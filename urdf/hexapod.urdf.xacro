@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<robot name="hexapod" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="pi" value="3.1415926535897931" />
+  <xacro:property name="length" value="1.8" />
+  <xacro:property name="width" value="1.0" />
+  <xacro:property name="depth" value="0.2" />
+  <xacro:property name="joint_1_lower_limit" value="${-pi}" />
+  <xacro:property name="joint_1_upper_limit" value="${pi}" />
+  <xacro:property name="joint_1_offset" value="${0}" />
+  <xacro:property name="joint_2_lower_limit" value="${-pi}" />
+  <xacro:property name="joint_2_upper_limit" value="${pi}" />
+  <xacro:property name="joint_2_offset" value="${0}" />
+  <xacro:property name="joint_3_lower_limit" value="${-pi}" />
+  <xacro:property name="joint_3_upper_limit" value="${pi}" />
+  <xacro:property name="joint_3_offset" value="${0}" />
+
+
+  <link name="base_link">
+  </link>
+
+  <!-- Probably change to floating joint type in future. Will need to publish transform directly (not via joint state publisher. -->
+  <joint name="base_to_body" type="floating">
+    <parent link="base_link"/>
+    <child link="body_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
+  <link name="body_link">
+    <visual>
+      <geometry>
+        <box size="${length} ${width} ${depth}"/>
+      </geometry>
+    </visual>
+  </link>
+
+
+  <xacro:macro name="joint_shape">
+        <cylinder length="${depth}" radius="${depth/2}"/>
+  </xacro:macro >
+
+
+  <xacro:macro name="leg" params="position side reflect_leftright reflect_frontback">
+
+  <joint name="base_to_leg_${position}_${side}_link_0" type="fixed">
+    <parent link="body_link"/>
+    <child link="leg_${position}_${side}_link_0"/>
+    <origin rpy="0 0 ${reflect_leftright*pi/2}" xyz="${reflect_frontback*(length/2)*0.6666666} ${reflect_leftright*width/2} 0"/>
+  </joint>
+
+  <link name="leg_${position}_${side}_link_0">
+  </link>
+
+  <joint name="leg_${position}_${side}_joint_1" type="revolute">
+    <parent link="leg_${position}_${side}_link_0"/>
+    <child link="leg_${position}_${side}_link_1"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${joint_1_lower_limit}" upper="${joint_1_upper_limit}" effort="100" velocity="100" />
+  </joint>
+
+  <link name="leg_${position}_${side}_link_1">
+    <visual>
+      <geometry>
+        <xacro:joint_shape />
+      </geometry>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${depth} ${depth} ${depth}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${depth/2} 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="leg_${position}_${side}_joint_2" type="revolute">
+    <parent link="leg_${position}_${side}_link_1"/>
+    <child link="leg_${position}_${side}_link_2"/>
+    <origin rpy="${pi/2} ${joint_2_offset} 0" xyz="${depth} 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${joint_2_lower_limit}" upper="${joint_2_upper_limit}" effort="100" velocity="100" />
+  </joint>
+
+  <link name="leg_${position}_${side}_link_2">
+    <visual>
+      <geometry>
+        <xacro:joint_shape />
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${depth*2} ${depth} ${depth}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${depth} 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="leg_${position}_${side}_joint_3" type="revolute">
+    <parent link="leg_${position}_${side}_link_2"/>
+    <child link="leg_${position}_${side}_link_3"/>
+    <origin rpy="0 0 ${joint_3_offset}" xyz="${depth*2} 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${joint_3_lower_limit}" upper="${joint_3_upper_limit}" effort="100" velocity="100" />
+  </joint>
+
+  <link name="leg_${position}_${side}_link_3">
+    <visual>
+      <geometry>
+        <xacro:joint_shape />
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${depth} ${depth} ${depth}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${depth*0.5} 0 0"/>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${depth} ${depth/2} ${depth/2}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${depth*1.5} 0 0"/>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${depth} ${depth/4} ${depth/4}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${depth*2.5} 0 0"/>
+    </visual>
+
+  </link>
+
+  <joint name="leg_${position}_${side}_joint_4_fixed" type="fixed">
+    <parent link="leg_${position}_${side}_link_3"/>
+    <child link="leg_${position}_${side}_foot"/>
+    <origin rpy="0 0 0" xyz="${depth*3} 0 0"/>
+  </joint>
+
+  <link name="leg_${position}_${side}_foot">
+  </link>
+
+  </xacro:macro>
+
+  <xacro:leg position="front" side="left" reflect_leftright="1" reflect_frontback="1"/>
+  <xacro:leg position="middle" side="left" reflect_leftright="1" reflect_frontback="0"/>
+  <xacro:leg position="back" side="left" reflect_leftright="1" reflect_frontback="-1"/>
+  <xacro:leg position="front" side="right" reflect_leftright="-1" reflect_frontback="1"/>
+  <xacro:leg position="middle" side="right" reflect_leftright="-1" reflect_frontback="0"/>
+  <xacro:leg position="back" side="right" reflect_leftright="-1" reflect_frontback="-1"/>
+
+</robot>

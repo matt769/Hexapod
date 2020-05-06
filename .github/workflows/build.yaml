@@ -1,0 +1,13 @@
+name: Build
+on:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build docker image
+      working-directory: test/docker
+      run: docker build -t hexapod -f Dockerfile ../../

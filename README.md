@@ -1,0 +1,155 @@
+![](https://github.com/matt769/Hexapod/workflows/Build/badge.svg)
+
+# Hexapod
+## Summary
+The core of this repo is code to control a hexapod type robot. It has been written with microcontrollers in mind and should be portable with very minor changes. However, I don't expect it to run (well) on more basic microcontrollers though - I will probably try building a physical version usiin a Teensy 4 (though this is probably overkill). The main aim was to provide very flexible and smooth control of all types of movement simultaneously. The hexapod can walk in any direction, while turning, while moving it's body through 6DoF. The leg height, stride length and stance width are all adjustable and the hexapod will update naturally whether stationary of moving.  
+
+There should also be no real code changes required if/when changing the general configuration i.e. position and orientation of legs, and even number of legs. As long as the robot knows where the legs are located (a transform for each leg) and what order to move them in (already present for the 6 legged version here), that is sufficient for full functionality.  
+
+For visualisation there is some additional code using ROS and RViz. `demo.launch` shows a preset demo of movements, and `control.launch` provides keyboard control of the hexapod (the controls are printed on the screen).  
+
+## Visualisation demo
+https://youtu.be/P0InG3q7VjE  
+
+## Build
+Clone into catkin worspace and then build using catkin (here I'm using python catkin tools)
+```sh
+mkdir -p catkin_ws/src
+cd catkin_ws
+git clone https://github.com/matt769/Hexapod.git src/hexapod
+catkin build
+```
+
+## Run
+In `catkin_ws`
+```sh
+source /opt/ros/kinetic/setup.bash  # if not done already
+source devel/setup.bash
+roslaunch hexapod control.launch
+```
+
+## Core movement concepts
+The below describes how the robot operates in WALKING mode. This is the main mode of operation and despite the name, also includes standing completely still, or standing still and only moving its body.
+
+
+### Base frame and body frame
+The `base` frame is always level with the ground plane and at a fixed height above it with its x-axis pointing forward. It is not fixed to the physical body of the robot. All movements (walking direction, body tilting etc) are defined with respect to this frame.  
+The `body` frame is fixed to the physical body of the robot (located in the centre) and so moves as the body moves.  
+Some types of movement involve moving the `base` frame e.g. walking, and other types only involve moving the `body` frame relative to the `base`.  
+
+The robot maintains the current `base` to `body` transformation. Cumulative movement of the `base` itself is not tracked since the robot does not know where it is in the real world (the visualisation does track this though). Technically, since the robot has no sensors at all, it cannot actually know where the `body` is in relation the the `base` but given that it controls the leg joint angles which determine this, I believe it is reasonable to assume this transformation is known.
+
+Foot positions are **always** calculated with respect to the `base`.  
+
+
+### Stationary movement - body only
+Movement of `body` relative to `base`. Movement while stationary is not handled any differently to walking but since the `base` is not moving, legs will not be raised (more details later). Due to numerical error when recalculating the new foot position in the leg frame after body movement, legs may occasionally be raised (and then put down in almost the same place).
+
+The below pictures show the `base`, `body` and all 6 `foot` frames. We can see that the `body` frame and physical body of the robot move relative to the `base` frame and the physical `feet` which do not move (though their orientation may change, their position will not).
+
+1a) Base and body aligned
+![](doc/readme_images/base_body_aligned_1.png)
+1b) Body is translated - base and feet (position only) are unchanged
+![](doc/readme_images/base_body_offset_1.png)
+2a) Base and body aligned (alternate view)
+![](doc/readme_images/base_body_aligned_2.png)
+2b) Body is translated and rotated relative to the base - base and feet (position only) are unchanged
+![](doc/readme_images/base_body_offset_rotation_2.png)
+
+
+### Neutral position
+The `neutral` position of a foot is fixed relative to the `base`. When the robot is stationary its feet will all be in their neutral positions (or moving towards it if only just stopped walking). This position can be changed but as a default is located a fixed distance to the side from the base of the leg (and assuming there is no `body` movement) and on the ground. `body` movement does **not** affect the `neutral` postition.
+
+
+### Walking
+Walking or turning is considered a movement of the `base`. Based on the speed, direction and rotation desired, we define a change in the `base`, relative to its current pose. To achieve this desired `base` position (i.e. movement), any legs on the ground must update their joints to accomodate this new position.
+
+It is important to observe in general that while walking, what we need to make decisions about is when to lift a leg up, and where/when to put it down. Legs on the ground just need to be updated to maintain the required relationship between `base` and `foot`.
+
+#### When to lift the foot
+When a foot can or should lift off the ground is defined by the gait sequence (the order in which the legs should lift), how many legs are currently on the ground and how many are allowed to be lifted at once (defined as part of the gait information). It is not based on position.  
+
+#### When to put the foot down
+The time taken to move a foot in the air is calculated based on the required speed, so as movement gets faster, the legs move faster while raised. However, at a given movement speed, the longer each foot is in the air, the longer the other feet must remain on the ground. If the time in the air is too long, (some of) the other legs may reach their movement limits, so the time in the air is limited to prevent this happening, and by extension the movement speed is also limited by this factor.
+
+#### Where to put the foot down
+All `base` movements have an associated `foot movement vector`. This vector can be calculated as the change in `neutral` position of the foot for a given change in the `base`. The current foot position is irrelevant. The below images show examples for a translation, a rotation, and both together. In practice, each movement step will ideally be much smaller than shown in the example.  
+![Translation](doc/readme_images/walk.png)
+![Rotation](doc/readme_images/turn.png)
+![Translation and rotation](doc/readme_images/walk_and_turn.png)  
+
+The `target foot position` is some distance ahead of the `neutral` position along the `foot movement vector` as shown in the below image. This distance is defined by the allowed range of the foot. Note that the position of the foot before it leaves the ground is not a factor at all (except in the situation where the current position and target are the same, in which case the leg raise movement is skipped).  
+![Target foot position](doc/readme_images/foot_placement.png)  
+
+
+### Current limitations
+The implementation assumes that the ground is completely flat. It has no sensors and no way of knowing if a leg is actually on the ground, so it puts them where it believes the (flat) ground to be.  
+
+No consideration of whether legs may collide, though this can be eliminated by adjusting `stride length` if required.
+
+
+## Transformations
+TODO  
+Describe main calculations  
+
+## Forward kinematics
+Where a, b, c are the link lengths from the leg base to the foot, theta_1, 2, 3 are the joint angles and x, y, z is the foot position in the leg frame, as described in the below image.
+![Leg FK](doc/readme_images/leg_fk.png)  
+
+So the formulae to calculate the foot position from the joint angles are as follows:  
+h = a + b * cos(theta_2) + c * cos(theta_2 + theta_3)  
+x = h * cos(theta_1)  
+y = h * sin(theta_1)  
+z = b * sin(theta_2) + c * sin(theta_2 + theta_3)  
+
+
+## Inverse kinematics
+The formulae to calculate the joint angles from the foot position are as follows (not taking into account joint limits for the moment):  
+
+theta_1 = atan2(y, x) +/- pi  
+k = (x / cos(theta_1)) if cos(theta_1) > |sin(theta_1)| , else (y / sin(theta_1))  
+theta_3 = +/- acos((z^2 + k^2 -b^2 -c^2) / (2 * b * c))  
+i = b + c * cos(theta_3)  
+j = c * sin(theta_3)  
+theta_2 = atan2(z, k) - atan2(j, i)  
+
+A full derivation is given in doc/IK.pdf TODO  
+
+
+## How to control
+From a starting position with the body on the ground, call `setLegsToGround()` (once), and `update()` periodically until `getState()` returns Hexapod::State::STANDING.  
+Then call `riseToWalk()` and `update()` periodically until `getState()` returns Hexapod::State::WALKING.  
+
+The robot can then be controlled primarily using the `changeBody()` and `setWalk()` functions. The `update()` function should be called for every 'small' time step. In these examples it's done at 50hz.  
+
+Other aspects of its movement can be changed through the other public functions.  
+
+```
+bool clearMovement();
+bool resetBody();
+void clearTargets();
+bool changeStanceWidth(float change);
+bool resetStanceWidth();
+bool changeGait(Gait gait);
+bool setFootGroundTravelRatio(float ratio);
+bool changeFootGroundTravelRatio(float change);
+bool resetFootGroundTravelRatio();
+bool setLegRaiseHeight(float height);
+bool changeLegRaiseHeight(float change);
+bool resetLegRaiseHeight();
+void setMoveMode(MoveMode move_mode);
+```
+
+## How to modify
+E.g. add legs or change positions etc  
+TODO  
+
+
+## Todo / Future (in no particular order)
+ - More restrictions on IK solutions (mainly joint 2) when walking
+ - Better definition of allowed foot movement range.
+ - Split core library and visualisation 
+ - Foot sensors to determine when a foot has actually touched the ground. This would help to allow handling of non-flat terrain.
+ - IMU to determine actual body pose.
+ - Experiment with some different configurations. Perhaps allow different sized legs.
+ - Built it!
