@@ -17,11 +17,6 @@ Hexapod::Hexapod() {
   tf_base_to_new_base_ = Transform();
   tf_base_to_body_target_ = Transform();
 
-  // assign leg ids
-  for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    legs_[leg_idx].id_ = leg_idx;
-  }
-
   // set up transformations between body centre frame and leg base frames
   // LHS leg base frames need to be rotated by 90, RHS by -90
   tf_body_to_leg_[FRONT_LEFT].t_(0) = (length_ / 2.0f) * 0.6666666f;
@@ -78,7 +73,7 @@ bool Hexapod::setStartingPosition(Leg::JointAngles starting_angles) {
    }
   // if legs below body, then adjust height_
   // TODO they shouldn't be below - remove this section?
-  float leg_pos_z = legs_[FRONT_LEFT].getFootPosition().z();
+  float leg_pos_z = legs_[0].getFootPosition().z();
   if (leg_pos_z < -height_) {
     height_ = -leg_pos_z;
   }
@@ -93,9 +88,8 @@ bool Hexapod::calculateGroundedLegs() {
       Vector3 foot_in_base =
           tf_base_to_body_ * tf_body_to_leg_[leg_idx] * legs_[leg_idx].getFootPosition();
       // position of foot in the updated leg frame (base on walk and body movement)
-      Vector3 tf_leg_to_foot_new =
-          (tf_base_to_new_body * tf_body_to_leg_[leg_idx]).inverse() * foot_in_base;
-      bool result = legs_[leg_idx].testSetFootPosition(tf_leg_to_foot_new, staged_angles_[leg_idx]);
+      Vector3 leg_to_foot_new = (tf_base_to_new_body * tf_body_to_leg_[leg_idx]).inverse() * foot_in_base;
+      bool result = legs_[leg_idx].calculateJointAngles(leg_to_foot_new, staged_angles_[leg_idx], Leg::IKMode::WALK);
       if (!result) {
         std::cout << "Unable to find IK solution for all legs.\n";
         return false;
@@ -352,7 +346,7 @@ bool Hexapod::update() {
   if (state_ == State::UNSUPPORTED) {
     updateMoveLegs();
   }
-  if (state_ == State::STANDING) {
+  else if (state_ == State::STANDING) {
     handleGroundedLegs();
   } else {
     handleGroundedLegs();
@@ -451,7 +445,7 @@ void Hexapod::setMoveMode(MoveMode move_mode) {
 // TODO relax that assumption
 // TODO add check that target isn't underground
 bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
-  if (state_ == State::STANDING) {
+  if (state_ != State::UNSUPPORTED) {
     return false;
   }
 
@@ -540,7 +534,7 @@ bool Hexapod::setLegsToGround() {
   // some default position
   Vector3 grounded_position{0.6, 0, -height_};
   Leg::JointAngles grounded_angles;
-  bool result = legs_[0].testSetFootPosition(grounded_position, grounded_angles);
+  bool result = legs_[0].calculateJointAngles(grounded_position, grounded_angles, Leg::IKMode::WALK);
   if (result) {
     result &= setTargetsMoveLegs(grounded_angles);
   }

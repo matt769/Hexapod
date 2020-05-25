@@ -1,4 +1,4 @@
 notes
 rough
-doxygen
-!doxygen/Doxyfile
+core/doxygen
+!core/doxygen/Doxyfile

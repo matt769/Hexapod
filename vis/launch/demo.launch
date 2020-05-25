@@ -1,11 +1,11 @@
 <launch>
 
-  <arg name="model" default="$(find hexapod)/urdf/hexapod.urdf.xacro"  />
-  <arg name="rvizconfig" default="$(find hexapod)/rviz/hexapod.rviz" />
+  <arg name="model" default="$(find hexapod_vis)/urdf/hexapod.urdf.xacro"  />
+  <arg name="rvizconfig" default="$(find hexapod_vis)/rviz/hexapod.rviz" />
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
 
-  <node name="demo_node" pkg="hexapod" type="demo_node" output="screen"/>
+  <node name="demo_node" pkg="hexapod_vis" type="demo_node" output="screen"/>
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 

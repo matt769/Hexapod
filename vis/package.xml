@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>hexapod_vis</name>
+  <version>0.0.0</version>
+  <description>The hexapod package</description>
+  <maintainer email="blah@blah.com">Matt</maintainer>
+  <license>None</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roslaunch</build_depend>
+  <build_depend>hexapod_core</build_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>hexapod_core</exec_depend>
+  <export>
+  </export>
+</package>

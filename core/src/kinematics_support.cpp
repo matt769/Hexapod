@@ -1,6 +1,5 @@
 #include "kinematics_support.h"
 
-#include "hexapod.h"
 #include "transformations.h"
 
 #include <cmath>

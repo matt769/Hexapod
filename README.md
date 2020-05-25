@@ -2,11 +2,13 @@
 
 # Hexapod
 ## Summary
-The core of this repo is code to control a hexapod type robot. It has been written with microcontrollers in mind and should be portable with very minor changes. However, I don't expect it to run (well) on more basic microcontrollers though - I will probably try building a physical version usiin a Teensy 4 (though this is probably overkill). The main aim was to provide very flexible and smooth control of all types of movement simultaneously. The hexapod can walk in any direction, while turning, while moving it's body through 6DoF. The leg height, stride length and stance width are all adjustable and the hexapod will update naturally whether stationary of moving.  
+This repository contains 2 catkin packages.  
+
+`core` provides a library to control a hexapod type robot. It has been written with microcontrollers in mind and should be portable with only extremely minor changes. However, I don't expect it to run (well) on more basic microcontrollers - I will probably try building a physical version usiin a Teensy 4 (though this is probably overkill). The main aim was to provide very flexible and smooth control of all types of movement simultaneously. The hexapod can walk in any direction, while turning, while moving it's body through 6DoF. The leg height, stride length and stance width are all adjustable and the hexapod will update naturally whether stationary of moving.  
 
 There should also be no real code changes required if/when changing the general configuration i.e. position and orientation of legs, and even number of legs. As long as the robot knows where the legs are located (a transform for each leg) and what order to move them in (already present for the 6 legged version here), that is sufficient for full functionality.  
 
-For visualisation there is some additional code using ROS and RViz. `demo.launch` shows a preset demo of movements, and `control.launch` provides keyboard control of the hexapod (the controls are printed on the screen).  
+`vis` provides additional code for visualisation using ROS and RViz. `demo.launch` shows a preset demo of movements, and `control.launch` provides keyboard control of the hexapod (the controls are printed on the screen).  
 
 ## Visualisation demo
 https://youtu.be/P0InG3q7VjE  
@@ -152,4 +154,4 @@ TODO
  - Foot sensors to determine when a foot has actually touched the ground. This would help to allow handling of non-flat terrain.
  - IMU to determine actual body pose.
  - Experiment with some different configurations. Perhaps allow different sized legs.
- - Built it!
+ - Build it!
