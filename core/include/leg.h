@@ -45,14 +45,13 @@ class Joint {
 */
 class Leg {
  public:
-  /** @brief Coxa length (metres) TODO change units */
-  static constexpr float a = 0.2f;
-  /** @brief Femur length (metres) TODO change units */
-  static constexpr float b = 0.4f;
-  /** @brief Tibia length (metres) TODO change units */
-  static constexpr float c = 0.6f;
-  /** @brief Number of joints within the leg */
-  static constexpr size_t num_joints_ = 3;
+  /** @brief Coxa, Femur, Tibia length (metres) TODO change units */
+  struct Dims {
+    float a;
+    float b;
+    float c;
+  };
+  Dims dims_;
   /** @brief Tolerance when checking if the foot is at the target position */
   static constexpr float target_tolerance =
       0.001;  // TODO should base this on allowed range of movement
@@ -64,7 +63,7 @@ class Leg {
    * Also known as base, hip and knee joint
    * @see joints_
    */
-  enum { JOINT_1 = 0, JOINT_2, JOINT_3 };
+  enum { JOINT_1 = 0, JOINT_2, JOINT_3, NUM_JOINTS };
   /** @brief Leg state */
   enum class State { ON_GROUND, RAISED };
   /** @brief Inverse kinematics mode
@@ -75,10 +74,13 @@ class Leg {
   State state_ = State::ON_GROUND;
   /** @brief Previous state */
   State prev_state_ = State::ON_GROUND;
+  /** @brief All joint objects for the leg */
+  Joint joints_[NUM_JOINTS];
 
+  /** @brief Need default constructor to allow us to create an array of Leg objects */
   Leg();
-  /** @brief Create Leg with specific starting joint angles */
-  Leg(JointAngles joint_angles);
+  /** @brief Create Leg with specific dimensions and joints */
+  Leg(Dims dims, Joint* joints);
   /** @brief Calculate joint angles for a given foot position */
   bool calculateJointAngles(const Tfm::Vector3& pos, JointAngles& angles, const IKMode ik_mode);
   /** @brief Calculate foot position for given joint angles */
@@ -102,8 +104,6 @@ class Leg {
   bool setStartingAngles(JointAngles starting_angles);
 
  private:
-  /** @brief All joint objects for the leg */
-  Joint joints_[num_joints_];
   /** @brief Current foot position relative to the leg base frame */
   Tfm::Vector3 pos_; 
   /** @brief Used to describe the trajectory of the leg (in joint space) while raised

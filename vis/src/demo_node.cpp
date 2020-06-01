@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
   ros::Publisher joints_pub =
       n.advertise<sensor_msgs::JointState>("joint_states", 1);  // joints publisher
 
-  Hexapod hexapod;
+  Hexapod hexapod = buildDefaultHexapod();
   // Leg::JointAngles starting_angles {0.0, M_PI/4.0, -3.0*M_PI/4.0};
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};
   hexapod.setStartingPosition(starting_angles);

@@ -15,7 +15,7 @@
 
 using namespace Transformations;
 
-Hexapod hexapod;
+Hexapod hexapod = buildDefaultHexapod();
 constexpr float walk_increment = 0.001f;
 const Vector3 walk_increment_fb{walk_increment, 0.0f, 0.0f};
 const Vector3 walk_increment_lr{0.0f, walk_increment, 0.0f};

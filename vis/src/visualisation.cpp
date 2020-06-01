@@ -38,10 +38,12 @@ void initialise(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br,
   Vis::updateVisJoints(hexapod, joints_pub);
 }
 
+
 void updateVisJoints(const Hexapod& hexapod, ros::Publisher* joints_pub) {
-  constexpr size_t total_joints = 18;
+  size_t total_joints = hexapod.num_legs_ * hexapod.getLeg(0).NUM_JOINTS;
   std::vector<std::string> joint_names(total_joints);
   std::vector<double> joint_angles(total_joints);
+  // currently dependent on knowing number of legs
   joint_names[0] = "leg_front_left_joint_1";
   joint_names[1] = "leg_front_left_joint_2";
   joint_names[2] = "leg_front_left_joint_3";
@@ -61,24 +63,25 @@ void updateVisJoints(const Hexapod& hexapod, ros::Publisher* joints_pub) {
   joint_names[16] = "leg_back_right_joint_2";
   joint_names[17] = "leg_back_right_joint_3";
 
-  joint_angles[0] = hexapod.getLeg(Hexapod::FRONT_LEFT).getJointAngles().theta_1;
-  joint_angles[1] = hexapod.getLeg(Hexapod::FRONT_LEFT).getJointAngles().theta_2;
-  joint_angles[2] = hexapod.getLeg(Hexapod::FRONT_LEFT).getJointAngles().theta_3;
-  joint_angles[3] = hexapod.getLeg(Hexapod::FRONT_RIGHT).getJointAngles().theta_1;
-  joint_angles[4] = hexapod.getLeg(Hexapod::FRONT_RIGHT).getJointAngles().theta_2;
-  joint_angles[5] = hexapod.getLeg(Hexapod::FRONT_RIGHT).getJointAngles().theta_3;
-  joint_angles[6] = hexapod.getLeg(Hexapod::MIDDLE_LEFT).getJointAngles().theta_1;
-  joint_angles[7] = hexapod.getLeg(Hexapod::MIDDLE_LEFT).getJointAngles().theta_2;
-  joint_angles[8] = hexapod.getLeg(Hexapod::MIDDLE_LEFT).getJointAngles().theta_3;
-  joint_angles[9] = hexapod.getLeg(Hexapod::MIDDLE_RIGHT).getJointAngles().theta_1;
-  joint_angles[10] = hexapod.getLeg(Hexapod::MIDDLE_RIGHT).getJointAngles().theta_2;
-  joint_angles[11] = hexapod.getLeg(Hexapod::MIDDLE_RIGHT).getJointAngles().theta_3;
-  joint_angles[12] = hexapod.getLeg(Hexapod::BACK_LEFT).getJointAngles().theta_1;
-  joint_angles[13] = hexapod.getLeg(Hexapod::BACK_LEFT).getJointAngles().theta_2;
-  joint_angles[14] = hexapod.getLeg(Hexapod::BACK_LEFT).getJointAngles().theta_3;
-  joint_angles[15] = hexapod.getLeg(Hexapod::BACK_RIGHT).getJointAngles().theta_1;
-  joint_angles[16] = hexapod.getLeg(Hexapod::BACK_RIGHT).getJointAngles().theta_2;
-  joint_angles[17] = hexapod.getLeg(Hexapod::BACK_RIGHT).getJointAngles().theta_3;
+  enum { FRONT_LEFT = 0, FRONT_RIGHT, MIDDLE_LEFT, MIDDLE_RIGHT, BACK_LEFT, BACK_RIGHT };
+  joint_angles[0] = hexapod.getLeg(FRONT_LEFT).getJointAngles().theta_1;
+  joint_angles[1] = hexapod.getLeg(FRONT_LEFT).getJointAngles().theta_2;
+  joint_angles[2] = hexapod.getLeg(FRONT_LEFT).getJointAngles().theta_3;
+  joint_angles[3] = hexapod.getLeg(FRONT_RIGHT).getJointAngles().theta_1;
+  joint_angles[4] = hexapod.getLeg(FRONT_RIGHT).getJointAngles().theta_2;
+  joint_angles[5] = hexapod.getLeg(FRONT_RIGHT).getJointAngles().theta_3;
+  joint_angles[6] = hexapod.getLeg(MIDDLE_LEFT).getJointAngles().theta_1;
+  joint_angles[7] = hexapod.getLeg(MIDDLE_LEFT).getJointAngles().theta_2;
+  joint_angles[8] = hexapod.getLeg(MIDDLE_LEFT).getJointAngles().theta_3;
+  joint_angles[9] = hexapod.getLeg(MIDDLE_RIGHT).getJointAngles().theta_1;
+  joint_angles[10] = hexapod.getLeg(MIDDLE_RIGHT).getJointAngles().theta_2;
+  joint_angles[11] = hexapod.getLeg(MIDDLE_RIGHT).getJointAngles().theta_3;
+  joint_angles[12] = hexapod.getLeg(BACK_LEFT).getJointAngles().theta_1;
+  joint_angles[13] = hexapod.getLeg(BACK_LEFT).getJointAngles().theta_2;
+  joint_angles[14] = hexapod.getLeg(BACK_LEFT).getJointAngles().theta_3;
+  joint_angles[15] = hexapod.getLeg(BACK_RIGHT).getJointAngles().theta_1;
+  joint_angles[16] = hexapod.getLeg(BACK_RIGHT).getJointAngles().theta_2;
+  joint_angles[17] = hexapod.getLeg(BACK_RIGHT).getJointAngles().theta_3;
 
   sensor_msgs::JointState msg;
   msg.header.stamp = ros::Time::now();

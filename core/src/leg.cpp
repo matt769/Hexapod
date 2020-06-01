@@ -27,25 +27,16 @@ float Joint::clampToLimts(float angle) const {
   return fmax(fmin(angle, upper_limit_), lower_limit_);
 }
 
-Leg::Leg() : Leg(JointAngles{0,0,0}){}
+Leg::Leg() {}
 
-Leg::Leg(JointAngles joint_angles) {
-  // BIT OF A PLACEHOLDER
-  // until I decide how to initialise everything properly
-  joints_[JOINT_1].lower_limit_ = -90.0f * M_PI / 180.0;
-  joints_[JOINT_1].upper_limit_ = 90.0f * M_PI / 180.0;
-  joints_[JOINT_1].angle_ = 0.0f;
-
-  joints_[JOINT_2].lower_limit_ = -150.0f * M_PI / 180.0;
-  joints_[JOINT_2].upper_limit_ = 150.0f * M_PI / 180.0;
-  joints_[JOINT_2].angle_ = 0.0f;
-
-  joints_[JOINT_3].lower_limit_ = -150.0f * M_PI / 180.0;
-  joints_[JOINT_3].upper_limit_ = 150.0f * M_PI / 180.0;
-  joints_[JOINT_3].angle_ = 0.0f;
-
-  setJointAngles(joint_angles);
+Leg::Leg(Dims dims, Joint* joints)
+  : dims_(dims)
+{
+  joints_[JOINT_1] = joints[0];
+  joints_[JOINT_2] = joints[1];
+  joints_[JOINT_3] = joints[2];
 }
+
 
 /**
  * @details
@@ -100,11 +91,11 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
   float cos_theta_1 = cos(angles[0].theta_1);
   float sin_theta_1 = sin(angles[0].theta_1);
   if (cos_theta_1 > fabs(sin_theta_1)) {
-    ha = pos.x() / cos_theta_1 - a;
+    ha = pos.x() / cos_theta_1 - dims_.a;
   } else {
-    ha = pos.y() / sin_theta_1 - a;
+    ha = pos.y() / sin_theta_1 - dims_.a;
   }
-  float ka = (pos.z() * pos.z() + ha * ha - b * b - c * c) / (2 * b * c);
+  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) / (2 * dims_.b * dims_.c);
 
   if (clamp(ka, -1.0f, 1.0f)) {
     angles[0].theta_3 = acos(ka);
@@ -126,8 +117,8 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
   // could use law of cosines again if quicker than atan version
   for (size_t i = 0; i < 2; i++) {
     if (angles_valid[i]) {
-      float kb = b + c * cos(angles[i].theta_3);
-      float kc = c * sin(angles[i].theta_3);
+      float kb = dims_.b + dims_.c * cos(angles[i].theta_3);
+      float kc = dims_.c * sin(angles[i].theta_3);
       angles[i].theta_2 = atan2(pos.z(), ha) - atan2(kc, kb);
       angles[i].theta_2 = wrapAngle(angles[i].theta_2);
       if (joints_[JOINT_2].isWithinLimits(angles[i].theta_2)) {
@@ -192,11 +183,11 @@ size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_ang
   // ******* JOINT 3 *******
   float ha;
   if (fabs(pos.x()) > fabs(pos.y())) {
-    ha = pos.x() / cos(th1) - a;
+    ha = pos.x() / cos(th1) - dims_.a;
   } else {
-    ha = pos.y() / sin(th1) - a;
+    ha = pos.y() / sin(th1) - dims_.a;
   }
-  float ka = (pos.z() * pos.z() + ha * ha - b * b - c * c) / (2 * b * c);
+  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) / (2 * dims_.b * dims_.c);
   if (clamp(ka, -1.0f, 1.0f)) {
     th3 = -acos(ka); // acos result always positive (between 0 and pi)
                      // but the negative version also valid
@@ -213,8 +204,8 @@ size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_ang
   }
 
   // ******* JOINT 2 *******
-  const float kb = b + c * cos(th3);
-  const float kc = c * sin(th3);
+  const float kb = dims_.b + dims_.c * cos(th3);
+  const float kc = dims_.c * sin(th3);
   th2 = atan2(pos.z(), ha) - atan2(kc, kb);
   th2 = wrapAngle(th2);
   if (joints_[JOINT_2].isWithinLimits(th2)) {
@@ -284,10 +275,10 @@ bool Leg::jointsWithinLimits(const JointAngles& joint_angles) const {
  * @return true always TODO make void or add checks
  */
 bool Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
-  float h = a + b * cos(angles.theta_2) + c * cos(angles.theta_2 + angles.theta_3);
+  float h = dims_.a + dims_.b * cos(angles.theta_2) + dims_.c * cos(angles.theta_2 + angles.theta_3);
   pos.x() = h * cos(angles.theta_1);
   pos.y() = h * sin(angles.theta_1);
-  pos.z() = b * sin(angles.theta_2) + c * sin(angles.theta_2 + angles.theta_3);
+  pos.z() = dims_.b * sin(angles.theta_2) + dims_.c * sin(angles.theta_2 + angles.theta_3);
   return true;
 }
 
