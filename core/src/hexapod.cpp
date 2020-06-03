@@ -691,3 +691,63 @@ Hexapod buildDefaultHexapod() {
 
   return Hexapod(num_legs, hex_dims, tf_body_to_leg, legs);
 }
+
+Hexapod buildDefaultHexapod2() {
+
+  // Construct a leg (they are all the same in this default robot)
+  constexpr size_t num_joints = 3;
+  Leg::Dims leg_dims{0.2f, 0.4f, 0.6f};
+
+  Joint joints[num_joints];
+  joints[0] = Joint(-90.0f * M_PI / 180.0, 90.0f * M_PI / 180.0, 0.0);
+  joints[1] = Joint(-150.0f * M_PI / 180.0, 150.0f * M_PI / 180.0, M_PI / 2.0);
+  joints[2] = Joint(-150.0f * M_PI / 10.0, 150.0f * M_PI / 180.0, M_PI / 4.0);
+
+  Leg leg(leg_dims, joints);
+
+  // Make an array of legs and copy the one we just made into all elements
+  constexpr size_t num_legs = 6;
+  Leg legs[num_legs];
+  for (size_t leg_idx = 0; leg_idx < num_legs; leg_idx++) {
+      legs[leg_idx] = leg;
+  }
+
+  // Hexapod body dimensions
+  constexpr float length = 1.8f;
+  constexpr float width = 1.0f;
+  constexpr float depth = 0.2f;
+  const Hexapod::Dims hex_dims{length, width, depth};
+
+  // Transformations between body frame and leg base frames
+  // LHS leg base frames need to be rotated by 90, RHS by -90
+  Transform tf_body_to_leg[num_legs];
+
+  Vector3 front(hex_dims.length / 2.0f, 0.0f, 0.0f);
+  Vector3 back = -front;
+  Vector3 left(0.0f, hex_dims.width / 2.0f, 0.0f);
+  Vector3 right = -left;
+  Vector3 middle(0.0f, 0.0f, 0.0f);
+
+  // Legs MUST be ordered this way i.e. left then right, then next row left ...
+  enum { FRONT_LEFT = 0, FRONT_RIGHT, MIDDLE_LEFT, MIDDLE_RIGHT, BACK_LEFT, BACK_RIGHT };
+
+  tf_body_to_leg[FRONT_LEFT].t_ = front + left;
+  tf_body_to_leg[FRONT_LEFT].R_.setRPYExtr(0, 0, M_PI / 3.0);
+
+  tf_body_to_leg[MIDDLE_LEFT].t_ = middle + left;
+  tf_body_to_leg[MIDDLE_LEFT].R_.setRPYExtr(0, 0, M_PI / 2.0);
+
+  tf_body_to_leg[BACK_LEFT].t_ = back + left;
+  tf_body_to_leg[BACK_LEFT].R_.setRPYExtr(0, 0, 2.0 * M_PI / 3.0);
+
+  tf_body_to_leg[FRONT_RIGHT].t_ = front + right;
+  tf_body_to_leg[FRONT_RIGHT].R_.setRPYExtr(0, 0, -M_PI / 3.0);
+
+  tf_body_to_leg[MIDDLE_RIGHT].t_ = middle + right;
+  tf_body_to_leg[MIDDLE_RIGHT].R_.setRPYExtr(0, 0, -M_PI / 2.0);
+
+  tf_body_to_leg[BACK_RIGHT].t_ = back + right;
+  tf_body_to_leg[BACK_RIGHT].R_.setRPYExtr(0, 0, -2.0 * M_PI / 3.0);
+
+  return Hexapod(num_legs, hex_dims, tf_body_to_leg, legs);
+}

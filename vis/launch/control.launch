@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="model" default="$(find hexapod_vis)/urdf/hexapod.urdf.xacro"  />
+  <arg name="model" default="$(find hexapod_vis)/urdf/hexapod2.urdf.xacro"  />
   <arg name="rvizconfig" default="$(find hexapod_vis)/rviz/hexapod.rviz" />
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
