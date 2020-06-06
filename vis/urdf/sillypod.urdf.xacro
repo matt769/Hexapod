@@ -2,7 +2,7 @@
 <robot name="hexapod" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <xacro:property name="pi" value="3.1415926535897931" />
-  <xacro:property name="length" value="1.8" />
+  <xacro:property name="length" value="10.0" />
   <xacro:property name="width" value="1.0" />
   <xacro:property name="depth" value="${width/5.0}" />
   <xacro:property name="joint_1_lower_limit" value="${-pi}" />
@@ -135,13 +135,28 @@
 
   </xacro:macro>
 
-  <xacro:leg position="row00" side="left" reflect_leftright="1" forward_position="${length/2}" />
-  <xacro:leg position="row01" side="left" reflect_leftright="1" forward_position="${length/2 - (length/(num_legs/2-1))}" />
-  <xacro:leg position="row02" side="left" reflect_leftright="1" forward_position="${-length/2 + (length/(num_legs/2-1))}" />
-  <xacro:leg position="row03" side="left" reflect_leftright="1" forward_position="${-length/2}" />
-  <xacro:leg position="row00" side="right" reflect_leftright="-1" forward_position="${length/2}" />
-  <xacro:leg position="row01" side="right" reflect_leftright="-1" forward_position="${length/2 - (length/(num_legs/2-1))}" />
-  <xacro:leg position="row02" side="right" reflect_leftright="-1" forward_position="${-length/2 + (length/(num_legs/2-1))}" />
-  <xacro:leg position="row03" side="right" reflect_leftright="-1" forward_position="${-length/2}" />
+  <xacro:leg position="row00" side="left" reflect_leftright="1" forward_position="5" />
+  <xacro:leg position="row01" side="left" reflect_leftright="1" forward_position="4" />
+  <xacro:leg position="row02" side="left" reflect_leftright="1" forward_position="3" />
+  <xacro:leg position="row03" side="left" reflect_leftright="1" forward_position="2" />
+  <xacro:leg position="row04" side="left" reflect_leftright="1" forward_position="1" />
+  <xacro:leg position="row05" side="left" reflect_leftright="1" forward_position="0" />
+  <xacro:leg position="row06" side="left" reflect_leftright="1" forward_position="-1" />
+  <xacro:leg position="row07" side="left" reflect_leftright="1" forward_position="-2" />
+  <xacro:leg position="row08" side="left" reflect_leftright="1" forward_position="-3" />
+  <xacro:leg position="row09" side="left" reflect_leftright="1" forward_position="-4" />
+  <xacro:leg position="row10" side="left" reflect_leftright="1" forward_position="-5" />
+
+  <xacro:leg position="row00" side="right" reflect_leftright="-1" forward_position="5" />
+  <xacro:leg position="row01" side="right" reflect_leftright="-1" forward_position="4" />
+  <xacro:leg position="row02" side="right" reflect_leftright="-1" forward_position="3" />
+  <xacro:leg position="row03" side="right" reflect_leftright="-1" forward_position="2" />
+  <xacro:leg position="row04" side="right" reflect_leftright="-1" forward_position="1" />
+  <xacro:leg position="row05" side="right" reflect_leftright="-1" forward_position="0" />
+  <xacro:leg position="row06" side="right" reflect_leftright="-1" forward_position="-1" />
+  <xacro:leg position="row07" side="right" reflect_leftright="-1" forward_position="-2" />
+  <xacro:leg position="row08" side="right" reflect_leftright="-1" forward_position="-3" />
+  <xacro:leg position="row09" side="right" reflect_leftright="-1" forward_position="-4" />
+  <xacro:leg position="row10" side="right" reflect_leftright="-1" forward_position="-5" />
 
 </robot>

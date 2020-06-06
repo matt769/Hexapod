@@ -4,7 +4,7 @@
   <xacro:property name="pi" value="3.1415926535897931" />
   <xacro:property name="length" value="1.8" />
   <xacro:property name="width" value="1.0" />
-  <xacro:property name="depth" value="0.2" />
+  <xacro:property name="depth" value="${width/5.0}" />
   <xacro:property name="joint_1_lower_limit" value="${-pi}" />
   <xacro:property name="joint_1_upper_limit" value="${pi}" />
   <xacro:property name="joint_1_offset" value="${0}" />
@@ -42,18 +42,10 @@
 
   <xacro:macro name="leg" params="position side reflect_leftright reflect_frontback">
 
-  <joint name="base_to_leg_${position}_${side}_link_0" type="fixed">
-    <parent link="body_link"/>
-    <child link="leg_${position}_${side}_link_0"/>
-    <origin rpy="0 0 ${reflect_leftright*(pi/2 - reflect_frontback*pi/6)}" xyz="${reflect_frontback*(length/2)} ${reflect_leftright*width/2} 0"/>
-  </joint>
-
-  <link name="leg_${position}_${side}_link_0">
-  </link>
-
   <joint name="leg_${position}_${side}_joint_1" type="revolute">
-    <parent link="leg_${position}_${side}_link_0"/>
+    <parent link="body_link"/>
     <child link="leg_${position}_${side}_link_1"/>
+    <origin rpy="0 0 ${reflect_leftright*(pi/2 - reflect_frontback*pi/6)}" xyz="${reflect_frontback*(length/2)} ${reflect_leftright*width/2} 0"/>
     <axis xyz="0 0 1"/>
     <limit lower="${joint_1_lower_limit}" upper="${joint_1_upper_limit}" effort="100" velocity="100" />
   </joint>
@@ -142,11 +134,13 @@
 
   </xacro:macro>
 
-  <xacro:leg position="front" side="left" reflect_leftright="1" reflect_frontback="1"/>
-  <xacro:leg position="mid1" side="left" reflect_leftright="1" reflect_frontback="0"/>
-  <xacro:leg position="back" side="left" reflect_leftright="1" reflect_frontback="-1"/>
-  <xacro:leg position="front" side="right" reflect_leftright="-1" reflect_frontback="1"/>
-  <xacro:leg position="mid1" side="right" reflect_leftright="-1" reflect_frontback="0"/>
-  <xacro:leg position="back" side="right" reflect_leftright="-1" reflect_frontback="-1"/>
+
+  <xacro:leg position="row00" side="left" reflect_leftright="1" reflect_frontback="1"/>
+  <xacro:leg position="row00" side="right" reflect_leftright="-1" reflect_frontback="1"/>
+  <xacro:leg position="row01" side="left" reflect_leftright="1" reflect_frontback="0"/>
+  <xacro:leg position="row01" side="right" reflect_leftright="-1" reflect_frontback="0"/>
+  <xacro:leg position="row02" side="left" reflect_leftright="1" reflect_frontback="-1"/>
+  <xacro:leg position="row02" side="right" reflect_leftright="-1" reflect_frontback="-1"/> 
+
 
 </robot>

@@ -68,16 +68,14 @@ void Vis::initialiseTransforms() {
 void Vis::generateJointNames() {
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     std::string position, side;
-    if (leg_idx <= 1) {
-      position = "front";
-    }
-    else if (leg_idx >= num_legs_ - 2) {
-      position = "back";
-    }
-    else {
-      const size_t row_idx = leg_idx / 2; // integer division
-      position = "mid" + std::to_string(row_idx);
-    }
+
+    const size_t row_idx = leg_idx / 2; // integer division
+    std::string row_str = std::to_string(row_idx);
+    // bit of faffing around to left pad the row number
+    const size_t pad_size = 2;
+    row_str.insert(row_str.begin(), pad_size-row_str.size(),'0');
+    position = "row" + row_str;
+
     if(leg_idx % 2 == 0) {
       side = "left";
     }

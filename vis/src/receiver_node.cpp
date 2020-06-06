@@ -3,6 +3,7 @@
 #include "transformations.h"
 #include "visualisation.h"
 #include "receiver.h"
+#include "build_from_urdf.h"
 
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
@@ -22,7 +23,10 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "demo_walk");
   ros::NodeHandle nh;
   
-  Hexapod hexapod = buildDefaultHexapod2();
+  // Hexapod hexapod = buildDefaultHexapod();
+  // Hexapod hexapod = buildDefaultHexapod2();
+  // Hexapod hexapod = buildDefaultOctapod();
+  Hexapod hexapod = BuildFromURDF::buildFromURDF();
   Vis visualiser(nh, &hexapod);
   Receiver receiver(nh, &hexapod);
 

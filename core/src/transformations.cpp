@@ -252,4 +252,41 @@ bool operator==(const Vector3& v1, const Vector3& v2) {
 }
 
 bool operator!=(const Vector3& v1, const Vector3& v2) { return !(v1 == v2); }
+
+/**
+ * @brief Taken from: https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
+ * 
+ * @param q 
+ * @return RotationMatrix 
+ */
+RotationMatrix QuaternionToRotationMatrix(const Quaternion& q) {
+  RotationMatrix R;
+  float ww = q.w() * q.w();
+  float xx = q.x() * q.x();
+  float yy = q.y() * q.y();
+  float zz = q.z() * q.z();
+
+  R(0,0) = ( xx - yy - zz + ww);
+  R(1,1) = (-xx + yy - zz + ww);
+  R(2,2) = (-xx - yy + zz + ww);
+  
+  float xy = q.x() * q.y();
+  float zw = q.z() * q.w();
+  R(1,0) = 2.0f * (xy + zw);
+  R(0,1) = 2.0f * (xy - zw);
+  
+  float xz = q.x() * q.z();
+  float yw = q.y() * q.w();
+  R(2,0) = 2.0 * (xz - yw);
+  R(0,2) = 2.0 * (xz + yw);
+
+  float yz = q.y() * q.z();
+  float xw = q.x() * q.w();
+  R(2,1) = 2.0 * (yz + xw);
+  R(1,2) = 2.0 * (yz - xw);
+
+  return R;
 }
+
+
+} // namespace Transformations

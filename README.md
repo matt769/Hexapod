@@ -6,9 +6,9 @@ This repository contains 2 catkin packages.
 
 `core` provides a library to control a hexapod type robot. It has been written with microcontrollers in mind and should be portable with only extremely minor changes. However, I don't expect it to run (well) on more basic microcontrollers - I will probably try building a physical version usiin a Teensy 4 (though this is probably overkill). The main aim was to provide very flexible and smooth control of all types of movement simultaneously. The hexapod can walk in any direction, while turning, while moving it's body through 6DoF. The leg height, stride length and stance width are all adjustable and the hexapod will update naturally whether stationary of moving.  
 
-There should also be no real code changes required if/when changing the general configuration i.e. position and orientation of legs, and even number of legs. As long as the robot knows where the legs are located (a transform for each leg) and what order to move them in (already present for the 6 legged version here), that is sufficient for full functionality.  
+The structure of the robot is also very configurable (explained further below) and the number of legs, their positions and dimensions.
 
-`vis` provides additional code for visualisation using ROS and RViz. `demo.launch` shows a preset demo of movements, and `control.launch` provides keyboard control of the hexapod (the controls are printed on the screen).  
+`vis` provides additional code for visualisation using ROS and RViz. `demo.launch` shows a preset demo of movements, and `control.launch` provides keyboard control of the hexapod (the controls are printed on the screen). There are also several urdf examples provided - a robot of the appropriate configuration is derived and built automatically from the urdf.
 
 ## Visualisation demo
 https://youtu.be/P0InG3q7VjE  
@@ -124,7 +124,7 @@ Then call `riseToWalk()` and `update()` periodically until `getState()` returns 
 
 The robot can then be controlled primarily using the `changeBody()` and `setWalk()` functions. The `update()` function should be called for every 'small' time step. In these examples it's done at 50hz.  
 
-Other aspects of its movement can be changed through the other public functions.  
+Other aspects of its movement can be changed through the public functions.  
 
 ```
 bool clearMovement();
@@ -142,16 +142,52 @@ bool resetLegRaiseHeight();
 void setMoveMode(MoveMode move_mode);
 ```
 
-## How to modify
-E.g. add legs or change positions etc  
-TODO  
+## How to build a robot
+### Using the constructor directly
+There are several provided examples of how to do this, See the `buildDefault...()` example functions in `core/src/hexapod.cpp`.  
+
+```c++
+Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg, Leg* legs);
+```
+num_legs - Number of legs for the robot to have. Must be an even number.  
+hex_dims - Hexapod dimensions (struct available from Hexapod class): length, width, depth. Depth is in fact the only dimension currently used and will be used to set the starting height of the `base` frame (depth/2 above 0).  
+tf_body_to_leg - An array of transformations describing the pose of the base of each leg with respect to the `body` frame (remember `body` frame is same as the `base` frame at start up).  
+legs - An array of Leg objects - more details below.  
+
+Both arrays must of course be the same length as the number of legs, and the order **must** be as follows:  
+ - first row (front) left leg
+ - same row right leg
+ - next row back left leg
+ - same row right leg
+ - ...
+ - last row (back) left leg
+ - same row right leg
+
+So there is an assumption that all legs come in pairs that are opposite each other. This does not need to be strictly adhered to when defining the body to leg transforms, but it is assumed by the gait calculations so if that assumption if not held then it might produce odd walking styles.
+
+
+```c++
+Leg(Dims dims, Joint* joints);
+```
+dims - Leg dimensions (struct available from Hexapod class): where a, b, c are the link lengths between joints.  
+joints - An array of Joint objects to use for that leg.  
+There is also a default constructor that can be used to create an array of Leg objects.  
+
+**Assumption** - if the leg is fully stretched out, the foot will be located directly along the x-axis of the leg base frame, at distance a+b+c (no offsets in y or z).  
+
+
+### Build robot based on the URDF file
+You can build the core robot using `BuildFromURDF()` function in the `vis` package. This will parse the URDF file loaded to the ROS parameter server and named `robot_description`, and call the Hexapod constructor with the appropriate arguments.  
+
+Note that the leg naming convention must be maintained as the visualisation code makes some assumptions on it. The names must adhere to the order described above when arranged in alphabetical order.  
+
+See the example URDF files in `vis/urdf`.  
+
 
 
 ## Todo / Future (in no particular order)
- - More restrictions on IK solutions (mainly joint 2) when walking
+ - Finish doxygen comments for core package.
  - Better definition of allowed foot movement range.
- - Split core library and visualisation 
  - Foot sensors to determine when a foot has actually touched the ground. This would help to allow handling of non-flat terrain.
  - IMU to determine actual body pose.
- - Experiment with some different configurations. Perhaps allow different sized legs.
  - Build it!
