@@ -20,7 +20,7 @@ class Vis {
         std::vector<std::string> joint_names_;
         std::vector<double> joint_angles_;
 
-        Vis(ros::NodeHandle nh, Hexapod* hexapod);
+        Vis(const ros::NodeHandle& nh, Hexapod* hexapod);
         void initialiseTransforms();
         void generateJointNames();
         void updateJoints();

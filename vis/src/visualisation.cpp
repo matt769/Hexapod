@@ -19,7 +19,7 @@
 using namespace Transformations;
 
 
-Vis::Vis(ros::NodeHandle nh, Hexapod* hexapod) 
+Vis::Vis(const ros::NodeHandle& nh, Hexapod* hexapod) 
   : nh_(nh), hexapod_(hexapod), num_legs_(hexapod->num_legs_)
 
 {
