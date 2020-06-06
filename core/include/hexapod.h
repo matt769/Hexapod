@@ -201,5 +201,6 @@ class Hexapod {
 
 Hexapod buildDefaultHexapod();
 Hexapod buildDefaultHexapod2();
+Hexapod buildDefaultOctapod();
 
 #endif
