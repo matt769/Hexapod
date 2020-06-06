@@ -33,12 +33,9 @@ int main(int argc, char** argv) {
   Hexapod hexapod = buildDefaultHexapod();
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};
   hexapod.setStartingPosition(starting_angles);
-
   Vis visualiser(nh, &hexapod);
 
-  ros::Duration(1).sleep();  // make sure tf is ready when we query it shortly
   size_t sim_step_no = 0;
-
   ros::Rate loop_rate(50);
   while (ros::ok()) {
     demo_all(hexapod);
