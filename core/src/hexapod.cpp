@@ -23,8 +23,8 @@ Hexapod::Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg,
 
   legs_ = new Leg[num_legs_];
   tf_body_to_leg_ = new Transform[num_legs_];
+  staged_angles_ = new Leg::JointAngles[num_legs_];
 
-  // all legs are the same in the default hexapod
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     tf_body_to_leg_[leg_idx] = tf_body_to_leg[leg_idx];
     legs_[leg_idx] = legs[leg_idx];
@@ -34,6 +34,7 @@ Hexapod::Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg,
 Hexapod::~Hexapod() {
   delete[] legs_;
   delete[] tf_body_to_leg_;
+  delete[] staged_angles_;
 }
 
 

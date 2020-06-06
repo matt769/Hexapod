@@ -112,7 +112,7 @@ class Hexapod {
   /** @brief Hold calculated angles for all legs before applying them.
    * TODO - probably move to leg class
    */
-  Leg::JointAngles staged_angles_[6];
+  Leg::JointAngles* staged_angles_;
   /** @brief Current walk vector. TODO review naming. */
   Tfm::Vector3 walk_step_current_;
   /** @brief Requested walk vector. */
