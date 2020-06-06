@@ -33,29 +33,19 @@ void callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg);
 int main(int argc, char **argv) {
 
   ros::init(argc, argv, "demo_walk");
-  ros::NodeHandle n;
+  ros::NodeHandle nh;
 
-  ros::Subscriber command_input = n.subscribe("hexapod/command_key", 10, callbackProcessKeyPress);
+  ros::Subscriber command_input = nh.subscribe("hexapod/command_key", 10, callbackProcessKeyPress);
 
-  static tf2_ros::TransformBroadcaster br; // used for the floating joint base to body, and also world to base
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener(tfBuffer); // in order to get current world to base (although we could just keep track of it in here)
-  ros::Publisher joints_pub = n.advertise<sensor_msgs::JointState >("joint_states", 1); // joints publisher
+  Vis visualiser(nh, &hexapod);
 
-  Vis::initialise(hexapod, &br, &joints_pub);
-
-  ros::Duration(1).sleep(); // make sure tf is ready when we query it shortly
   size_t sim_step_no = 0;
-  
   ros::Rate loop_rate(50);
   while (ros::ok())
   {
     hexapod.setWalk(current_walk, current_turn);
     hexapod.update();  
-
-    Vis::updateVisJoints(hexapod, &joints_pub);
-    Vis::updateVisBody(hexapod, &br);
-    Vis::updateVisWorld(hexapod, &br, &tfBuffer);
+    visualiser.update();
 
     sim_step_no++;
     ros::spinOnce();

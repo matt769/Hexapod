@@ -1,6 +1,8 @@
 #include "visualisation.h"
 
 #include "transformations.h"
+#include "hexapod.h"
+#include "leg.h"
 
 #include <geometry_msgs/TransformStamped.h>
 #include <ros/ros.h>
@@ -12,12 +14,27 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <string>
+
 using namespace Transformations;
 
-namespace Vis {
 
-void initialise(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br,
-                ros::Publisher* joints_pub) {
+Vis::Vis(ros::NodeHandle nh, Hexapod* hexapod) 
+  : nh_(nh), hexapod_(hexapod), num_legs_(hexapod->num_legs_)
+
+{
+  const size_t number_of_joints = num_legs_ * 3;
+  joint_names_.resize(number_of_joints);
+  joint_angles_.resize(number_of_joints);
+  generateJointNames();
+
+  joints_pub_ = nh_.advertise<sensor_msgs::JointState >("joint_states", 1);
+  tf_listener_ = std::make_unique<tf2_ros::TransformListener>(tf_buffer_);
+  initialiseTransforms();
+  ros::Duration(1).sleep(); // make sure tf is ready when we query it shortly
+}
+
+void Vis::initialiseTransforms() {
   // this tf doesn't exist yet so we need to explicitly create it
   //  (which updateVisWorld doesn't do )
   geometry_msgs::TransformStamped tf_world_to_base;
@@ -26,72 +43,74 @@ void initialise(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br,
   tf_world_to_base.child_frame_id = "base_link";
   tf_world_to_base.transform.translation.x = 0.0;
   tf_world_to_base.transform.translation.y = 0.0;
-  tf_world_to_base.transform.translation.z = hexapod.getHeight();
+  tf_world_to_base.transform.translation.z = hexapod_->getHeight();
   tf2::Quaternion q2(0.0, 0.0, 0.0, 1.0);
   tf_world_to_base.transform.rotation.x = q2.x();
   tf_world_to_base.transform.rotation.y = q2.y();
   tf_world_to_base.transform.rotation.z = q2.z();
   tf_world_to_base.transform.rotation.w = q2.w();
-  tf_br->sendTransform(tf_world_to_base);
+  tf_br_.sendTransform(tf_world_to_base);
 
-  Vis::updateVisBody(hexapod, tf_br);
-  Vis::updateVisJoints(hexapod, joints_pub);
+  updateBody();
+  updateJoints();
+}
+
+/**
+ * @brief 
+ * @details
+ * Assumes that leg indicies are allocated from front to back, left to right
+ * i.e. front left = 0, front right = 1, next row back left = 2, right = 3 etc
+ * so for legs on the left, index % 2 == 0
+ * The front row is named 'front', back row is named 'back'
+ * And all others are 'rowN' where N starts at 1 (next to the front) and increases towards the back
+ * The naming MUST match the naming used in the associated URDF
+ */
+void Vis::generateJointNames() {
+  for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    std::string position, side;
+    if (leg_idx <= 1) {
+      position = "front";
+    }
+    else if (leg_idx >= num_legs_ - 2) {
+      position = "back";
+    }
+    else {
+      const size_t row_idx = leg_idx / 2; // integer division
+      position = "mid" + std::to_string(row_idx);
+    }
+    if(leg_idx % 2 == 0) {
+      side = "left";
+    }
+    else {
+      side = "right";
+    }
+    std::string leg_name = "leg_" + position + "_" + side + "_";
+
+    joint_names_.at(3*leg_idx + 0) = leg_name + "joint_1";
+    joint_names_.at(3*leg_idx + 1) = leg_name + "joint_2";
+    joint_names_.at(3*leg_idx + 2) = leg_name + "joint_3";
+  }
 }
 
 
-void updateVisJoints(const Hexapod& hexapod, ros::Publisher* joints_pub) {
-  size_t total_joints = hexapod.num_legs_ * hexapod.getLeg(0).NUM_JOINTS;
-  std::vector<std::string> joint_names(total_joints);
-  std::vector<double> joint_angles(total_joints);
-  // currently dependent on knowing number of legs
-  joint_names[0] = "leg_front_left_joint_1";
-  joint_names[1] = "leg_front_left_joint_2";
-  joint_names[2] = "leg_front_left_joint_3";
-  joint_names[3] = "leg_front_right_joint_1";
-  joint_names[4] = "leg_front_right_joint_2";
-  joint_names[5] = "leg_front_right_joint_3";
-  joint_names[6] = "leg_middle_left_joint_1";
-  joint_names[7] = "leg_middle_left_joint_2";
-  joint_names[8] = "leg_middle_left_joint_3";
-  joint_names[9] = "leg_middle_right_joint_1";
-  joint_names[10] = "leg_middle_right_joint_2";
-  joint_names[11] = "leg_middle_right_joint_3";
-  joint_names[12] = "leg_back_left_joint_1";
-  joint_names[13] = "leg_back_left_joint_2";
-  joint_names[14] = "leg_back_left_joint_3";
-  joint_names[15] = "leg_back_right_joint_1";
-  joint_names[16] = "leg_back_right_joint_2";
-  joint_names[17] = "leg_back_right_joint_3";
-
-  enum { FRONT_LEFT = 0, FRONT_RIGHT, MIDDLE_LEFT, MIDDLE_RIGHT, BACK_LEFT, BACK_RIGHT };
-  joint_angles[0] = hexapod.getLeg(FRONT_LEFT).getJointAngles().theta_1;
-  joint_angles[1] = hexapod.getLeg(FRONT_LEFT).getJointAngles().theta_2;
-  joint_angles[2] = hexapod.getLeg(FRONT_LEFT).getJointAngles().theta_3;
-  joint_angles[3] = hexapod.getLeg(FRONT_RIGHT).getJointAngles().theta_1;
-  joint_angles[4] = hexapod.getLeg(FRONT_RIGHT).getJointAngles().theta_2;
-  joint_angles[5] = hexapod.getLeg(FRONT_RIGHT).getJointAngles().theta_3;
-  joint_angles[6] = hexapod.getLeg(MIDDLE_LEFT).getJointAngles().theta_1;
-  joint_angles[7] = hexapod.getLeg(MIDDLE_LEFT).getJointAngles().theta_2;
-  joint_angles[8] = hexapod.getLeg(MIDDLE_LEFT).getJointAngles().theta_3;
-  joint_angles[9] = hexapod.getLeg(MIDDLE_RIGHT).getJointAngles().theta_1;
-  joint_angles[10] = hexapod.getLeg(MIDDLE_RIGHT).getJointAngles().theta_2;
-  joint_angles[11] = hexapod.getLeg(MIDDLE_RIGHT).getJointAngles().theta_3;
-  joint_angles[12] = hexapod.getLeg(BACK_LEFT).getJointAngles().theta_1;
-  joint_angles[13] = hexapod.getLeg(BACK_LEFT).getJointAngles().theta_2;
-  joint_angles[14] = hexapod.getLeg(BACK_LEFT).getJointAngles().theta_3;
-  joint_angles[15] = hexapod.getLeg(BACK_RIGHT).getJointAngles().theta_1;
-  joint_angles[16] = hexapod.getLeg(BACK_RIGHT).getJointAngles().theta_2;
-  joint_angles[17] = hexapod.getLeg(BACK_RIGHT).getJointAngles().theta_3;
+void Vis::updateJoints() {
+  
+  for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    const Leg::JointAngles leg_joint_angles = hexapod_->getLeg(leg_idx).getJointAngles();
+    joint_angles_.at(3*leg_idx + 0) = leg_joint_angles.theta_1;
+    joint_angles_.at(3*leg_idx + 1) = leg_joint_angles.theta_2;
+    joint_angles_.at(3*leg_idx + 2) = leg_joint_angles.theta_3;
+  }
 
   sensor_msgs::JointState msg;
   msg.header.stamp = ros::Time::now();
-  msg.name = joint_names;
-  msg.position = joint_angles;
-  joints_pub->publish(msg);
+  msg.name = joint_names_;
+  msg.position = joint_angles_;
+  joints_pub_.publish(msg);
 }
 
-void updateVisBody(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br) {
-  const Transform tf_btb = hexapod.getBaseToBody();
+void Vis::updateBody() {
+  const Transform tf_btb = hexapod_->getBaseToBody();
   // convert to tf matrix3x3
   tf2::Matrix3x3 r;
   r.setValue(tf_btb.R_(0, 0), tf_btb.R_(0, 1), tf_btb.R_(0, 2), tf_btb.R_(1, 0), tf_btb.R_(1, 1),
@@ -111,13 +130,12 @@ void updateVisBody(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br)
   tf_base_to_body.transform.rotation.y = q.y();
   tf_base_to_body.transform.rotation.z = q.z();
   tf_base_to_body.transform.rotation.w = q.w();
-  tf_br->sendTransform(tf_base_to_body);
+  tf_br_.sendTransform(tf_base_to_body);
 }
 
-void updateVisWorld(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br,
-                    tf2_ros::Buffer* tf_buffer) {
-  // extract movement from hexapod
-  const Transform tf_b_nb = hexapod.getBaseMovement();  // for brevity, base to new base
+void Vis::updateWorld() {
+  // extract movement from hexapod_
+  const Transform tf_b_nb = hexapod_->getBaseMovement();  // for brevity, base to new base
   // convert to tf matrix3x3
   tf2::Matrix3x3 r;
   r.setValue(tf_b_nb.R_(0, 0), tf_b_nb.R_(0, 1), tf_b_nb.R_(0, 2), tf_b_nb.R_(1, 0), tf_b_nb.R_(1, 1),
@@ -133,7 +151,7 @@ void updateVisWorld(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br
 
   // current world to base
   geometry_msgs::TransformStamped tf_world_to_base_msg =
-      tf_buffer->lookupTransform("world", "base_link", ros::Time(0));
+      tf_buffer_.lookupTransform("world", "base_link", ros::Time(0));
   tf2::Stamped<tf2::Transform> tf_world_to_base;
   tf2::fromMsg(tf_world_to_base_msg, tf_world_to_base);
 
@@ -150,7 +168,12 @@ void updateVisWorld(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br
   tf_world_to_base_msg.child_frame_id = "base_link";
   tf_world_to_base_msg.header.stamp = ros::Time::now();
 
-  tf_br->sendTransform(tf_world_to_base_msg);
+  tf_br_.sendTransform(tf_world_to_base_msg);
 }
 
-}  // namespace Vis
+
+void Vis::update() {
+  updateJoints();
+  updateWorld();
+  updateBody();
+}

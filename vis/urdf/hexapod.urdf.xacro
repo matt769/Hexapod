@@ -143,10 +143,10 @@
   </xacro:macro>
 
   <xacro:leg position="front" side="left" reflect_leftright="1" reflect_frontback="1"/>
-  <xacro:leg position="middle" side="left" reflect_leftright="1" reflect_frontback="0"/>
+  <xacro:leg position="mid1" side="left" reflect_leftright="1" reflect_frontback="0"/>
   <xacro:leg position="back" side="left" reflect_leftright="1" reflect_frontback="-1"/>
   <xacro:leg position="front" side="right" reflect_leftright="-1" reflect_frontback="1"/>
-  <xacro:leg position="middle" side="right" reflect_leftright="-1" reflect_frontback="0"/>
+  <xacro:leg position="mid1" side="right" reflect_leftright="-1" reflect_frontback="0"/>
   <xacro:leg position="back" side="right" reflect_leftright="-1" reflect_frontback="-1"/>
 
 </robot>

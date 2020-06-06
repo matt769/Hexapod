@@ -28,45 +28,24 @@ void demo_stand(Hexapod& hexapod);
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "demo_walk");
-  ros::NodeHandle n;
-
-  static tf2_ros::TransformBroadcaster
-      br;  // used for the floating joint base to body, and also world to base
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener(tfBuffer);  // in order to get current world to base
-                                                    // (although we could just keep track of it in
-                                                    // here)
-  ros::Publisher joints_pub =
-      n.advertise<sensor_msgs::JointState>("joint_states", 1);  // joints publisher
+  ros::NodeHandle nh;
 
   Hexapod hexapod = buildDefaultHexapod();
-  // Leg::JointAngles starting_angles {0.0, M_PI/4.0, -3.0*M_PI/4.0};
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};
   hexapod.setStartingPosition(starting_angles);
-  Vis::initialise(hexapod, &br, &joints_pub);
+
+  Vis visualiser(nh, &hexapod);
 
   ros::Duration(1).sleep();  // make sure tf is ready when we query it shortly
   size_t sim_step_no = 0;
 
-  bool result = false;
   ros::Rate loop_rate(50);
   while (ros::ok()) {
     demo_all(hexapod);
 
     // move and update
-    result = hexapod.update();
-
-    // publish the joint angles
-    Vis::updateVisJoints(hexapod, &joints_pub);
-
-    // and if the movement was successful, then the hexapod has moved in the world frame
-    //    or its body has moved
-    //  so update
-    if (result) {
-      // and base to body
-      Vis::updateVisBody(hexapod, &br);
-      Vis::updateVisWorld(hexapod, &br, &tfBuffer);
-    }
+    hexapod.update();
+    visualiser.update();
 
     sim_step_no++;
     ros::spinOnce();

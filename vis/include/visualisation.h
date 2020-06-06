@@ -6,16 +6,28 @@
 #include <ros/ros.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
+#include <sensor_msgs/JointState.h>
 
-namespace Vis {
+class Vis {
+    public:
+        ros::NodeHandle nh_;
+        Hexapod* const hexapod_;
+        tf2_ros::TransformBroadcaster tf_br_;
+        tf2_ros::Buffer tf_buffer_; // should this be outside the class? ot static?
+        std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
+        ros::Publisher joints_pub_;
+        size_t num_legs_;
+        std::vector<std::string> joint_names_;
+        std::vector<double> joint_angles_;
 
-void initialise(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br,
-                ros::Publisher* joints_pub);
-void updateVisJoints(const Hexapod& hexapod, ros::Publisher* joints_pub);
-void updateVisWorld(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br,
-                    tf2_ros::Buffer* tf_buffer);
-void updateVisBody(const Hexapod& hexapod, tf2_ros::TransformBroadcaster* tf_br);
+        Vis(ros::NodeHandle nh, Hexapod* hexapod);
+        void initialiseTransforms();
+        void generateJointNames();
+        void updateJoints();
+        void updateWorld();
+        void updateBody();
+        void update();
 
-}  // namespace Vis
+};
 
 #endif
