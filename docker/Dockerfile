@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
                                         ros-kinetic-tf2 \
                                         ros-kinetic-tf2-ros \                                        
                                         ros-kinetic-tf2-geometry-msgs \
+                                        ros-kinetic-urdf \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . /catkin_ws/src/hexapod
