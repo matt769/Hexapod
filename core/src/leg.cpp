@@ -165,7 +165,7 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
  *  hopefully this approach allows a bit more flexibility and the option to use IK options elsewhere if required
  * 
  * @param pos Required foot position
- * @param[out] angles Joint angles to store the results
+ * @param[out] result_angles Joint angles to store the results
  * @return size_t Number of valid results (0 or 1)
  */
 size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_angles) {

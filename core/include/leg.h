@@ -53,14 +53,14 @@ class Leg {
   };
   Dims dims_;
   /** @brief Tolerance when checking if the foot is at the target position */
-  static constexpr float target_tolerance =
-      0.001;  // TODO should base this on allowed range of movement
+  static constexpr float target_tolerance = 0.001;  // TODO review
   /** @brief Struct used to represent all joint angles of a leg */
   struct JointAngles {
     float theta_1, theta_2, theta_3;
   };
-  /** @brief Joint identifiers, used as indexes into joints_.
-   * Also known as base, hip and knee joint
+  /** @brief Joint identifiers, used as indexes into joint array.
+   * @details
+   * Also known as base, hip and knee joints
    * @see joints_
    */
   enum { JOINT_1 = 0, JOINT_2, JOINT_3, NUM_JOINTS };
@@ -79,7 +79,11 @@ class Leg {
 
   /** @brief Need default constructor to allow us to create an array of Leg objects */
   Leg();
-  /** @brief Create Leg with specific dimensions and joints */
+  /** @brief Create Leg with specific dimensions and joints
+   * @details
+   * If the leg is fully stretched out, all joint centres and the foot will be located directly along the x-axis of the leg base frame.
+   * The foot will be at distance a+b+c (no offsets in y or z) from the leg base.
+   */
   Leg(Dims dims, Joint* joints);
   /** @brief Calculate joint angles for a given foot position */
   bool calculateJointAngles(const Tfm::Vector3& pos, JointAngles& angles, const IKMode ik_mode);
@@ -106,19 +110,23 @@ class Leg {
  private:
   /** @brief Current foot position relative to the leg base frame */
   Tfm::Vector3 pos_; 
-  /** @brief Used to describe the trajectory of the leg (in joint space) while raised
-   * 
-   * It will go move from its current position on the ground, up to joint_targets_raised_
-   *  and then down to joint_targets_, moving at the specified increments each step.
-   */
-  JointAngles joint_targets_, joint_targets_raised_, joint_inc_up_, joint_inc_down_;
+  /** @brief The final position (in joint space) of the foot during a step */
+  JointAngles joint_targets_;
+  /** @brief The apex position (in joint space) of the foot during a step */
+  JointAngles joint_targets_raised_;
+  /** @brief Incremental movement per time step while moving towards the apex during a step */
+  JointAngles joint_inc_up_;
+  /** @brief Incremental movement per time step while moving from the apex to the final position */
+  JointAngles joint_inc_down_;
   /** @brief Track leg movement while raised */
   size_t step_no_ = 0;
   /** @brief The number of steps that the leg will spend raised for the current step */
   size_t current_foot_air_time_;
-  /** @brief Used to describe the trajectory of the leg (in leg base frame) while raised */
-  Tfm::Vector3 target_pos_, raised_pos_;  // TODO check target_pos_ is being initialised properly
-  /** @brief TODO */
+  /** @brief The final position (in leg base frame) of the foot during a step */
+  Tfm::Vector3 target_pos_;
+  /** @brief The apex position (in leg base frame) of the foot during a step */
+  Tfm::Vector3 raised_pos_;
+  /** @brief Holds the latest calculated time for the leg step */
   size_t foot_air_time_new_;
   /** @brief Indicates whether target_pos_ or raised_pos_ have been updated */
   bool target_updated_ = false;

@@ -9,18 +9,23 @@
 
 namespace Tfm = Transformations;
 
+/** @class Hexapod
+ * @brief A hexapod contains a body and a number of legs (not actually limited to 6), and manages the legs in order to move the body around.
+*/
 class Hexapod {
  public:
+  /** @brief Describes a basic cuboid body shape */
   struct Dims {
     float length;
     float width;
     float depth;
   };
+  /** @brief The hexapod body */
   Dims dims_;
   size_t num_legs_;
   /** @brief Heading moves with body frame (Standard) or stays fixed (Headless) */
   enum class MoveMode { STANDARD, HEADLESS };
-  /** @brief Walking is main state, others are used in start up routine */
+  /** @brief Walking is main state, others are used in start up routine. Unsupported implies legs do not any resetriction on foot position. */
   enum class State { UNSUPPORTED, STANDING, WALKING };
   /** @brief Gait identifier. Also used as index into gait_seq_ */
   enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, NUM_GAITS };
@@ -41,6 +46,7 @@ class Hexapod {
   /** @brief Default stride length as proportion of allowed foot movement */
   static constexpr float fgtr_default_ = 0.5f;
 
+  /** @brief Construct a new Hexapod object */
   Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg, Leg* legs);
   ~Hexapod();
   Hexapod(const Hexapod&) = delete;
@@ -163,6 +169,7 @@ class Hexapod {
   bool calculateGroundedLegs();
   /** @brief Applies the pre-calculated joint angles for all grounded legs. */
   void applyChangesGroundedLegs();
+  /** @brief Returns number of legs currently raised. */
   size_t getNumLegsRaised() const;
   /** @brief Includes everything necessary to manage the grounded legs. */
   bool handleGroundedLegs();
@@ -172,10 +179,11 @@ class Hexapod {
   void handleRaisedLegs();
   /** @brief Update status of each leg and request they raise if conditions met. */
   void updateLegs();
-  /** @brief Return neutral position for the leg in the base frame. */
+  /** @brief Return neutral position for a leg in the base frame. */
   Tfm::Vector3 getNeutralPosition(size_t leg_idx) const;
-  /** @brief Update foot targets (if required)*/
+  /** @brief Update foot targets (if required) for single leg*/
   void updateFootTarget(size_t leg_idx);
+  /** @brief Call updateFootTarget for all raised legs */
   void updateFootTargets();
   /** @brief Return foot position in the base frame. */
   Tfm::Vector3 getFootPosition(size_t leg_idx) const;
@@ -193,14 +201,20 @@ class Hexapod {
   void handleStateChange();
   /** @brief Clear variables used by visualisation. */
   void clearVisualisationChanges();
+  /** @brief To be called after any leg raise event. */
   void advanceGait();
+  /** @brief Returns the index of the next leg to be raised. */
   size_t gaitNextLeg();
+  /** @brief Returns the maximum number of legs that can be raised during the current gait. */
   size_t gaitMaxRaised();
 
 };
 
+/** @brief Returns a Hexapod object consistent with example file hexapod.urdf.xacro */
 Hexapod buildDefaultHexapod();
+/** @brief Returns a Hexapod object consistent with example file hexapod2.urdf.xacro */
 Hexapod buildDefaultHexapod2();
+/** @brief Returns a Hexapod object consistent with example file octapod.urdf.xacro */
 Hexapod buildDefaultOctapod();
 
 #endif
