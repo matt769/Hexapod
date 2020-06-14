@@ -247,8 +247,7 @@ Vector3 operator*(float scalar, const Vector3& v) {
 }
 
 bool operator==(const Vector3& v1, const Vector3& v2) {
-  return fabs(v1.x() - v2.x()) < tolerance && fabs(v1.y() - v2.y()) < tolerance &&
-         fabs(v1.z() - v2.z()) < tolerance;
+  return v1.x() == v2.x() && v1.y() == v2.y() && v1.z() == v2.z();
 }
 
 bool operator!=(const Vector3& v1, const Vector3& v2) { return !(v1 == v2); }

@@ -326,8 +326,7 @@ bool Hexapod::setWalk(const Vector3& walk_step, float angle_step) {
   // all to allow feet to return to neutral position
   // Current Vector3 comparison allows some tolerance, here explicity test if zero
   if (walk_step_current_ != walk_step_new_ || turn_step_current_ != turn_step_new_) {
-    if (walk_step_new_.x() == 0.0f && walk_step_new_.y() == 0.0f && walk_step_new_.z() == 0.0f &&
-        turn_step_new_ == 0.0f) {
+    if (walk_step_new_ == Vector3{0.0f, 0.0f, 0.0f} && turn_step_new_ == 0.0f) {
       recalculate_all_feet_targets_ = true;
     } else {
       recalculate_raised_feet_targets_ = true;
