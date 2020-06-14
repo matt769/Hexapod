@@ -86,13 +86,19 @@ class Leg {
    */
   Leg(Dims dims, Joint* joints);
   /** @brief Calculate joint angles for a given foot position */
-  bool calculateJointAngles(const Tfm::Vector3& pos, JointAngles& angles, const IKMode ik_mode);
+  bool calculateJointAngles(const Tfm::Vector3& pos, const IKMode ik_mode);
   /** @brief Calculate foot position for given joint angles */
   bool calculateFootPosition(const JointAngles& angles, Tfm::Vector3& pos);
   /** @brief Check if a set of joint angles are allowed by the leg joint limits */
   bool jointsWithinLimits(const JointAngles& joint_angles) const;
   /** @brief Sets all leg joints */
-  bool setJointAngles(const JointAngles& angles);  // no limit check
+  bool setJointAngles(const JointAngles& angles);
+  /** @brief Return staged angles */
+  JointAngles getStagedAngles() const;
+  /** @brief Sets staged angles */
+  bool setStagedAngles(const JointAngles& angles);
+  /** @brief Sets all leg joints */
+  bool applyStagedAngles();
   /** @brief Returns the current foot position in the leg frame */
   Tfm::Vector3 getFootPosition() const;
   /** @brief Returns the neutral foot position in the leg frame. Z unknown by the leg, and is always zero. */
@@ -122,6 +128,8 @@ class Leg {
   JointAngles joint_inc_up_;
   /** @brief Incremental movement per time step while moving from the apex to the final position */
   JointAngles joint_inc_down_;
+  /** @brief Store calculated joint angles (without implementing) */
+  JointAngles staged_joints_;
   /** @brief Track leg movement while raised */
   size_t step_no_ = 0;
   /** @brief The number of steps that the leg will spend raised for the current step */

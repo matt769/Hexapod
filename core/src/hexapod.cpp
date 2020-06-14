@@ -43,7 +43,6 @@ Hexapod::Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg,
 
   legs_ = new Leg[num_legs_];
   tf_body_to_leg_ = new Transform[num_legs_];
-  staged_angles_ = new Leg::JointAngles[num_legs_];
 
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     tf_body_to_leg_[leg_idx] = tf_body_to_leg[leg_idx];
@@ -54,7 +53,6 @@ Hexapod::Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg,
 Hexapod::~Hexapod() {
   delete[] legs_;
   delete[] tf_body_to_leg_;
-  delete[] staged_angles_;
 }
 
 /**
@@ -93,7 +91,7 @@ bool Hexapod::calculateGroundedLegs() {
           tf_base_to_body_ * tf_body_to_leg_[leg_idx] * legs_[leg_idx].getFootPosition();
       // position of foot in the updated leg frame (base on walk and body movement)
       Vector3 leg_to_foot_new = (tf_base_to_new_body * tf_body_to_leg_[leg_idx]).inverse() * foot_in_base;
-      bool result = legs_[leg_idx].calculateJointAngles(leg_to_foot_new, staged_angles_[leg_idx], Leg::IKMode::WALK);
+      bool result = legs_[leg_idx].calculateJointAngles(leg_to_foot_new, Leg::IKMode::WALK);
       if (!result) {
         std::cout << "Unable to find IK solution for all legs.\n";
         return false;
@@ -106,7 +104,7 @@ bool Hexapod::calculateGroundedLegs() {
 void Hexapod::applyChangesGroundedLegs() {
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     if (legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
-      legs_[leg_idx].setJointAngles(staged_angles_[leg_idx]);
+      legs_[leg_idx].applyStagedAngles();
     }
   }
 }
@@ -690,10 +688,9 @@ bool Hexapod::setLegsToGround() {
   // some default position
   Vector3 grounded_position = legs_[0].getNeutralPosition();
   grounded_position.z() = -height_;
-  Leg::JointAngles grounded_angles;
-  bool result = legs_[0].calculateJointAngles(grounded_position, grounded_angles, Leg::IKMode::WALK);
+  bool result = legs_[0].calculateJointAngles(grounded_position, Leg::IKMode::WALK);
   if (result) {
-    result &= setTargetsMoveLegs(grounded_angles);
+    result &= setTargetsMoveLegs(legs_[0].getStagedAngles());
   }
   requested_state_ = State::STANDING;
   return result;

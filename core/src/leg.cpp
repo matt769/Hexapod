@@ -223,32 +223,32 @@ size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_ang
   return 1; // max 1 result
 }
 
-// result_angles are not modified if no result found
 /**
  * @details
  * 
  * Wrapper for IK which choses the appropriate IK function based on the selected IKMode.
  * May also apply selection logic if multiple angle options available.
  * 
+ * Resulting angles are stored in staged_angles_
+ * 
  * @param pos Required foot position
- * @param[out] result_angles Contains the result if found, not modified if no valid results
  * @param ik_mode 
  * @return true if valid angles were found
  */
-bool Leg::calculateJointAngles(const Vector3& pos, JointAngles& result_angles, const IKMode ik_mode) {
+bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
   if (ik_mode == IKMode::FULL) {
     JointAngles anglesFull[2];
     size_t num_results = calculateJointAnglesFull(pos, anglesFull);
     if (num_results > 0) {
       size_t chosen_idx = chooseJointAnglesNearest(anglesFull, num_results, getJointAngles());
-      result_angles = anglesFull[chosen_idx];
+      staged_joints_ = anglesFull[chosen_idx];
       return true;
     } else {
       return false;
     }
   }
   else if (ik_mode == IKMode::WALK) {
-    return calculateJointAnglesWalk(pos, result_angles);
+    return calculateJointAnglesWalk(pos, staged_joints_);
   }
   else {
     return false;
@@ -309,6 +309,21 @@ bool Leg::setJointAngles(const JointAngles& angles) {
   updateFootPosition();
   return true;
 }
+
+Leg::JointAngles Leg::getStagedAngles() const {
+  return staged_joints_;
+}
+
+bool Leg::setStagedAngles(const JointAngles& angles) {
+  staged_joints_ = angles;
+  return true;
+}
+
+
+bool Leg::applyStagedAngles() {
+  return setJointAngles(staged_joints_);
+}
+
 
 /**
  * @details
@@ -442,29 +457,34 @@ bool Leg::stepUpdate() {
   if (target_updated_ && prev_state_ == State::ON_GROUND) {
     step_no_ = 0;                                 // reset
     current_foot_air_time_ = foot_air_time_new_;  // save for later when doing actual movement
-    bool result_target = calculateJointAngles(target_pos_, joint_targets_, IKMode::WALK);
+    bool result_target = calculateJointAngles(target_pos_, IKMode::WALK);
     if (!result_target) {
       std::cout << "Could not calculate joint angles at requested foot target position\n";
       return false;
     }
+    else {
+      joint_targets_  = getStagedAngles();
+    }
 
-    bool result = calculateJointAngles(raised_pos_, joint_targets_raised_, IKMode::WALK);
+    bool result = calculateJointAngles(raised_pos_, IKMode::WALK);
     if (!result) {
       // TODO in future can try reducing the raise amount until this works
       std::cout << "Could not calculate joint angles at requested raise limit position\n";
       return false;
+    }
+    else {
+      joint_targets_raised_ = getStagedAngles();
     }
     calculateTrajectory();
   }
 
   // recalculate target and trajectory
   if (target_updated_ && step_no_ > 0) {
-    JointAngles target_joints_upd;
-    bool result_upd_target = calculateJointAngles(target_pos_, target_joints_upd, IKMode::WALK);
+    bool result_upd_target = calculateJointAngles(target_pos_, IKMode::WALK);
     if (!result_upd_target) {
       std::cout << "Could not calculate joint angles at updated foot target position\n";
     } else {
-      joint_targets_ = target_joints_upd;
+      joint_targets_ = getStagedAngles();
       calculateTrajectory();
     }
   }
