@@ -95,6 +95,8 @@ class Leg {
   bool setJointAngles(const JointAngles& angles);  // no limit check
   /** @brief Returns the current foot position in the leg frame */
   Tfm::Vector3 getFootPosition() const;
+  /** @brief Returns the neutral foot position in the leg frame. Z unknown by the leg, and is always zero. */
+  Tfm::Vector3 getNeutralPosition() const;
   /** @brief Returns the current joint angles */
   JointAngles getJointAngles() const;
   /** @brief Updates joint angles as required by current trajectory. Must be called every period when leg raised. */
@@ -109,7 +111,9 @@ class Leg {
 
  private:
   /** @brief Current foot position relative to the leg base frame */
-  Tfm::Vector3 pos_; 
+  Tfm::Vector3 pos_;
+  /** @brief Neutral position relative to the leg base frame. Z unknown by leg (always zero). */
+  Tfm::Vector3 neutral_pos_; 
   /** @brief The final position (in joint space) of the foot during a step */
   JointAngles joint_targets_;
   /** @brief The apex position (in joint space) of the foot during a step */

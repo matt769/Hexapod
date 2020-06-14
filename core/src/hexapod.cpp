@@ -168,8 +168,22 @@ Vector3 Hexapod::calculateFootVector(const size_t leg_idx) const {
   return step;
 }
 
+
+/**
+ * @details
+ * The leg itself doesn't know how high the robot is, so leg::getNeutralPosition just has z = 0
+ * so we just add it
+ * 
+ * The neutral position does not change with the body, so we only need to apply the body_to_leg transform
+ * to get the neutral position in the base frame i.e. as if the base to body transform is identity
+ * 
+ * @param leg_idx 
+ * @return Vector3 
+ */
 Vector3 Hexapod::getNeutralPosition(size_t leg_idx) const {
-  return tf_body_to_leg_[leg_idx] * Vector3{stance_width_, 0.0f, -height_};
+  Vector3 leg_neutral = legs_[leg_idx].getNeutralPosition();
+  leg_neutral.z() = -height_;
+  return tf_body_to_leg_[leg_idx] * leg_neutral;
 }
 
 /**

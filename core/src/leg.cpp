@@ -30,11 +30,13 @@ float Joint::clampToLimts(float angle) const {
 Leg::Leg() {}
 
 Leg::Leg(Dims dims, Joint* joints)
-  : dims_(dims)
+  : dims_(dims),
+    neutral_pos_{(dims.a + dims.b + dims.c) / 2.0f, 0.0f, 0.0f}
 {
   joints_[JOINT_1] = joints[0];
   joints_[JOINT_2] = joints[1];
   joints_[JOINT_3] = joints[2];
+  updateFootPosition();
 }
 
 
@@ -335,6 +337,8 @@ size_t Leg::chooseJointAnglesNearest(const JointAngles angle_options[2], size_t 
 }
 
 Vector3 Leg::getFootPosition() const { return pos_; }
+
+Vector3 Leg::getNeutralPosition() const { return neutral_pos_; }
 
 /**
  * @details
