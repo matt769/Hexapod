@@ -680,7 +680,7 @@ bool Hexapod::changeBase(Vector3 move_base) {
  * One of several basic functions for getting the hexapod to move from a starting position to an upright
  *  position supported by the legs from which it can start walking.
  * 
- * TODO - maybe refactor.
+ * TODO - maybe refactor, does not currently support different sized legs.
  * 
  * @return true if an IK solution was found for all legs 
  */
@@ -689,7 +689,8 @@ bool Hexapod::setLegsToGround() {
     return false;
   }
   // some default position
-  Vector3 grounded_position{0.6, 0, -height_};
+  Vector3 grounded_position = legs_[0].getNeutralPosition();
+  grounded_position.z() = -height_;
   Leg::JointAngles grounded_angles;
   bool result = legs_[0].calculateJointAngles(grounded_position, grounded_angles, Leg::IKMode::WALK);
   if (result) {
