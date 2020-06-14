@@ -241,14 +241,14 @@ bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
     size_t num_results = calculateJointAnglesFull(pos, anglesFull);
     if (num_results > 0) {
       size_t chosen_idx = chooseJointAnglesNearest(anglesFull, num_results, getJointAngles());
-      staged_joints_ = anglesFull[chosen_idx];
+      staged_angles_ = anglesFull[chosen_idx];
       return true;
     } else {
       return false;
     }
   }
   else if (ik_mode == IKMode::WALK) {
-    return calculateJointAnglesWalk(pos, staged_joints_);
+    return calculateJointAnglesWalk(pos, staged_angles_);
   }
   else {
     return false;
@@ -290,7 +290,7 @@ bool Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
  * @return true always
  */
 bool Leg::updateFootPosition() {
-  return calculateFootPosition(getJointAngles(), pos_);
+  return calculateFootPosition(getJointAngles(), current_pos_);
 }
 
 /**
@@ -311,17 +311,17 @@ bool Leg::setJointAngles(const JointAngles& angles) {
 }
 
 Leg::JointAngles Leg::getStagedAngles() const {
-  return staged_joints_;
+  return staged_angles_;
 }
 
 bool Leg::setStagedAngles(const JointAngles& angles) {
-  staged_joints_ = angles;
+  staged_angles_ = angles;
   return true;
 }
 
 
 bool Leg::applyStagedAngles() {
-  return setJointAngles(staged_joints_);
+  return setJointAngles(staged_angles_);
 }
 
 
@@ -351,15 +351,15 @@ size_t Leg::chooseJointAnglesNearest(const JointAngles angle_options[2], size_t 
   }
 }
 
-Vector3 Leg::getFootPosition() const { return pos_; }
+Vector3 Leg::getFootPosition() const { return current_pos_; }
 
 Vector3 Leg::getNeutralPosition() const { return neutral_pos_; }
 
 /**
  * @details
  * Calculate a trajectory for the leg in joint space. The trajectory will take the leg from the ground, 
- * move forward and up towards joint_targets_raised_ 
- * and then forward and down back to joint_targets_ (on the ground)
+ * move forward and up towards target_angles_raised_ 
+ * and then forward and down back to target_angles_ (on the ground)
  * 
  * This function will always be called when the foot is first about to be raised.
  * 
@@ -372,36 +372,36 @@ void Leg::calculateTrajectory() {
   JointAngles current_joint_angles = getJointAngles();
 
   // the foot must go up
-  // (remember, current_foot_air_time_ always even)
-  float steps_up = (float)fmax((current_foot_air_time_/2) - step_no_, 0);
+  // (remember, current_step_duration_ always even)
+  float steps_up = (float)fmax((current_step_duration_/2) - step_idx_, 0);
 
   // if (steps_up > 0) {
-    joint_inc_up_.theta_1 = (joint_targets_raised_.theta_1 - current_joint_angles.theta_1) /
+    inc_up_angles_.theta_1 = (step_apex_angles_.theta_1 - current_joint_angles.theta_1) /
                               steps_up;
-    joint_inc_up_.theta_2 = (joint_targets_raised_.theta_2 - current_joint_angles.theta_2) /
+    inc_up_angles_.theta_2 = (step_apex_angles_.theta_2 - current_joint_angles.theta_2) /
                             steps_up;
-    joint_inc_up_.theta_3 = (joint_targets_raised_.theta_3 - current_joint_angles.theta_3) /
+    inc_up_angles_.theta_3 = (step_apex_angles_.theta_3 - current_joint_angles.theta_3) /
                             steps_up;
   // } // else { doesn't matter }
 
   // and then down
-  float steps_down = (float)fmin((current_foot_air_time_/2), current_foot_air_time_ - step_no_);
-  if (step_no_ < current_foot_air_time_/2) {
+  float steps_down = (float)fmin((current_step_duration_/2), current_step_duration_ - step_idx_);
+  if (step_idx_ < current_step_duration_/2) {
     // still moving up
-    joint_inc_down_.theta_1 = (joint_targets_.theta_1 - joint_targets_raised_.theta_1) /
+    inc_down_angles_.theta_1 = (target_angles_.theta_1 - step_apex_angles_.theta_1) /
                               steps_down;
-    joint_inc_down_.theta_2 = (joint_targets_.theta_2 - joint_targets_raised_.theta_2) /
+    inc_down_angles_.theta_2 = (target_angles_.theta_2 - step_apex_angles_.theta_2) /
                               steps_down;
-    joint_inc_down_.theta_3 = (joint_targets_.theta_3 - joint_targets_raised_.theta_3) /
+    inc_down_angles_.theta_3 = (target_angles_.theta_3 - step_apex_angles_.theta_3) /
                               steps_down;
   }
   else {
     // now moving down
-    joint_inc_down_.theta_1 = (joint_targets_.theta_1 - current_joint_angles.theta_1) /
+    inc_down_angles_.theta_1 = (target_angles_.theta_1 - current_joint_angles.theta_1) /
                               steps_down;
-    joint_inc_down_.theta_2 = (joint_targets_.theta_2 - current_joint_angles.theta_2) /
+    inc_down_angles_.theta_2 = (target_angles_.theta_2 - current_joint_angles.theta_2) /
                             steps_down;
-    joint_inc_down_.theta_3 = (joint_targets_.theta_3 - current_joint_angles.theta_3) /
+    inc_down_angles_.theta_3 = (target_angles_.theta_3 - current_joint_angles.theta_3) /
                             steps_down;
   }
 }
@@ -415,23 +415,23 @@ void Leg::calculateTrajectory() {
  */
 void Leg::incrementLeg() {
   JointAngles current_joint_angles = getJointAngles();
-  if (step_no_ == current_foot_air_time_ - 1) {
-    current_joint_angles.theta_1 = joint_targets_.theta_1;
-    current_joint_angles.theta_2 = joint_targets_.theta_2;
-    current_joint_angles.theta_3 = joint_targets_.theta_3;
-  } else if (step_no_ == (current_foot_air_time_ / 2) - 1) {
-    current_joint_angles.theta_1 = joint_targets_raised_.theta_1;
-    current_joint_angles.theta_2 = joint_targets_raised_.theta_2;
-    current_joint_angles.theta_3 = joint_targets_raised_.theta_3;
+  if (step_idx_ == current_step_duration_ - 1) {
+    current_joint_angles.theta_1 = target_angles_.theta_1;
+    current_joint_angles.theta_2 = target_angles_.theta_2;
+    current_joint_angles.theta_3 = target_angles_.theta_3;
+  } else if (step_idx_ == (current_step_duration_ / 2) - 1) {
+    current_joint_angles.theta_1 = step_apex_angles_.theta_1;
+    current_joint_angles.theta_2 = step_apex_angles_.theta_2;
+    current_joint_angles.theta_3 = step_apex_angles_.theta_3;
   }
-  else if (step_no_ < (current_foot_air_time_ / 2)) {
-    current_joint_angles.theta_1 += joint_inc_up_.theta_1;
-    current_joint_angles.theta_2 += joint_inc_up_.theta_2;
-    current_joint_angles.theta_3 += joint_inc_up_.theta_3;
+  else if (step_idx_ < (current_step_duration_ / 2)) {
+    current_joint_angles.theta_1 += inc_up_angles_.theta_1;
+    current_joint_angles.theta_2 += inc_up_angles_.theta_2;
+    current_joint_angles.theta_3 += inc_up_angles_.theta_3;
   } else {
-    current_joint_angles.theta_1 += joint_inc_down_.theta_1;
-    current_joint_angles.theta_2 += joint_inc_down_.theta_2;
-    current_joint_angles.theta_3 += joint_inc_down_.theta_3;
+    current_joint_angles.theta_1 += inc_down_angles_.theta_1;
+    current_joint_angles.theta_2 += inc_down_angles_.theta_2;
+    current_joint_angles.theta_3 += inc_down_angles_.theta_3;
   }
   setJointAngles(current_joint_angles);
 }
@@ -455,15 +455,15 @@ bool Leg::stepUpdate() {
 
   // if leg has only just transitioned to RAISED then need to calculate trajectory
   if (target_updated_ && prev_state_ == State::ON_GROUND) {
-    step_no_ = 0;                                 // reset
-    current_foot_air_time_ = foot_air_time_new_;  // save for later when doing actual movement
+    step_idx_ = 0;                                 // reset
+    current_step_duration_ = new_step_duration_;  // save for later when doing actual movement
     bool result_target = calculateJointAngles(target_pos_, IKMode::WALK);
     if (!result_target) {
       std::cout << "Could not calculate joint angles at requested foot target position\n";
       return false;
     }
     else {
-      joint_targets_  = getStagedAngles();
+      target_angles_  = getStagedAngles();
     }
 
     bool result = calculateJointAngles(raised_pos_, IKMode::WALK);
@@ -473,25 +473,25 @@ bool Leg::stepUpdate() {
       return false;
     }
     else {
-      joint_targets_raised_ = getStagedAngles();
+      step_apex_angles_ = getStagedAngles();
     }
     calculateTrajectory();
   }
 
   // recalculate target and trajectory
-  if (target_updated_ && step_no_ > 0) {
+  if (target_updated_ && step_idx_ > 0) {
     bool result_upd_target = calculateJointAngles(target_pos_, IKMode::WALK);
     if (!result_upd_target) {
       std::cout << "Could not calculate joint angles at updated foot target position\n";
     } else {
-      joint_targets_ = getStagedAngles();
+      target_angles_ = getStagedAngles();
       calculateTrajectory();
     }
   }
 
   incrementLeg();
   target_updated_ = false;
-  step_no_++;
+  step_idx_++;
   return true;
 }
 
@@ -508,14 +508,14 @@ bool Leg::stepUpdate() {
 bool Leg::updateStatus(const bool raise) {
   prev_state_ = state_;
   bool result = false;
-  if (state_ == State::RAISED && step_no_ == current_foot_air_time_) {
+  if (state_ == State::RAISED && step_idx_ == current_step_duration_) {
     state_ = State::ON_GROUND;
   }
   // If it's already at its target then don't lift but return true as if it had
   else if (raise && state_ == State::ON_GROUND) {
-    float dx = pos_.x() - target_pos_.x();
-    float dy = pos_.y() - target_pos_.y();
-    float dz = pos_.z() - target_pos_.z();
+    float dx = current_pos_.x() - target_pos_.x();
+    float dy = current_pos_.y() - target_pos_.y();
+    float dz = current_pos_.z() - target_pos_.z();
     float d =
         sqrtf(dx * dx + dy * dy + dz * dz);  // TODO skip sqrt and compare to tolerance squared
     if (!compareFloat(d, 0.0f, target_tolerance)) {
@@ -538,7 +538,7 @@ void Leg::updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
                         size_t foot_air_time) {
   target_pos_ = target_pos;
   raised_pos_ = raised_pos;
-  foot_air_time_new_ = foot_air_time;
+  new_step_duration_ = foot_air_time;
   target_updated_ = true;
 }
 
@@ -549,7 +549,7 @@ Leg::JointAngles Leg::getJointAngles() const {
 bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
   bool result = setJointAngles(starting_angles);
   if (result) {
-    target_pos_ = pos_;
+    target_pos_ = current_pos_;
   }
   return result;
 }
