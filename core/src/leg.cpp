@@ -31,7 +31,8 @@ Leg::Leg() {}
 
 Leg::Leg(Dims dims, Joint* joints)
   : dims_(dims),
-    neutral_pos_{(dims.a + dims.b + dims.c) / 2.0f, 0.0f, 0.0f}
+    neutral_pos_{(dims.a + dims.b + dims.c) / 2.0f, 0.0f, 0.0f},
+    step_idx_{0}
 {
   joints_[JOINT_1] = joints[0];
   joints_[JOINT_2] = joints[1];
@@ -357,6 +358,10 @@ Vector3 Leg::getNeutralPosition() const { return neutral_pos_; }
 
 Vector3& Leg::getNeutralPosition() { return neutral_pos_; }
 
+Vector3 Leg::getTargetPosition() const { return target_pos_; }
+
+Vector3 Leg::getRaisedPosition() const { return raised_pos_; }
+
 /**
  * @details
  * Calculate a trajectory for the leg in joint space. The trajectory will take the leg from the ground, 
@@ -459,8 +464,10 @@ bool Leg::stepUpdate() {
   if (target_updated_ && prev_state_ == State::ON_GROUND) {
     step_idx_ = 0;                                 // reset
     current_step_duration_ = new_step_duration_;  // save for later when doing actual movement
-    bool result_target = calculateJointAngles(target_pos_, IKMode::WALK);
-    if (!result_target) {
+  }
+
+  if (target_updated_) {
+    if (!calculateJointAngles(target_pos_, IKMode::WALK)) {
       std::cout << "Could not calculate joint angles at requested foot target position\n";
       return false;
     }
@@ -468,9 +475,7 @@ bool Leg::stepUpdate() {
       target_angles_  = getStagedAngles();
     }
 
-    bool result = calculateJointAngles(raised_pos_, IKMode::WALK);
-    if (!result) {
-      // TODO in future can try reducing the raise amount until this works
+    if (!calculateJointAngles(raised_pos_, IKMode::WALK)) {
       std::cout << "Could not calculate joint angles at requested raise limit position\n";
       return false;
     }
@@ -478,17 +483,6 @@ bool Leg::stepUpdate() {
       step_apex_angles_ = getStagedAngles();
     }
     calculateTrajectory();
-  }
-
-  // recalculate target and trajectory
-  if (target_updated_ && step_idx_ > 0) {
-    bool result_upd_target = calculateJointAngles(target_pos_, IKMode::WALK);
-    if (!result_upd_target) {
-      std::cout << "Could not calculate joint angles at updated foot target position\n";
-    } else {
-      target_angles_ = getStagedAngles();
-      calculateTrajectory();
-    }
   }
 
   incrementLeg();
@@ -512,6 +506,7 @@ bool Leg::updateStatus(const bool raise) {
   bool result = false;
   if (state_ == State::RAISED && step_idx_ == current_step_duration_) {
     state_ = State::ON_GROUND;
+    step_idx_ = 0;
   }
   // If it's already at its target then don't lift but return true as if it had
   else if (raise && state_ == State::ON_GROUND) {
@@ -550,4 +545,8 @@ bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
     target_pos_ = current_pos_;
   }
   return result;
+}
+
+size_t Leg::getStepIdx() const {
+  return step_idx_;
 }

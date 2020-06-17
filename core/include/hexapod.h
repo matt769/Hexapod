@@ -179,8 +179,14 @@ class Hexapod {
   void handleRaisedLegs();
   /** @brief Update status of each leg and request they raise if conditions met. */
   void updateLegs();
+  /** @brief Converts a vector in a leg frame to the correspondng vector in the base frame. */
+  Tfm::Vector3 legToBase(size_t leg_idx, const Tfm::Vector3& v) const;
   /** @brief Return neutral position for a leg in the base frame. */
   Tfm::Vector3 getNeutralPosition(size_t leg_idx) const;
+  /** @brief Return target position for a leg in the base frame. */
+  Tfm::Vector3 getTargetPosition(size_t leg_idx) const;
+  /** @brief Return raised target position for a leg in the base frame. */
+  Tfm::Vector3 getRaisedPosition(size_t leg_idx) const;
   /** @brief Update foot targets (if required) for single leg*/
   void updateFootTarget(size_t leg_idx);
   /** @brief Call updateFootTarget for all raised legs */

@@ -105,6 +105,10 @@ class Leg {
   Tfm::Vector3 getNeutralPosition() const;
   /** @brief Returns the neutral foot position for modification. */
   Tfm::Vector3& getNeutralPosition();
+  /** @brief Returns the current target position in the leg frame */
+  Tfm::Vector3 getTargetPosition() const;
+  /** @brief Returns the current raised target position in the leg frame */
+  Tfm::Vector3 getRaisedPosition() const;
   /** @brief Returns the current joint angles */
   JointAngles getJointAngles() const;
   /** @brief Updates joint angles as required by current trajectory. Must be called every period when leg raised. */
@@ -116,6 +120,8 @@ class Leg {
                      size_t foot_air_time);
   /** @brief Initialise leg angles, position and targets */
   bool setStartingAngles(JointAngles starting_angles);
+  /** @brief Return step index (progress through a step). 0 if on the ground. */
+  size_t getStepIdx() const;
 
  private:
   /** @brief Current foot position relative to the leg base frame */

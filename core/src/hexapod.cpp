@@ -37,6 +37,7 @@ Hexapod::Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg,
     height_(hex_dims.depth / 2.0f)
 {
   tf_base_to_body_ = Transform();
+  tf_base_to_body_prev_ = Transform();
   tf_base_movement_ = Transform();
   tf_base_to_new_base_ = Transform();
   tf_base_to_body_target_ = Transform();
@@ -166,6 +167,10 @@ Vector3 Hexapod::calculateFootVector(const size_t leg_idx) const {
   return step;
 }
 
+Vector3 Hexapod::legToBase(const size_t leg_idx, const Vector3& v) const {
+  return tf_base_to_body_ * tf_body_to_leg_[leg_idx] * v;
+}
+
 
 /**
  * @details
@@ -178,7 +183,7 @@ Vector3 Hexapod::calculateFootVector(const size_t leg_idx) const {
  * @param leg_idx 
  * @return Vector3 
  */
-Vector3 Hexapod::getNeutralPosition(size_t leg_idx) const {
+Vector3 Hexapod::getNeutralPosition(const size_t leg_idx) const {
   Vector3 leg_neutral = legs_[leg_idx].getNeutralPosition();
   leg_neutral.z() = -height_;
   return tf_body_to_leg_[leg_idx] * leg_neutral;
@@ -207,6 +212,7 @@ bool Hexapod::handleGroundedLegs() {
       height_ += tf_base_to_new_base_.t_.z();
     }
     if (body_change_) {
+      tf_base_to_body_prev_ = tf_base_to_body_;
       tf_base_to_body_ = tf_base_to_body_target_;
     }
   } else {
@@ -262,22 +268,46 @@ void Hexapod::updateFootTarget(size_t leg_idx) {
     }
   }
 
-  Vector3 neutral_pos = getNeutralPosition(leg_idx);
-  Vector3 raised_pos_in_base = neutral_pos;
-  raised_pos_in_base.z() += leg_lift_height_;
+  Vector3 raised_pos;
+  Vector3 target_pos;
+  // if the leg has already been lifted, use the already calculated targets
+  //    we just need to modify them to account to changes in body position
+  if (legs_[leg_idx].state_ == Leg::State::RAISED && legs_[leg_idx].getStepIdx() > 0) {
+    // perhaps move this calculation 'higher' to avoid repeating (although will only repeat for raised legs)
+    Transform tf_update = (tf_base_to_body_ * tf_body_to_leg_[leg_idx]).inverse() * tf_base_to_body_prev_ * tf_body_to_leg_[leg_idx];
+    target_pos = tf_update * legs_[leg_idx].getTargetPosition();
+    raised_pos = tf_update * legs_[leg_idx].getRaisedPosition();
+    // also need to update the current position to account for the body change
+    // I think I need to re-think the whole leg raise movement approach really
+    // because it could probably be a lot simpler
+    Vector3 upd_current_pos = tf_update * legs_[leg_idx].getFootPosition();
+    legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK);
+    if (legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK)) {
+      legs_[leg_idx].applyStagedAngles();
+    }
+  }
+  // if the leg os only just about to become raised then need to calculate targets for first time
+  // also do this if the foot is on the ground i.e. target update doesn't relate to a step
+  else {
+    Vector3 neutral_pos = getNeutralPosition(leg_idx);
+    Vector3 raised_pos_in_base = neutral_pos;
+    raised_pos_in_base.z() += leg_lift_height_;
 
-  // HACK add 2 (times num feet on ground) to account for a few steps overhead in changing state
-  // that means feet are actually on the ground longer than calculated
-  const size_t foot_ground_time =
-      2 + foot_air_time * (num_legs_ - gaitMaxRaised());
-  const float half_distance_to_travel = ((float)foot_ground_time * speed) / 2.0f;
-  Vector3 target_pos_in_base = neutral_pos + half_distance_to_travel * step_unit;
-  // transform the step vector from base frame to leg base
-  // can ignore the new base to base stuff since we only care about the relative position to the
-  // base, wherever it is
-  Transform tf_leg_to_base = (tf_base_to_body_ * tf_body_to_leg_[leg_idx]).inverse();
-  Vector3 raised_pos = tf_leg_to_base * raised_pos_in_base;
-  Vector3 target_pos = tf_leg_to_base * target_pos_in_base;
+    // HACK add 2 (times num feet on ground) to account for a few steps overhead in changing state
+    // that means feet are actually on the ground longer than calculated
+    const size_t foot_ground_time =
+        2 + foot_air_time * (num_legs_ - gaitMaxRaised());
+    const float half_distance_to_travel = ((float)foot_ground_time * speed) / 2.0f;
+    Vector3 target_pos_in_base = neutral_pos + half_distance_to_travel * step_unit;
+    // transform the step vector from base frame to leg base
+    // can ignore the new base to base stuff since we only care about the relative position to the
+    // base, wherever it is
+    Transform tf_leg_to_base = (tf_base_to_body_ * tf_body_to_leg_[leg_idx]).inverse();
+    raised_pos = tf_leg_to_base * raised_pos_in_base;
+    target_pos = tf_leg_to_base * target_pos_in_base;
+  }
+
+
   legs_[leg_idx].updateTargets(target_pos, raised_pos, foot_air_time);
 }
 
@@ -290,8 +320,16 @@ void Hexapod::updateFootTargets() {
   }
 }
 
-Vector3 Hexapod::getFootPosition(size_t leg_idx) const {
-  return tf_base_to_body_ * tf_body_to_leg_[leg_idx] * legs_[leg_idx].getFootPosition();
+Vector3 Hexapod::getFootPosition(const size_t leg_idx) const {
+  return legToBase(leg_idx, legs_[leg_idx].getFootPosition());
+}
+
+Vector3 Hexapod::getTargetPosition(const size_t leg_idx) const {
+  return legToBase(leg_idx, legs_[leg_idx].getTargetPosition());
+}
+
+Vector3 Hexapod::getRaisedPosition(const size_t leg_idx) const {
+  return legToBase(leg_idx, legs_[leg_idx].getRaisedPosition());
 }
 
 void Hexapod::handleRaisedLegs() {
@@ -403,6 +441,7 @@ bool Hexapod::update() {
                           // the ground
     updateLegs();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
   }
+
   clearTargets();
   handleStateChange();
   return true;
