@@ -515,11 +515,7 @@ bool Leg::updateStatus(const bool raise) {
   }
   // If it's already at its target then don't lift but return true as if it had
   else if (raise && state_ == State::ON_GROUND) {
-    float dx = current_pos_.x() - target_pos_.x();
-    float dy = current_pos_.y() - target_pos_.y();
-    float dz = current_pos_.z() - target_pos_.z();
-    float d =
-        sqrtf(dx * dx + dy * dy + dz * dz);  // TODO skip sqrt and compare to tolerance squared
+    float d = (current_pos_ - target_pos_).norm();
     if (!compareFloat(d, 0.0f, target_tolerance)) {
       state_ = State::RAISED;
     }
