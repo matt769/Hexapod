@@ -428,6 +428,9 @@ bool Hexapod::setStanceWidth(float stance_width) {
   } else {
     stance_width_ = stance_width;
     recalculate_all_feet_targets_ = true;
+    for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+        legs_[leg_idx].getNeutralPosition().x() = stance_width_;
+    }
     return true;
   }
 }

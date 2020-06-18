@@ -355,6 +355,8 @@ Vector3 Leg::getFootPosition() const { return current_pos_; }
 
 Vector3 Leg::getNeutralPosition() const { return neutral_pos_; }
 
+Vector3& Leg::getNeutralPosition() { return neutral_pos_; }
+
 /**
  * @details
  * Calculate a trajectory for the leg in joint space. The trajectory will take the leg from the ground, 

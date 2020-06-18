@@ -103,6 +103,8 @@ class Leg {
   Tfm::Vector3 getFootPosition() const;
   /** @brief Returns the neutral foot position in the leg frame. Z unknown by the leg, and is always zero. */
   Tfm::Vector3 getNeutralPosition() const;
+  /** @brief Returns the neutral foot position for modification. */
+  Tfm::Vector3& getNeutralPosition();
   /** @brief Returns the current joint angles */
   JointAngles getJointAngles() const;
   /** @brief Updates joint angles as required by current trajectory. Must be called every period when leg raised. */
