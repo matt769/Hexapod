@@ -186,7 +186,7 @@ See the example URDF files in `vis/urdf`.
 
 
 ## Todo / Future (in no particular order)
- - Finish doxygen comments for core package.
+ - Review the way in which legs move while raised. It's got overly complicated. Could probably be simplified.
  - Better definition of allowed foot movement range.
  - Foot sensors to determine when a foot has actually touched the ground. This would help to allow handling of non-flat terrain.
  - IMU to determine actual body pose.
