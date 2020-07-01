@@ -6,7 +6,7 @@ This repository contains 2 catkin packages.
 
 `core` provides a library to control a hexapod type robot. It has been written with microcontrollers in mind and should be portable with only extremely minor changes. However, I don't expect it to run (well) on more basic microcontrollers - I will probably try building a physical version usiin a Teensy 4 (though this is probably overkill). The main aim was to provide very flexible and smooth control of all types of movement simultaneously. The hexapod can walk in any direction, while turning, while moving it's body through 6DoF. The leg height, stride length and stance width are all adjustable and the hexapod will update naturally whether stationary of moving.  
 
-The structure of the robot is also very configurable (explained further below) and the number of legs, their positions and dimensions.
+The structure of the robot is also very configurable (explained further below), including the number of legs, their positions and dimensions.
 
 `vis` provides additional code for visualisation using ROS and RViz. `demo.launch` shows a preset demo of movements, and `control.launch` provides keyboard control of the hexapod (the controls are printed on the screen). There are also several urdf examples provided - a robot of the appropriate configuration is derived and built automatically from the urdf.
 
@@ -182,6 +182,25 @@ You can build the core robot using `BuildFromURDF()` function in the `vis` packa
 Note that the leg naming convention must be maintained as the visualisation code makes some assumptions on it. The names must adhere to the order described above when arranged in alphabetical order.  
 
 See the example URDF files in `vis/urdf`.  
+
+```sh
+roslaunch hexapod control.launch model:=vis/urdf/hexapod2.urdf.xacro
+```
+![Hexapod2](doc/readme_images/hexapod2.png) 
+
+
+```sh
+roslaunch hexapod control.launch model:=vis/urdf/octapod.urdf.xacro
+```
+![Octapod](doc/readme_images/octapod.png) 
+
+
+```sh
+roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
+```
+![Sillypod](doc/readme_images/sillypod.png) 
+
+
 
 
 
