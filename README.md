@@ -157,10 +157,10 @@ legs - An array of Leg objects - more details below.
 Both arrays must of course be the same length as the number of legs, and the order **must** be as follows:  
  - first row (front) left leg
  - same row right leg
- - next row back left leg
+ - next row left leg
  - same row right leg
  - ...
- - last row (back) left leg
+ - back row left leg
  - same row right leg
 
 So there is an assumption that all legs come in pairs that are opposite each other. This does not need to be strictly adhered to when defining the body to leg transforms, but it is assumed by the gait calculations so if that assumption if not held then it might produce odd walking styles.
