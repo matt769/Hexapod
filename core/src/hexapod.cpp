@@ -14,28 +14,25 @@ using namespace Transformations;
 /**
  * @details
  * The transforms and Legs provided MUST be in the following order:
- * 
+ *
  * Starting at the front row/pair of legs...\n
  * Left leg, then right leg\n
  * Move back 1 row\n
  * Left leg, then right leg etc
- * 
- * So the indicies for a 6 legged robot are:\n 
+ *
+ * So the indicies for a 6 legged robot are:\n
  * Front left ->  0  1  <- Front right\n
  * Middle left -> 2  3  <- Middle right\n
- * Back left ->   4  5  <- Back right\n 
- * 
- * 
+ * Back left ->   4  5  <- Back right\n
+ *
+ *
  * @param num_legs - number of legs
  * @param hex_dims - hexapod body dimensions
  * @param tf_body_to_leg - array of transforms relating each leg to the body
  * @param legs - array of Legs
  */
 Hexapod::Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg, Leg* legs)
-  : dims_(hex_dims),
-    num_legs_(num_legs), 
-    height_(hex_dims.depth / 2.0f)
-{
+    : dims_(hex_dims), num_legs_(num_legs), height_(hex_dims.depth / 2.0f) {
   tf_base_to_body_ = Transform();
   tf_base_to_body_prev_ = Transform();
   tf_base_movement_ = Transform();
@@ -59,17 +56,18 @@ Hexapod::~Hexapod() {
 /**
  * @details
  * Mostly redundant - will likely be removed later.
- * 
- * @param starting_angles 
+ *
+ * @param starting_angles
  * @return true if ajoint angles set successfully
  */
 bool Hexapod::setStartingPosition(Leg::JointAngles starting_angles) {
   bool result = true;
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    result &= legs_[leg_idx].setStartingAngles(starting_angles);  // get into close enough position so
-                                                               // that IK will pick the right option
-                                                               // later
-   }
+    result &=
+        legs_[leg_idx].setStartingAngles(starting_angles);  // get into close enough position so
+                                                            // that IK will pick the right option
+                                                            // later
+  }
   // if legs below body, then adjust height_
   // TODO they shouldn't be below - remove this section?
   float leg_pos_z = legs_[0].getFootPosition().z();
@@ -91,7 +89,8 @@ bool Hexapod::calculateGroundedLegs() {
       Vector3 foot_in_base =
           tf_base_to_body_ * tf_body_to_leg_[leg_idx] * legs_[leg_idx].getFootPosition();
       // position of foot in the updated leg frame (base on walk and body movement)
-      Vector3 leg_to_foot_new = (tf_base_to_new_body * tf_body_to_leg_[leg_idx]).inverse() * foot_in_base;
+      Vector3 leg_to_foot_new =
+          (tf_base_to_new_body * tf_body_to_leg_[leg_idx]).inverse() * foot_in_base;
       bool result = legs_[leg_idx].calculateJointAngles(leg_to_foot_new, Leg::IKMode::WALK);
       if (!result) {
         std::cout << "Unable to find IK solution for all legs.\n";
@@ -123,12 +122,13 @@ size_t Hexapod::getNumLegsRaised() const {
 /**
  * @details
  * Calls Leg::updateStatus() for all legs.
- * 
- * Determines whether the robot wants the leg to raise based on other conditions like the current position in the gait sequence
+ *
+ * Determines whether the robot wants the leg to raise based on other conditions like the current
+ * position in the gait sequence
  * and the number of legs currently raised.
- * 
+ *
  * If there's no base change flag (includes zero speed) then don't request raise
- * 
+ *
  */
 void Hexapod::updateLegs() {
   size_t num_legs_raised = getNumLegsRaised();
@@ -136,8 +136,7 @@ void Hexapod::updateLegs() {
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     // check if this leg is next to be lifted, and if we want to allow it
     if (base_change_ && legs_[leg_idx].state_ == Leg::State::ON_GROUND &&
-        gaitNextLeg() == leg_idx &&
-        num_legs_raised < gaitMaxRaised()) {
+        gaitNextLeg() == leg_idx && num_legs_raised < gaitMaxRaised()) {
       updateFootTarget(leg_idx);
       raise_result = legs_[leg_idx].updateStatus(true);
     } else {
@@ -156,7 +155,7 @@ void Hexapod::updateLegs() {
  * Current point = foot neutral point in current leg base frame\n
  * New point = foot neutral point in new leg base frame\n
  * Neutral point is fixed wrt base (so base->body change does not affect it)\n
- * 
+ *
  * @param leg_idx - calculate for which leg
  * @return Vector3 - step vector
  */
@@ -171,17 +170,17 @@ Vector3 Hexapod::legToBase(const size_t leg_idx, const Vector3& v) const {
   return tf_base_to_body_ * tf_body_to_leg_[leg_idx] * v;
 }
 
-
 /**
  * @details
  * The leg itself doesn't know how high the robot is, so leg::getNeutralPosition just has z = 0
  * so we just add it
- * 
- * The neutral position does not change with the body, so we only need to apply the body_to_leg transform
+ *
+ * The neutral position does not change with the body, so we only need to apply the body_to_leg
+ * transform
  * to get the neutral position in the base frame i.e. as if the base to body transform is identity
- * 
- * @param leg_idx 
- * @return Vector3 
+ *
+ * @param leg_idx
+ * @return Vector3
  */
 Vector3 Hexapod::getNeutralPosition(const size_t leg_idx) const {
   Vector3 leg_neutral = legs_[leg_idx].getNeutralPosition();
@@ -191,9 +190,10 @@ Vector3 Hexapod::getNeutralPosition(const size_t leg_idx) const {
 
 /**
  * @details
- * Calculate the required angles for all legs on the ground to accomodate the desired walk/turn.\n 
- * Apply them if possible, and if so then update the current state to incorporate the latest base and body movements.
- * 
+ * Calculate the required angles for all legs on the ground to accomodate the desired walk/turn.\n
+ * Apply them if possible, and if so then update the current state to incorporate the latest base
+ * and body movements.
+ *
  * @return true if an IK solution was found for all grounded legs
  */
 bool Hexapod::handleGroundedLegs() {
@@ -229,7 +229,7 @@ bool Hexapod::handleGroundedLegs() {
  * The time is based upon the magnitude of the step vector.\n
  * The target is based upon the direction of the step vector.\n
  * The apex is a point above the neutral position.
- * 
+ *
  * @param leg_idx - calculate for which leg
  */
 void Hexapod::updateFootTarget(size_t leg_idx) {
@@ -246,8 +246,7 @@ void Hexapod::updateFootTarget(size_t leg_idx) {
     step_unit = combined_step.unit();
 
     // Check desired speed within limits and cap it if not
-    size_t min_foot_ground_time =
-        foot_air_time_min_ * (num_legs_ - gaitMaxRaised());
+    size_t min_foot_ground_time = foot_air_time_min_ * (num_legs_ - gaitMaxRaised());
     // max speed if travel full allowed distance in the minimum allowed time
     float max_v = allowed_foot_position_.dia / (float)min_foot_ground_time;
     if (speed > max_v) {
@@ -260,8 +259,7 @@ void Hexapod::updateFootTarget(size_t leg_idx) {
         allowed_foot_position_.dia * foot_ground_travel_ratio_;  // stride length
     float foot_ground_time_fl = foot_ground_distance / speed;
     // and in the air - make sure it's even (round up if not)
-    float foot_air_time_fl =
-        foot_ground_time_fl / (float)(num_legs_ - gaitMaxRaised());
+    float foot_air_time_fl = foot_ground_time_fl / (float)(num_legs_ - gaitMaxRaised());
     foot_air_time = (size_t)ceilf(foot_air_time_fl);
     if (foot_air_time % 2 == 1) {
       foot_air_time += 1;
@@ -273,8 +271,10 @@ void Hexapod::updateFootTarget(size_t leg_idx) {
   // if the leg has already been lifted, use the already calculated targets
   //    we just need to modify them to account to changes in body position
   if (legs_[leg_idx].state_ == Leg::State::RAISED && legs_[leg_idx].getStepIdx() > 0) {
-    // perhaps move this calculation 'higher' to avoid repeating (although will only repeat for raised legs)
-    Transform tf_update = (tf_base_to_body_ * tf_body_to_leg_[leg_idx]).inverse() * tf_base_to_body_prev_ * tf_body_to_leg_[leg_idx];
+    // perhaps move this calculation 'higher' to avoid repeating (although will only repeat for
+    // raised legs)
+    Transform tf_update = (tf_base_to_body_ * tf_body_to_leg_[leg_idx]).inverse() *
+                          tf_base_to_body_prev_ * tf_body_to_leg_[leg_idx];
     target_pos = tf_update * legs_[leg_idx].getTargetPosition();
     raised_pos = tf_update * legs_[leg_idx].getRaisedPosition();
     // also need to update the current position to account for the body change
@@ -295,8 +295,7 @@ void Hexapod::updateFootTarget(size_t leg_idx) {
 
     // HACK add 2 (times num feet on ground) to account for a few steps overhead in changing state
     // that means feet are actually on the ground longer than calculated
-    const size_t foot_ground_time =
-        2 + foot_air_time * (num_legs_ - gaitMaxRaised());
+    const size_t foot_ground_time = 2 + foot_air_time * (num_legs_ - gaitMaxRaised());
     const float half_distance_to_travel = ((float)foot_ground_time * speed) / 2.0f;
     Vector3 target_pos_in_base = neutral_pos + half_distance_to_travel * step_unit;
     // transform the step vector from base frame to leg base
@@ -306,7 +305,6 @@ void Hexapod::updateFootTarget(size_t leg_idx) {
     raised_pos = tf_leg_to_base * raised_pos_in_base;
     target_pos = tf_leg_to_base * target_pos_in_base;
   }
-
 
   legs_[leg_idx].updateTargets(target_pos, raised_pos, foot_air_time);
 }
@@ -402,8 +400,8 @@ bool Hexapod::clearMovement() { return setWalk(Vector3(0.0f, 0.0f, 0.0f), 0.0f);
 
 /**
  * @details
- * The hexapod will not move until another movement type command (e.g. setWalk, changeBody) is given 
- * 
+ * The hexapod will not move until another movement type command (e.g. setWalk, changeBody) is given
+ *
  */
 void Hexapod::clearTargets() {
   base_change_ = false;
@@ -416,14 +414,14 @@ void Hexapod::clearTargets() {
 
 void Hexapod::clearVisualisationChanges() { tf_base_movement_ = Transform(); }
 
-
 /**
  * @details
- * clearVisualisationChanges must come at the beginning because those changes need to be available after update() is called 
+ * clearVisualisationChanges must come at the beginning because those changes need to be available
+ * after update() is called
  *  and before the next update() is called.
- * 
+ *
  * TODO - move updateFootTargets and updateLegs into handleRaisedLegs?
- * 
+ *
  * @return true always - this is now redundant
  */
 bool Hexapod::update() {
@@ -431,8 +429,7 @@ bool Hexapod::update() {
 
   if (state_ == State::UNSUPPORTED) {
     updateMoveLegs();
-  }
-  else if (state_ == State::STANDING) {
+  } else if (state_ == State::STANDING) {
     handleGroundedLegs();
   } else {
     handleGroundedLegs();
@@ -447,12 +444,11 @@ bool Hexapod::update() {
   return true;
 }
 
-
 /**
  * @details
- * TODO the foot movement limits should (in theory) also be updated after this gets called 
- * 
- * @param stance_width 
+ * TODO the foot movement limits should (in theory) also be updated after this gets called
+ *
+ * @param stance_width
  * @return true if the value was changed
  */
 bool Hexapod::setStanceWidth(float stance_width) {
@@ -468,7 +464,7 @@ bool Hexapod::setStanceWidth(float stance_width) {
     stance_width_ = stance_width;
     recalculate_all_feet_targets_ = true;
     for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-        legs_[leg_idx].getNeutralPosition().x() = stance_width_;
+      legs_[leg_idx].getNeutralPosition().x() = stance_width_;
     }
     return true;
   }
@@ -476,8 +472,8 @@ bool Hexapod::setStanceWidth(float stance_width) {
 
 /**
   * @details
-  * 
-  * @param change 
+  *
+  * @param change
  * @return true if the value was changed
  */
 bool Hexapod::changeStanceWidth(float change) {
@@ -487,7 +483,7 @@ bool Hexapod::changeStanceWidth(float change) {
 
 /**
  * @details
- * 
+ *
  * @return true if the value was changed
  */
 bool Hexapod::resetStanceWidth() { return setStanceWidth(stance_width_default_); }
@@ -495,8 +491,8 @@ bool Hexapod::resetStanceWidth() { return setStanceWidth(stance_width_default_);
 /**
  * @details
  * TODO need to add quite a few checks here to make sure this is possible without exceeding limits
- * 
- * @param gait 
+ *
+ * @param gait
  * @return true if the gait was changed
  */
 bool Hexapod::changeGait(Gait gait) {
@@ -508,8 +504,8 @@ bool Hexapod::changeGait(Gait gait) {
 
 /**
  * @details
- * 
- * @param ratio 
+ *
+ * @param ratio
  * @return true if the value was changed
  */
 bool Hexapod::setFootGroundTravelRatio(float ratio) {
@@ -527,8 +523,8 @@ bool Hexapod::setFootGroundTravelRatio(float ratio) {
 
 /**
  * @details
- * 
- * @param change 
+ *
+ * @param change
  * @return true if the value was changed
  */
 bool Hexapod::changeFootGroundTravelRatio(const float change) {
@@ -538,15 +534,15 @@ bool Hexapod::changeFootGroundTravelRatio(const float change) {
 
 /**
  * @details
- * 
+ *
  * @return true if the value was changed
  */
 bool Hexapod::resetFootGroundTravelRatio() { return setFootGroundTravelRatio(fgtr_default_); }
 
 /**
- * @details 
- * 
- * @param height 
+ * @details
+ *
+ * @param height
  * @return true if the value was changed
  */
 bool Hexapod::setLegRaiseHeight(float height) {
@@ -563,9 +559,9 @@ bool Hexapod::setLegRaiseHeight(float height) {
 }
 
 /**
- * @details 
- * 
- * @param change 
+ * @details
+ *
+ * @param change
  * @return true if the value was changed
  */
 bool Hexapod::changeLegRaiseHeight(const float change) {
@@ -574,8 +570,8 @@ bool Hexapod::changeLegRaiseHeight(const float change) {
 }
 
 /**
- * @details 
- * 
+ * @details
+ *
  * @return true if the value was changed
  */
 bool Hexapod::resetLegRaiseHeight() { return setLegRaiseHeight(leg_lift_height_default_); }
@@ -584,8 +580,8 @@ bool Hexapod::resetLegRaiseHeight() { return setLegRaiseHeight(leg_lift_height_d
  * @details
  * The fixed heading of headless mode will always be set to the current heading when this is called
  *  to enter headless mode, whether or not it is already in headless mode
- * 
- * @param move_mode 
+ *
+ * @param move_mode
  */
 void Hexapod::setMoveMode(MoveMode move_mode) {
   move_mode_ = move_mode;
@@ -596,12 +592,13 @@ void Hexapod::setMoveMode(MoveMode move_mode) {
 
 /**
  * @details
- * One of several basic functions for getting the hexapod to move from a starting position to an upright
+ * One of several basic functions for getting the hexapod to move from a starting position to an
+ * upright
  *  position supported by the legs from which it can start walking.
- * 
+ *
  * TODO - maybe refactor.
- * 
- * @param joint_targets 
+ *
+ * @param joint_targets
  * @return true if the requested targets were set
  */
 bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
@@ -638,11 +635,12 @@ bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
 
 /**
  * @details
- * One of several basic functions for getting the hexapod to move from a starting position to an upright
+ * One of several basic functions for getting the hexapod to move from a starting position to an
+ * upright
  *  position supported by the legs from which it can start walking.
- * 
+ *
  * TODO - maybe refactor.
- * 
+ *
  * @return true if the movement was achieved
  */
 bool Hexapod::updateMoveLegs() {
@@ -677,13 +675,14 @@ bool Hexapod::updateMoveLegs() {
 
 /**
  * @details
- * One of several basic functions for getting the hexapod to move from a starting position to an upright
+ * One of several basic functions for getting the hexapod to move from a starting position to an
+ * upright
  *  position supported by the legs from which it can start walking.
- * 
+ *
  * TODO - maybe refactor.
- * 
- * @return true 
- * @return false 
+ *
+ * @return true
+ * @return false
  */
 bool Hexapod::riseToWalk() {
   if (!(state_ == State::STANDING)) {
@@ -700,12 +699,13 @@ bool Hexapod::riseToWalk() {
 
 /**
  * @details
- * One of several basic functions for getting the hexapod to move from a starting position to an upright
+ * One of several basic functions for getting the hexapod to move from a starting position to an
+ * upright
  *  position supported by the legs from which it can start walking.
- * 
+ *
  * TODO - maybe refactor.
- * 
- * @param move_base 
+ *
+ * @param move_base
  * @return true always
  */
 bool Hexapod::changeBase(Vector3 move_base) {
@@ -716,12 +716,13 @@ bool Hexapod::changeBase(Vector3 move_base) {
 
 /**
  * @details
- * One of several basic functions for getting the hexapod to move from a starting position to an upright
+ * One of several basic functions for getting the hexapod to move from a starting position to an
+ * upright
  *  position supported by the legs from which it can start walking.
- * 
+ *
  * TODO - maybe refactor, does not currently support different sized legs.
- * 
- * @return true if an IK solution was found for all legs 
+ *
+ * @return true if an IK solution was found for all legs
  */
 bool Hexapod::setLegsToGround() {
   if (!(state_ == State::UNSUPPORTED)) {
@@ -778,59 +779,44 @@ void Hexapod::handleStateChange() {
   }
 }
 
-Hexapod::State Hexapod::getState() const {
-  return state_;
-}
+Hexapod::State Hexapod::getState() const { return state_; }
 
-const Leg& Hexapod::getLeg(size_t leg_idx) const {
-  return legs_[leg_idx];
-}
+const Leg& Hexapod::getLeg(size_t leg_idx) const { return legs_[leg_idx]; }
 
-const Tfm::Transform& Hexapod::getBaseToBody() const {
-  return tf_base_to_body_;
-}
+const Tfm::Transform& Hexapod::getBaseToBody() const { return tf_base_to_body_; }
 
-const Tfm::Transform& Hexapod::getBaseMovement() const {
-  return tf_base_movement_;
-}
+const Tfm::Transform& Hexapod::getBaseMovement() const { return tf_base_movement_; }
 
-float Hexapod::getHeight() const {
-  return height_;
-}
+float Hexapod::getHeight() const { return height_; }
 
 /**
  * @details
  * Advance gait_current_pos_ to the index of the next leg to be raised.
- * 
+ *
  * Based on some basic rules for each gait.
- * 
+ *
  */
 void Hexapod::advanceGait() {
-
   switch (current_gait_seq_) {
     case Gait::RIPPLE:
       // next leg is on the other side and 1 'row' further back
       if (gait_current_pos_ % 2 == 0) {
         // on left
         gait_current_pos_ += 3;
-      }
-      else {
+      } else {
         gait_current_pos_ += 1;
       }
       if (gait_current_pos_ >= num_legs_) {
         if (gait_current_pos_ % 2 == 0) {
-          if (num_legs_/2 % 2 == 0) {
+          if (num_legs_ / 2 % 2 == 0) {
             gait_current_pos_ = 1;
-          }
-          else {
+          } else {
             gait_current_pos_ = 0;
           }
-        }
-        else {
-          if (num_legs_/2 % 2 == 0) {
+        } else {
+          if (num_legs_ / 2 % 2 == 0) {
             gait_current_pos_ = 0;
-          }
-          else {
+          } else {
             gait_current_pos_ = 1;
           }
         }
@@ -841,14 +827,13 @@ void Hexapod::advanceGait() {
       gait_current_pos_ += 1;
       gait_current_pos_ = gait_current_pos_ % num_legs_;
       break;
-    
+
     case Gait::LHS_THEN_RHS:
       gait_current_pos_ += 2;
       if (gait_current_pos_ >= num_legs_) {
         if (gait_current_pos_ % 2 == 0) {
           gait_current_pos_ = 1;
-        }
-        else {
+        } else {
           gait_current_pos_ = 0;
         }
       }
@@ -857,15 +842,13 @@ void Hexapod::advanceGait() {
     case Gait::AROUND_THE_CLOCK:
       if (gait_current_pos_ % 2 == 0) {
         gait_current_pos_ += 2;
-        if(gait_current_pos_ == num_legs_) {
+        if (gait_current_pos_ == num_legs_) {
           gait_current_pos_ = num_legs_ - 1;
         }
-      }
-      else {
-        if(gait_current_pos_ == 1) {
+      } else {
+        if (gait_current_pos_ == 1) {
           gait_current_pos_ = 0;
-        }
-        else {
+        } else {
           gait_current_pos_ -= 2;
         }
       }
@@ -876,16 +859,13 @@ void Hexapod::advanceGait() {
   }
 }
 
-size_t Hexapod::gaitNextLeg() {
-  return gait_current_pos_;
-}
+size_t Hexapod::gaitNextLeg() { return gait_current_pos_; }
 
 size_t Hexapod::gaitMaxRaised() {
-  return 1; // currently fixed for all gaits
+  return 1;  // currently fixed for all gaits
 }
 
 Hexapod buildDefaultHexapod() {
-
   // Construct a leg (they are all the same in this default robot)
   constexpr size_t num_joints = 3;
   Leg::Dims leg_dims{0.2f, 0.4f, 0.6f};
@@ -901,7 +881,7 @@ Hexapod buildDefaultHexapod() {
   constexpr size_t num_legs = 6;
   Leg legs[num_legs];
   for (size_t leg_idx = 0; leg_idx < num_legs; leg_idx++) {
-      legs[leg_idx] = leg;
+    legs[leg_idx] = leg;
   }
 
   // Hexapod body dimensions
@@ -945,7 +925,6 @@ Hexapod buildDefaultHexapod() {
 }
 
 Hexapod buildDefaultHexapod2() {
-
   // Construct a leg (they are all the same in this default robot)
   constexpr size_t num_joints = 3;
   Leg::Dims leg_dims{0.2f, 0.4f, 0.6f};
@@ -961,7 +940,7 @@ Hexapod buildDefaultHexapod2() {
   constexpr size_t num_legs = 6;
   Leg legs[num_legs];
   for (size_t leg_idx = 0; leg_idx < num_legs; leg_idx++) {
-      legs[leg_idx] = leg;
+    legs[leg_idx] = leg;
   }
 
   // Hexapod body dimensions
@@ -1005,7 +984,6 @@ Hexapod buildDefaultHexapod2() {
 }
 
 Hexapod buildDefaultOctapod() {
-
   // Construct a leg (they are all the same in this default robot)
   constexpr size_t num_joints = 3;
   Leg::Dims leg_dims{0.2f, 0.4f, 0.6f};
@@ -1021,7 +999,7 @@ Hexapod buildDefaultOctapod() {
   constexpr size_t num_legs = 8;
   Leg legs[num_legs];
   for (size_t leg_idx = 0; leg_idx < num_legs; leg_idx++) {
-      legs[leg_idx] = leg;
+    legs[leg_idx] = leg;
   }
 
   // Hexapod body dimensions
@@ -1035,14 +1013,23 @@ Hexapod buildDefaultOctapod() {
   Transform tf_body_to_leg[num_legs];
 
   Vector3 front((hex_dims.length / 2.0f), 0.0f, 0.0f);
-  Vector3 front_mid((hex_dims.length / 2.0f) - (length/(num_legs/2-1)), 0.0f, 0.0f);
+  Vector3 front_mid((hex_dims.length / 2.0f) - (length / (num_legs / 2 - 1)), 0.0f, 0.0f);
   Vector3 back_mid = -front_mid;
   Vector3 back = -front;
   Vector3 left(0.0f, hex_dims.width / 2.0f, 0.0f);
   Vector3 right = -left;
 
   // Legs MUST be ordered this way i.e. left then right, then next row left ...
-  enum { FRONT_LEFT = 0, FRONT_RIGHT, FRONT_MIDDLE_LEFT, FRONT_MIDDLE_RIGHT, BACK_MIDDLE_LEFT, BACK_MIDDLE_RIGHT, BACK_LEFT, BACK_RIGHT };
+  enum {
+    FRONT_LEFT = 0,
+    FRONT_RIGHT,
+    FRONT_MIDDLE_LEFT,
+    FRONT_MIDDLE_RIGHT,
+    BACK_MIDDLE_LEFT,
+    BACK_MIDDLE_RIGHT,
+    BACK_LEFT,
+    BACK_RIGHT
+  };
 
   tf_body_to_leg[FRONT_LEFT].t_ = front + left;
   tf_body_to_leg[FRONT_LEFT].R_.setRPYExtr(0, 0, M_PI / 2.0);

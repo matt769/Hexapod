@@ -26,9 +26,7 @@ bool compareFloat(float a, float b) { return compareFloat(a, b, eps); }
 
 bool compareFloat(float a, float b, float tolerance) { return fabs(a - b) < tolerance; }
 
-bool approxEqual(Vector3 a, Vector3 b, float tolerance) {
-  return fabs((a - b).norm()) < tolerance;
-}
+bool approxEqual(Vector3 a, Vector3 b, float tolerance) { return fabs((a - b).norm()) < tolerance; }
 
 bool clamp(float& val, const float lower, const float upper) {
   if (val < (lower - eps) || val > (upper + eps)) {

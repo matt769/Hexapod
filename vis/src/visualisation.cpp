@@ -1,8 +1,8 @@
 #include "visualisation.h"
 
-#include "transformations.h"
 #include "hexapod.h"
 #include "leg.h"
+#include "transformations.h"
 
 #include <geometry_msgs/TransformStamped.h>
 #include <ros/ros.h>
@@ -18,9 +18,10 @@
 
 using namespace Transformations;
 
-
-Vis::Vis(const ros::NodeHandle& nh, Hexapod* hexapod) 
-  : nh_(nh), hexapod_(hexapod), num_legs_(hexapod->num_legs_)
+Vis::Vis(const ros::NodeHandle& nh, Hexapod* hexapod)
+    : nh_(nh),
+      hexapod_(hexapod),
+      num_legs_(hexapod->num_legs_)
 
 {
   const size_t number_of_joints = num_legs_ * 3;
@@ -28,10 +29,10 @@ Vis::Vis(const ros::NodeHandle& nh, Hexapod* hexapod)
   joint_angles_.resize(number_of_joints);
   generateJointNames();
 
-  joints_pub_ = nh_.advertise<sensor_msgs::JointState >("joint_states", 1);
+  joints_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
   tf_listener_ = std::make_unique<tf2_ros::TransformListener>(tf_buffer_);
   initialiseTransforms();
-  ros::Duration(1).sleep(); // make sure tf is ready when we query it shortly
+  ros::Duration(1).sleep();  // make sure tf is ready when we query it shortly
 }
 
 void Vis::initialiseTransforms() {
@@ -56,7 +57,7 @@ void Vis::initialiseTransforms() {
 }
 
 /**
- * @brief 
+ * @brief
  * @details
  * Assumes that leg indicies are allocated from front to back, left to right
  * i.e. front left = 0, front right = 1, next row back left = 2, right = 3 etc
@@ -69,35 +70,32 @@ void Vis::generateJointNames() {
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     std::string position, side;
 
-    const size_t row_idx = leg_idx / 2; // integer division
+    const size_t row_idx = leg_idx / 2;  // integer division
     std::string row_str = std::to_string(row_idx);
     // bit of faffing around to left pad the row number
     const size_t pad_size = 2;
-    row_str.insert(row_str.begin(), pad_size-row_str.size(),'0');
+    row_str.insert(row_str.begin(), pad_size - row_str.size(), '0');
     position = "row" + row_str;
 
-    if(leg_idx % 2 == 0) {
+    if (leg_idx % 2 == 0) {
       side = "left";
-    }
-    else {
+    } else {
       side = "right";
     }
     std::string leg_name = "leg_" + position + "_" + side + "_";
 
-    joint_names_.at(3*leg_idx + 0) = leg_name + "joint_1";
-    joint_names_.at(3*leg_idx + 1) = leg_name + "joint_2";
-    joint_names_.at(3*leg_idx + 2) = leg_name + "joint_3";
+    joint_names_.at(3 * leg_idx + 0) = leg_name + "joint_1";
+    joint_names_.at(3 * leg_idx + 1) = leg_name + "joint_2";
+    joint_names_.at(3 * leg_idx + 2) = leg_name + "joint_3";
   }
 }
 
-
 void Vis::updateJoints() {
-  
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     const Leg::JointAngles leg_joint_angles = hexapod_->getLeg(leg_idx).getJointAngles();
-    joint_angles_.at(3*leg_idx + 0) = leg_joint_angles.theta_1;
-    joint_angles_.at(3*leg_idx + 1) = leg_joint_angles.theta_2;
-    joint_angles_.at(3*leg_idx + 2) = leg_joint_angles.theta_3;
+    joint_angles_.at(3 * leg_idx + 0) = leg_joint_angles.theta_1;
+    joint_angles_.at(3 * leg_idx + 1) = leg_joint_angles.theta_2;
+    joint_angles_.at(3 * leg_idx + 2) = leg_joint_angles.theta_3;
   }
 
   sensor_msgs::JointState msg;
@@ -136,8 +134,9 @@ void Vis::updateWorld() {
   const Transform tf_b_nb = hexapod_->getBaseMovement();  // for brevity, base to new base
   // convert to tf matrix3x3
   tf2::Matrix3x3 r;
-  r.setValue(tf_b_nb.R_(0, 0), tf_b_nb.R_(0, 1), tf_b_nb.R_(0, 2), tf_b_nb.R_(1, 0), tf_b_nb.R_(1, 1),
-             tf_b_nb.R_(1, 2), tf_b_nb.R_(2, 0), tf_b_nb.R_(2, 1), tf_b_nb.R_(2, 2));
+  r.setValue(tf_b_nb.R_(0, 0), tf_b_nb.R_(0, 1), tf_b_nb.R_(0, 2), tf_b_nb.R_(1, 0),
+             tf_b_nb.R_(1, 1), tf_b_nb.R_(1, 2), tf_b_nb.R_(2, 0), tf_b_nb.R_(2, 1),
+             tf_b_nb.R_(2, 2));
   // extract quaternion from it using tf2 implementation
   tf2::Quaternion q_b_nb;
   r.getRotation(q_b_nb);
@@ -168,7 +167,6 @@ void Vis::updateWorld() {
 
   tf_br_.sendTransform(tf_world_to_base_msg);
 }
-
 
 void Vis::update() {
   updateJoints();

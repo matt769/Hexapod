@@ -10,7 +10,8 @@
 namespace Tfm = Transformations;
 
 /** @class Hexapod
- * @brief A hexapod contains a body and a number of legs (not actually limited to 6), and manages the legs in order to move the body around.
+ * @brief A hexapod contains a body and a number of legs (not actually limited to 6), and manages
+ * the legs in order to move the body around.
 */
 class Hexapod {
  public:
@@ -25,7 +26,8 @@ class Hexapod {
   size_t num_legs_;
   /** @brief Heading moves with body frame (Standard) or stays fixed (Headless) */
   enum class MoveMode { STANDARD, HEADLESS };
-  /** @brief Walking is main state, others are used in start up routine. Unsupported implies legs do not any resetriction on foot position. */
+  /** @brief Walking is main state, others are used in start up routine. Unsupported implies legs do
+   * not any resetriction on foot position. */
   enum class State { UNSUPPORTED, STANDING, WALKING };
   /** @brief Gait identifier. Also used as index into gait_seq_ */
   enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, NUM_GAITS };
@@ -67,7 +69,8 @@ class Hexapod {
   bool clearMovement();
   /** @brief Resets any body tilt or translation. Does not affect walk or turn. */
   bool resetBody();
-  /** @brief main update function to be called every period. Will apply any movement currently set. */
+  /** @brief main update function to be called every period. Will apply any movement currently set.
+   */
   bool update();
   bool setStanceWidth(float stance_width);
   bool changeStanceWidth(float change);
@@ -96,13 +99,13 @@ class Hexapod {
   float getHeight() const;
 
  private:
-   /** @brief Used to control movements while in unsupported state */
+  /** @brief Used to control movements while in unsupported state */
   enum class SubState { NOT_STARTED, IN_PROGRESS, FINISHED };
-  Leg* legs_; 
+  Leg* legs_;
   /** @brief Height of base frame above ground */
   float height_;
   /** @brief Relationship between base frame and body frame */
-  Tfm::Transform tf_base_to_body_, tf_base_to_body_prev_;  // 
+  Tfm::Transform tf_base_to_body_, tf_base_to_body_prev_;  //
   /** @brief Fixed relationship between body frame and leg frames */
   Tfm::Transform* tf_body_to_leg_;
   MoveMode move_mode_ = MoveMode::STANDARD;
@@ -122,7 +125,7 @@ class Hexapod {
   /** @brief Current walk vector. TODO review naming. */
   Tfm::Vector3 walk_step_current_;
   /** @brief Requested walk vector. */
-  Tfm::Vector3  walk_step_new_;
+  Tfm::Vector3 walk_step_new_;
   /** @brief Current walk vector. TODO review naming. */
   float turn_step_current_;
   /** @brief Requested turn angle. */
@@ -142,11 +145,11 @@ class Hexapod {
   /** @brief Number periods over which unsupported movements. */
   size_t total_movement_steps_;
   /** @brief Current progress of unsupported movements. */
-  size_t current_movement_step_;  
+  size_t current_movement_step_;
 
   /**
    * @brief Describes a circle of allowed foot movement around the neutral point.
-   * 
+   *
    * @details
    * TODO review this. Don't think min and max are even used.
    * Ideally have better solution to managing range of movement.
@@ -163,7 +166,7 @@ class Hexapod {
   float stance_width_ = stance_width_default_;
   float leg_lift_height_ = leg_lift_height_default_;
   float foot_ground_travel_ratio_ = fgtr_default_;
-  float total_base_rotation_ = 0.0f;  
+  float total_base_rotation_ = 0.0f;
 
   /** @brief Calculate the required joint angles for all grounded legs */
   bool calculateGroundedLegs();
@@ -193,13 +196,13 @@ class Hexapod {
   void updateFootTargets();
   /** @brief Return foot position in the base frame. */
   Tfm::Vector3 getFootPosition(size_t leg_idx) const;
-    /** @brief Clear all movement targets (walk, turn, body etc). */
+  /** @brief Clear all movement targets (walk, turn, body etc). */
   void clearTargets();
-    /** @brief Set robot-wide targets to move all legs to specified joint position
-     * when in unsupported state.
-    */
+  /** @brief Set robot-wide targets to move all legs to specified joint position
+   * when in unsupported state.
+  */
   bool setTargetsMoveLegs(Leg::JointAngles joint_targets);
-    /** @brief Update function for movements in UNSUPPORTED state. */
+  /** @brief Update function for movements in UNSUPPORTED state. */
   bool updateMoveLegs();
   /** @brief Set a movement of the base. Only used in specific situtations e.g. start up. */
   bool changeBase(Tfm::Vector3 move_base);
@@ -213,7 +216,6 @@ class Hexapod {
   size_t gaitNextLeg();
   /** @brief Returns the maximum number of legs that can be raised during the current gait. */
   size_t gaitMaxRaised();
-
 };
 
 /** @brief Returns a Hexapod object consistent with example file hexapod.urdf.xacro */

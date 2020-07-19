@@ -79,7 +79,7 @@ RotationMatrix RotationMatrix::inverse() const {
 
 // new_rotation = roll * pitch * yaw;  // RHS intrinsic rotation
 void RotationMatrix::setRPYIntr(const float roll, const float pitch, const float yaw) {
-  if (roll == 0 && pitch == 0 && yaw ==0) {
+  if (roll == 0 && pitch == 0 && yaw == 0) {
     return;
   }
   RotationMatrix new_rotation;
@@ -97,7 +97,7 @@ void RotationMatrix::setRPYIntr(const float roll, const float pitch, const float
 
 // new_rotation = yaw * pitch * roll;  // LHS extrinsic rotation
 void RotationMatrix::setRPYExtr(const float roll, const float pitch, const float yaw) {
-  if (roll == 0 && pitch == 0 && yaw ==0) {
+  if (roll == 0 && pitch == 0 && yaw == 0) {
     return;
   }
   RotationMatrix new_rotation;
@@ -161,8 +161,7 @@ RotationMatrix operator*(const RotationMatrix& a, const RotationMatrix& b) {
   return result;
 }
 
-Quaternion::Quaternion() :
-  Quaternion(1.0, 0.0, 0.0, 0.0) {}
+Quaternion::Quaternion() : Quaternion(1.0, 0.0, 0.0, 0.0) {}
 
 Quaternion::Quaternion(float w, float x, float y, float z) {
   data_[0] = w;
@@ -203,7 +202,7 @@ Quaternion Quaternion::normalise() {
 }
 
 void Quaternion::setRPYExtr(float roll, float pitch, float yaw) {
-  if (roll == 0 && pitch == 0 && yaw ==0) {
+  if (roll == 0 && pitch == 0 && yaw == 0) {
     return;
   }
   Quaternion new_rotation;
@@ -253,10 +252,11 @@ bool operator==(const Vector3& v1, const Vector3& v2) {
 bool operator!=(const Vector3& v1, const Vector3& v2) { return !(v1 == v2); }
 
 /**
- * @brief Taken from: https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
- * 
- * @param q 
- * @return RotationMatrix 
+ * @brief Taken from:
+ * https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
+ *
+ * @param q
+ * @return RotationMatrix
  */
 RotationMatrix QuaternionToRotationMatrix(const Quaternion& q) {
   RotationMatrix R;
@@ -265,27 +265,26 @@ RotationMatrix QuaternionToRotationMatrix(const Quaternion& q) {
   float yy = q.y() * q.y();
   float zz = q.z() * q.z();
 
-  R(0,0) = ( xx - yy - zz + ww);
-  R(1,1) = (-xx + yy - zz + ww);
-  R(2,2) = (-xx - yy + zz + ww);
-  
+  R(0, 0) = (xx - yy - zz + ww);
+  R(1, 1) = (-xx + yy - zz + ww);
+  R(2, 2) = (-xx - yy + zz + ww);
+
   float xy = q.x() * q.y();
   float zw = q.z() * q.w();
-  R(1,0) = 2.0f * (xy + zw);
-  R(0,1) = 2.0f * (xy - zw);
-  
+  R(1, 0) = 2.0f * (xy + zw);
+  R(0, 1) = 2.0f * (xy - zw);
+
   float xz = q.x() * q.z();
   float yw = q.y() * q.w();
-  R(2,0) = 2.0 * (xz - yw);
-  R(0,2) = 2.0 * (xz + yw);
+  R(2, 0) = 2.0 * (xz - yw);
+  R(0, 2) = 2.0 * (xz + yw);
 
   float yz = q.y() * q.z();
   float xw = q.x() * q.w();
-  R(2,1) = 2.0 * (yz + xw);
-  R(1,2) = 2.0 * (yz - xw);
+  R(2, 1) = 2.0 * (yz + xw);
+  R(1, 2) = 2.0 * (yz - xw);
 
   return R;
 }
 
-
-} // namespace Transformations
+}  // namespace Transformations

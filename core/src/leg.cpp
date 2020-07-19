@@ -30,20 +30,16 @@ float Joint::clampToLimts(float angle) const {
 Leg::Leg() {}
 
 Leg::Leg(Dims dims, Joint* joints)
-  : dims_(dims),
-    neutral_pos_{(dims.a + dims.b + dims.c) / 2.0f, 0.0f, 0.0f},
-    step_idx_{0}
-{
+    : dims_(dims), neutral_pos_{(dims.a + dims.b + dims.c) / 2.0f, 0.0f, 0.0f}, step_idx_{0} {
   joints_[JOINT_1] = joints[0];
   joints_[JOINT_2] = joints[1];
   joints_[JOINT_3] = joints[2];
   updateFootPosition();
 }
 
-
 /**
  * @details
- * 
+ *
  * @param angles The joint angles to check
  * @param pos The foot position to check against
  * @return true ff matching
@@ -56,7 +52,7 @@ bool Leg::validateJointAngles(const JointAngles& angles, const Vector3& pos) {
 
 /**
  * @details
- * 
+ *
  * @param pos Required foot position
  * @param[out] angles Array of joint angles to store the results
  * @return size_t Number of valid results
@@ -98,7 +94,8 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
   } else {
     ha = pos.y() / sin_theta_1 - dims_.a;
   }
-  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) / (2 * dims_.b * dims_.c);
+  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) /
+             (2 * dims_.b * dims_.c);
 
   if (clamp(ka, -1.0f, 1.0f)) {
     angles[0].theta_3 = acos(ka);
@@ -163,10 +160,11 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
  * @details
  * To avoid choosing an technically correct but undesirable set of joint angles while walking,
  *  this version of inverse kinematics restricts joint 3 to being negative.
- * 
+ *
  * A similar effect could be achieved through setting the appropriate joint limits but
- *  hopefully this approach allows a bit more flexibility and the option to use IK options elsewhere if required
- * 
+ *  hopefully this approach allows a bit more flexibility and the option to use IK options elsewhere
+ * if required
+ *
  * @param pos Required foot position
  * @param[out] result_angles Joint angles to store the results
  * @return size_t Number of valid results (0 or 1)
@@ -180,7 +178,7 @@ size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_ang
   if (joints_[JOINT_1].isWithinLimits(th1)) {
     th1 = joints_[JOINT_1].clampToLimts(th1);
   } else {
-      return 0;
+    return 0;
   }
 
   // ******* JOINT 3 *******
@@ -190,19 +188,18 @@ size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_ang
   } else {
     ha = pos.y() / sin(th1) - dims_.a;
   }
-  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) / (2 * dims_.b * dims_.c);
+  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) /
+             (2 * dims_.b * dims_.c);
   if (clamp(ka, -1.0f, 1.0f)) {
-    th3 = -acos(ka); // acos result always positive (between 0 and pi)
-                     // but the negative version also valid
-                     // and for walking, we want to option where J3 is negative
+    th3 = -acos(ka);  // acos result always positive (between 0 and pi)
+                      // but the negative version also valid
+                      // and for walking, we want to option where J3 is negative
     if (joints_[JOINT_3].isWithinLimits(th3)) {
-        th3 = joints_[JOINT_3].clampToLimts(th3);
-    }
-    else {
+      th3 = joints_[JOINT_3].clampToLimts(th3);
+    } else {
       return 0;
     }
-  }
-  else {
+  } else {
     return 0;
   }
 
@@ -215,25 +212,25 @@ size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_ang
     th2 = joints_[JOINT_2].clampToLimts(th2);
   }
 
-  JointAngles tmp {th1, th2, th3};
+  JointAngles tmp{th1, th2, th3};
   if (!validateJointAngles(tmp, pos)) {
     return 0;
   }
 
   result_angles = tmp;
-  return 1; // max 1 result
+  return 1;  // max 1 result
 }
 
 /**
  * @details
- * 
+ *
  * Wrapper for IK which choses the appropriate IK function based on the selected IKMode.
  * May also apply selection logic if multiple angle options available.
- * 
+ *
  * Resulting angles are stored in staged_angles_
- * 
+ *
  * @param pos Required foot position
- * @param ik_mode 
+ * @param ik_mode
  * @return true if valid angles were found
  */
 bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
@@ -247,21 +244,19 @@ bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
     } else {
       return false;
     }
-  }
-  else if (ik_mode == IKMode::WALK) {
+  } else if (ik_mode == IKMode::WALK) {
     return calculateJointAnglesWalk(pos, staged_angles_);
-  }
-  else {
+  } else {
     return false;
   }
 }
 
 /**
- * @details 
- * 
+ * @details
+ *
  * @param joint_angles Angles to test
  * @return true if all joints within their respective joint limits
- * @return false 
+ * @return false
  */
 bool Leg::jointsWithinLimits(const JointAngles& joint_angles) const {
   return (joints_[JOINT_1].isWithinLimits(joint_angles.theta_1) &&
@@ -272,13 +267,14 @@ bool Leg::jointsWithinLimits(const JointAngles& joint_angles) const {
 /**
  * @details
  * Forward kinematics on joint angles to find the associated foot position.
- * 
+ *
  * @param angles Joint angles to calculate position for
  * @param[out] pos Calculated foot position
  * @return true always TODO make void or add checks
  */
 bool Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
-  float h = dims_.a + dims_.b * cos(angles.theta_2) + dims_.c * cos(angles.theta_2 + angles.theta_3);
+  float h =
+      dims_.a + dims_.b * cos(angles.theta_2) + dims_.c * cos(angles.theta_2 + angles.theta_3);
   pos.x() = h * cos(angles.theta_1);
   pos.y() = h * sin(angles.theta_1);
   pos.z() = dims_.b * sin(angles.theta_2) + dims_.c * sin(angles.theta_2 + angles.theta_3);
@@ -287,20 +283,18 @@ bool Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
 
 /**
  * @details
- * 
+ *
  * @return true always
  */
-bool Leg::updateFootPosition() {
-  return calculateFootPosition(getJointAngles(), current_pos_);
-}
+bool Leg::updateFootPosition() { return calculateFootPosition(getJointAngles(), current_pos_); }
 
 /**
  * @details
  * Sets the leg joint angles and recalculates the current foot position.
- * 
+ *
  * No checks on input.
- * 
- * @param angles 
+ *
+ * @param angles
  * @return true always
  */
 bool Leg::setJointAngles(const JointAngles& angles) {
@@ -311,34 +305,30 @@ bool Leg::setJointAngles(const JointAngles& angles) {
   return true;
 }
 
-Leg::JointAngles Leg::getStagedAngles() const {
-  return staged_angles_;
-}
+Leg::JointAngles Leg::getStagedAngles() const { return staged_angles_; }
 
 bool Leg::setStagedAngles(const JointAngles& angles) {
   staged_angles_ = angles;
   return true;
 }
 
-
-bool Leg::applyStagedAngles() {
-  return setJointAngles(staged_angles_);
-}
-
+bool Leg::applyStagedAngles() { return setJointAngles(staged_angles_); }
 
 /**
  * @details
- * Given an array of 2 joint angle options, return the index of the option closest to the reference angles provided.
- * 
- * Currently 'closest' is based solely on joint 2. Only expected to have to deal with relatively small differences in joint angles.
- * 
+ * Given an array of 2 joint angle options, return the index of the option closest to the reference
+ * angles provided.
+ *
+ * Currently 'closest' is based solely on joint 2. Only expected to have to deal with relatively
+ * small differences in joint angles.
+ *
  * @param angle_options Array of angles to choose from (maximum 2)
  * @param num_valid Number of valid angles in array
  * @param ref_angles Reference angles to compare to
  * @return size_t Index of the angle_options closest to the ref_angles angles
  */
 size_t Leg::chooseJointAnglesNearest(const JointAngles angle_options[2], size_t num_valid,
-                                   const JointAngles& ref_angles) const {
+                                     const JointAngles& ref_angles) const {
   if (num_valid == 1) {
     return 0;
   } else {
@@ -364,15 +354,16 @@ Vector3 Leg::getRaisedPosition() const { return raised_pos_; }
 
 /**
  * @details
- * Calculate a trajectory for the leg in joint space. The trajectory will take the leg from the ground, 
- * move forward and up towards target_angles_raised_ 
+ * Calculate a trajectory for the leg in joint space. The trajectory will take the leg from the
+ * ground,
+ * move forward and up towards target_angles_raised_
  * and then forward and down back to target_angles_ (on the ground)
- * 
+ *
  * This function will always be called when the foot is first about to be raised.
- * 
- * It may also be called during the trajectory if the targets have changed 
+ *
+ * It may also be called during the trajectory if the targets have changed
  * (in the leg frame - may still be stationary in a more global frame),
- * in which case the trajectory will be recalculated from the current position 
+ * in which case the trajectory will be recalculated from the current position
  * (which may not lie on the old trajectory anymore).
  */
 void Leg::calculateTrajectory() {
@@ -380,43 +371,33 @@ void Leg::calculateTrajectory() {
 
   // the foot must go up
   // (remember, current_step_duration_ always even)
-  float steps_up = (float)fmax((current_step_duration_/2) - step_idx_, 0);
+  float steps_up = (float)fmax((current_step_duration_ / 2) - step_idx_, 0);
 
   // if (steps_up > 0) {
-    inc_up_angles_.theta_1 = (step_apex_angles_.theta_1 - current_joint_angles.theta_1) /
-                              steps_up;
-    inc_up_angles_.theta_2 = (step_apex_angles_.theta_2 - current_joint_angles.theta_2) /
-                            steps_up;
-    inc_up_angles_.theta_3 = (step_apex_angles_.theta_3 - current_joint_angles.theta_3) /
-                            steps_up;
+  inc_up_angles_.theta_1 = (step_apex_angles_.theta_1 - current_joint_angles.theta_1) / steps_up;
+  inc_up_angles_.theta_2 = (step_apex_angles_.theta_2 - current_joint_angles.theta_2) / steps_up;
+  inc_up_angles_.theta_3 = (step_apex_angles_.theta_3 - current_joint_angles.theta_3) / steps_up;
   // } // else { doesn't matter }
 
   // and then down
-  float steps_down = (float)fmin((current_step_duration_/2), current_step_duration_ - step_idx_);
-  if (step_idx_ < current_step_duration_/2) {
+  float steps_down = (float)fmin((current_step_duration_ / 2), current_step_duration_ - step_idx_);
+  if (step_idx_ < current_step_duration_ / 2) {
     // still moving up
-    inc_down_angles_.theta_1 = (target_angles_.theta_1 - step_apex_angles_.theta_1) /
-                              steps_down;
-    inc_down_angles_.theta_2 = (target_angles_.theta_2 - step_apex_angles_.theta_2) /
-                              steps_down;
-    inc_down_angles_.theta_3 = (target_angles_.theta_3 - step_apex_angles_.theta_3) /
-                              steps_down;
-  }
-  else {
+    inc_down_angles_.theta_1 = (target_angles_.theta_1 - step_apex_angles_.theta_1) / steps_down;
+    inc_down_angles_.theta_2 = (target_angles_.theta_2 - step_apex_angles_.theta_2) / steps_down;
+    inc_down_angles_.theta_3 = (target_angles_.theta_3 - step_apex_angles_.theta_3) / steps_down;
+  } else {
     // now moving down
-    inc_down_angles_.theta_1 = (target_angles_.theta_1 - current_joint_angles.theta_1) /
-                              steps_down;
-    inc_down_angles_.theta_2 = (target_angles_.theta_2 - current_joint_angles.theta_2) /
-                            steps_down;
-    inc_down_angles_.theta_3 = (target_angles_.theta_3 - current_joint_angles.theta_3) /
-                            steps_down;
+    inc_down_angles_.theta_1 = (target_angles_.theta_1 - current_joint_angles.theta_1) / steps_down;
+    inc_down_angles_.theta_2 = (target_angles_.theta_2 - current_joint_angles.theta_2) / steps_down;
+    inc_down_angles_.theta_3 = (target_angles_.theta_3 - current_joint_angles.theta_3) / steps_down;
   }
 }
 
 /**
  * @details
  * Apply the pre-calculated joint increments to the current joint angles.
- * 
+ *
  * If the trajectory is at the midpoint or end, set the joint angles directly to those values
  *  to avoid any rounding errors.
  */
@@ -430,8 +411,7 @@ void Leg::incrementLeg() {
     current_joint_angles.theta_1 = step_apex_angles_.theta_1;
     current_joint_angles.theta_2 = step_apex_angles_.theta_2;
     current_joint_angles.theta_3 = step_apex_angles_.theta_3;
-  }
-  else if (step_idx_ < (current_step_duration_ / 2)) {
+  } else if (step_idx_ < (current_step_duration_ / 2)) {
     current_joint_angles.theta_1 += inc_up_angles_.theta_1;
     current_joint_angles.theta_2 += inc_up_angles_.theta_2;
     current_joint_angles.theta_3 += inc_up_angles_.theta_3;
@@ -443,16 +423,17 @@ void Leg::incrementLeg() {
   setJointAngles(current_joint_angles);
 }
 
-
 /**
  * @details
  * To be run for every period the leg is raised. Can be called if not raised - will not do anything.
- * 
- * When foot has just entered raised state, or the target positions have been updated, 
- *  call IK routine to find the associated joint angles, then calculate the trajectory between these joint positions.
+ *
+ * When foot has just entered raised state, or the target positions have been updated,
+ *  call IK routine to find the associated joint angles, then calculate the trajectory between these
+ * joint positions.
  * Then update the leg's joint angles.
- * 
- * @return true if any required joint angles were calculated successfully and the leg joint angles were updated
+ *
+ * @return true if any required joint angles were calculated successfully and the leg joint angles
+ * were updated
  */
 bool Leg::stepUpdate() {
   // TODO check if foot air time has changed, may need to change speed of leg
@@ -462,7 +443,7 @@ bool Leg::stepUpdate() {
 
   // if leg has only just transitioned to RAISED then need to calculate trajectory
   if (target_updated_ && prev_state_ == State::ON_GROUND) {
-    step_idx_ = 0;                                 // reset
+    step_idx_ = 0;                                // reset
     current_step_duration_ = new_step_duration_;  // save for later when doing actual movement
   }
 
@@ -470,16 +451,14 @@ bool Leg::stepUpdate() {
     if (!calculateJointAngles(target_pos_, IKMode::WALK)) {
       std::cout << "Could not calculate joint angles at requested foot target position\n";
       return false;
-    }
-    else {
-      target_angles_  = getStagedAngles();
+    } else {
+      target_angles_ = getStagedAngles();
     }
 
     if (!calculateJointAngles(raised_pos_, IKMode::WALK)) {
       std::cout << "Could not calculate joint angles at requested raise limit position\n";
       return false;
-    }
-    else {
+    } else {
       step_apex_angles_ = getStagedAngles();
     }
     calculateTrajectory();
@@ -494,10 +473,11 @@ bool Leg::stepUpdate() {
 /**
  * @details
  * Will change status from raised to on ground if it has reached the end of its raised trajectory.
- * 
- * Will change status from on groun to raised if a raise is requested by input param, and it's not already at its target position.
+ *
+ * Will change status from on groun to raised if a raise is requested by input param, and it's not
+ * already at its target position.
  *  If it is already at its target it will not raise even if requested.
- * 
+ *
  * @param raise indicates if the leg should raise if possible
  * @return true if the leg changes to raised, or skipped raising
  */
@@ -522,10 +502,10 @@ bool Leg::updateStatus(const bool raise) {
 /**
  * @details
  * Update the leg raise trajectory target positions, and flag that they've been updated.
- * 
+ *
  * @param target_pos Target position to place the foot on the ground
  * @param raised_pos Apex of the leg raise movement
- * @param foot_air_time 
+ * @param foot_air_time
  */
 void Leg::updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
                         size_t foot_air_time) {
@@ -547,6 +527,4 @@ bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
   return result;
 }
 
-size_t Leg::getStepIdx() const {
-  return step_idx_;
-}
+size_t Leg::getStepIdx() const { return step_idx_; }

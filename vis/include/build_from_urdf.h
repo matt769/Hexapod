@@ -6,7 +6,6 @@
 namespace BuildFromURDF {
 
 Hexapod buildFromURDF();
-
 }
 
 #endif

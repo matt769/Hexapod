@@ -7,15 +7,13 @@
 
 using namespace Transformations;
 
-Receiver::Receiver(const ros::NodeHandle& nh, Hexapod* hexapod)
-    : nh_(nh), hexapod_(hexapod) {
-
-    input_sub_ = nh_.subscribe("hexapod/command_key", 10, &Receiver::callbackProcessKeyPress, this);        
+Receiver::Receiver(const ros::NodeHandle& nh, Hexapod* hexapod) : nh_(nh), hexapod_(hexapod) {
+  input_sub_ = nh_.subscribe("hexapod/command_key", 10, &Receiver::callbackProcessKeyPress, this);
 }
 
 void Receiver::update() {
-    hexapod_->setWalk(current_walk, current_turn);
-    // everything else is set within the callback itself
+  hexapod_->setWalk(current_walk, current_turn);
+  // everything else is set within the callback itself
 }
 
 void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
@@ -73,7 +71,7 @@ void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
       hexapod_->changeBody(body_change);
       break;
     case 98:
-      hexapod_->setBody(body_change); // TODO implement resetBody()
+      hexapod_->setBody(body_change);  // TODO implement resetBody()
       break;
 
     case 105:
@@ -101,7 +99,7 @@ void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
       hexapod_->changeBody(body_change);
       break;
     case 44:
-      hexapod_->setBody(body_change); // TODO implement resetBody()
+      hexapod_->setBody(body_change);  // TODO implement resetBody()
       break;
 
     case 49:
@@ -149,14 +147,14 @@ void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
       hexapod_->resetLegRaiseHeight();
       break;
 
-    case 127: // backspace
+    case 127:  // backspace
       hexapod_->setMoveMode(Hexapod::MoveMode::STANDARD);
       break;
-    case 10: // enter
+    case 10:  // enter
       hexapod_->setMoveMode(Hexapod::MoveMode::HEADLESS);
       break;
 
-    case 96: // backtick
+    case 96:  // backtick
       if (hexapod_->getState() == Hexapod::State::UNSUPPORTED) {
         hexapod_->setLegsToGround();
       }
@@ -165,9 +163,7 @@ void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
       }
       break;
 
-
     default:
       std::cout << "Unrecognised key\n";
   }
-
 }
