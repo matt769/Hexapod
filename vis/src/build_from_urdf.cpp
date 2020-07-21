@@ -53,8 +53,8 @@ Hexapod buildFromURDF() {
   joints[2] = Joint(-150.0f * M_PI / 10.0, 150.0f * M_PI / 180.0, M_PI / 4.0);
 
   // put it into arrays required for Hexapod constructor
-  Transform leg_tfs_for_build[num_legs];
-  Leg legs[num_legs];
+  Transform* leg_tfs_for_build = new Transform[num_legs];
+  Leg* legs = new Leg[num_legs];
   std::vector<std::string> joint_names;
   size_t idx = 0;
   for (const auto& leg_info : legs_ordered) {
@@ -86,7 +86,7 @@ Hexapod buildFromURDF() {
     std::cout << "Based on urdf joint: " << joint_names.at(idx) << '\n';
   }
 
-  return Hexapod(num_legs, hex_dims, leg_tfs_for_build, legs);
+  return Hexapod(num_legs, hex_dims, std::move(leg_tfs_for_build), std::move(legs));
 }
 
 }  // namespace

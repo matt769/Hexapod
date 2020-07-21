@@ -39,8 +39,8 @@ Hexapod::Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg,
   tf_base_to_new_base_ = Transform();
   tf_base_to_body_target_ = Transform();
 
-  legs_ = new Leg[num_legs_];
-  tf_body_to_leg_ = new Transform[num_legs_];
+  legs_ = legs;
+  tf_body_to_leg_ = tf_body_to_leg;
 
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     tf_body_to_leg_[leg_idx] = tf_body_to_leg[leg_idx];
@@ -879,7 +879,7 @@ Hexapod buildDefaultHexapod() {
 
   // Make an array of legs and copy the one we just made into all elements
   constexpr size_t num_legs = 6;
-  Leg legs[num_legs];
+  Leg* legs = new Leg[num_legs];
   for (size_t leg_idx = 0; leg_idx < num_legs; leg_idx++) {
     legs[leg_idx] = leg;
   }
@@ -892,7 +892,7 @@ Hexapod buildDefaultHexapod() {
 
   // Transformations between body frame and leg base frames
   // LHS leg base frames need to be rotated by 90, RHS by -90
-  Transform tf_body_to_leg[num_legs];
+  Transform* tf_body_to_leg = new Transform[num_legs];
 
   Vector3 front((hex_dims.length / 2.0f) * 0.6666666f, 0.0f, 0.0f);
   Vector3 back = -front;
@@ -938,7 +938,7 @@ Hexapod buildDefaultHexapod2() {
 
   // Make an array of legs and copy the one we just made into all elements
   constexpr size_t num_legs = 6;
-  Leg legs[num_legs];
+  Leg* legs = new Leg[num_legs];
   for (size_t leg_idx = 0; leg_idx < num_legs; leg_idx++) {
     legs[leg_idx] = leg;
   }
@@ -951,7 +951,7 @@ Hexapod buildDefaultHexapod2() {
 
   // Transformations between body frame and leg base frames
   // LHS leg base frames need to be rotated by 90, RHS by -90
-  Transform tf_body_to_leg[num_legs];
+  Transform* tf_body_to_leg = new Transform[num_legs];
 
   Vector3 front(hex_dims.length / 2.0f, 0.0f, 0.0f);
   Vector3 back = -front;
@@ -997,7 +997,7 @@ Hexapod buildDefaultOctapod() {
 
   // Make an array of legs and copy the one we just made into all elements
   constexpr size_t num_legs = 8;
-  Leg legs[num_legs];
+  Leg* legs = new Leg[num_legs];
   for (size_t leg_idx = 0; leg_idx < num_legs; leg_idx++) {
     legs[leg_idx] = leg;
   }
@@ -1010,7 +1010,7 @@ Hexapod buildDefaultOctapod() {
 
   // Transformations between body frame and leg base frames
   // LHS leg base frames need to be rotated by 90, RHS by -90
-  Transform tf_body_to_leg[num_legs];
+  Transform* tf_body_to_leg = new Transform[num_legs];
 
   Vector3 front((hex_dims.length / 2.0f), 0.0f, 0.0f);
   Vector3 front_mid((hex_dims.length / 2.0f) - (length / (num_legs / 2 - 1)), 0.0f, 0.0f);
