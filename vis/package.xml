@@ -10,10 +10,12 @@
   <build_depend>roslaunch</build_depend>
   <build_depend>hexapod_core</build_depend>
   <exec_depend>joint_state_publisher</exec_depend>
-  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>robot_state_publisher_gui</exec_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>xacro</exec_depend>
-  <exec_depend>hexapod_core</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
   <export>
   </export>
 </package>

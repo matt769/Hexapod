@@ -25,7 +25,7 @@ catkin build
 ## Run
 In `catkin_ws`
 ```sh
-source /opt/ros/kinetic/setup.bash  # if not done already
+source /opt/ros/melodic/setup.bash  # if not done already
 source devel/setup.bash
 roslaunch hexapod control.launch
 ```
@@ -210,3 +210,6 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - Foot sensors to determine when a foot has actually touched the ground. This would help to allow handling of non-flat terrain.
  - IMU to determine actual body pose.
  - Build it!
+
+### Bits and pieces
+ - Does base_to_body floating joint really belong in the urdf? Probably not 

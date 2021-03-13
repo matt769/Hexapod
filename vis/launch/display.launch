@@ -8,7 +8,7 @@
   <node name="tf_base_to_body" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 base_link body_link 1" />
   <node name="tf_world_to_base" pkg="tf" type="static_transform_publisher" args="0 0 0.4 0 0 0 world base_link 1" />
   <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
 </launch>
