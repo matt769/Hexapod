@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <robot name="hexapod" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:property name="pi" value="3.1415926535897931" />
   <xacro:property name="length" value="1.8" />
   <xacro:property name="width" value="1.0" />
   <xacro:property name="depth" value="${width/5.0}" />
