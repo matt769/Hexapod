@@ -14,11 +14,15 @@ catkin_package(
     LIBRARIES hexapod_core
 )
 
-include_directories(include)
-
 add_library(${PROJECT_NAME} STATIC
   src/hexapod.cpp
   src/leg.cpp
   src/kinematics_support.cpp
   src/transformations.cpp
 )
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+
+add_executable(${PROJECT_NAME}_example
+        src/example.cpp)
+target_include_directories(${PROJECT_NAME}_example PRIVATE include)
+target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
