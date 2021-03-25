@@ -7,8 +7,12 @@
 
 #include "transformations.h"
 
+#ifdef __AVR__
+#include <math.h>
+#else
 #include <cstddef>
 #include <cmath>
+#endif
 
 namespace Tfm = Transformations;
 

@@ -1,7 +1,10 @@
 #ifndef TRANSFORMATION_MATRIX_H
 #define TRANSFORMATION_MATRIX_H
 
+#ifdef __AVR__
+#else
 #include <stdint.h>
+#endif
 
 namespace Transformations {
 

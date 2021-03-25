@@ -3,9 +3,13 @@
 #include "kinematics_support.h"
 #include "transformations.h"
 
+#ifdef __AVR__
+#include <math.h>
+#else
 #include <cstddef>
 #include <cmath>
 #include <iostream>
+#endif
 
 using namespace KinematicsSupport;
 using namespace Transformations;

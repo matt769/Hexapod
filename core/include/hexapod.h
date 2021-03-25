@@ -4,8 +4,13 @@
 #include "leg.h"
 #include "transformations.h"
 
+#ifdef __AVR__
+#include <math.h>
+#else
 #include <cstddef>
 #include <cmath>
+#include <iostream>
+#endif
 
 namespace Tfm = Transformations;
 

@@ -1,7 +1,10 @@
 #include "transformations.h"
 
+#ifdef __AVR__
+#else
 #include <stdint.h>
 #include <cmath>
+#endif
 
 namespace Transformations {
 
