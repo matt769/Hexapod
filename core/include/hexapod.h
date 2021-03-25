@@ -28,7 +28,7 @@ class Hexapod {
   };
   /** @brief The hexapod body */
   Dims dims_;
-  size_t num_legs_;
+  uint8_t num_legs_;
   /** @brief Heading moves with body frame (Standard) or stays fixed (Headless) */
   enum class MoveMode { STANDARD, HEADLESS };
   /** @brief Walking is main state, others are used in start up routine. Unsupported implies legs do
@@ -39,9 +39,9 @@ class Hexapod {
   /** @brief During start up, hexapod will rise to this height before entering walking state */
   static constexpr float walk_height_default_ = 0.4;
   /** @brief Number of periods leg will be in air if raised while walk speed is zero */
-  static constexpr size_t foot_air_time_default_ = 20;
+  static constexpr uint16_t foot_air_time_default_ = 20;
   /** @brief Minimum time foot can be in air during a raise i.e. fastest raise movement */
-  static constexpr size_t foot_air_time_min_ = 6;
+  static constexpr uint16_t foot_air_time_min_ = 6;
   static constexpr float stance_width_min_ = 0.2f;  // TODO REVIEW - maybe this should come from Leg
   static constexpr float stance_width_max_ = 0.9f;  // TODO REVIEW
   static constexpr float stance_width_default_ = 0.6f;
@@ -54,7 +54,7 @@ class Hexapod {
   static constexpr float fgtr_default_ = 0.5f;
 
   /** @brief Construct a new Hexapod object */
-  Hexapod(size_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg, Leg* legs);
+  Hexapod(uint8_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg, Leg* legs);
   ~Hexapod();
   Hexapod(const Hexapod&) = delete;
   Hexapod(Hexapod&&) = default;
@@ -95,7 +95,7 @@ class Hexapod {
   bool riseToWalk();
   State getState() const;
   /** @brief For visualisation */
-  const Leg& getLeg(size_t leg_idx) const;
+  const Leg& getLeg(uint8_t leg_idx) const;
   /** @brief For visualisation */
   const Tfm::Transform& getBaseToBody() const;
   /** @brief For visualisation */
@@ -148,9 +148,9 @@ class Hexapod {
   /** @brief Joint movement increments when in unsupported state. */
   Leg::JointAngles joint_increments_;
   /** @brief Number periods over which unsupported movements. */
-  size_t total_movement_steps_;
+  uint16_t total_movement_steps_;
   /** @brief Current progress of unsupported movements. */
-  size_t current_movement_step_;
+  uint16_t current_movement_step_;
 
   /**
    * @brief Describes a circle of allowed foot movement around the neutral point.
@@ -166,8 +166,8 @@ class Hexapod {
     float dia = 0.4f;
   } allowed_foot_position_;
 
-  size_t current_gait_seq_ = Gait::RIPPLE;
-  size_t gait_current_pos_ = 0;
+  uint8_t current_gait_seq_ = Gait::RIPPLE;
+  uint8_t gait_current_pos_ = 0;
   float stance_width_ = stance_width_default_;
   float leg_lift_height_ = leg_lift_height_default_;
   float foot_ground_travel_ratio_ = fgtr_default_;
@@ -178,29 +178,29 @@ class Hexapod {
   /** @brief Applies the pre-calculated joint angles for all grounded legs. */
   void applyChangesGroundedLegs();
   /** @brief Returns number of legs currently raised. */
-  size_t getNumLegsRaised() const;
+  uint8_t getNumLegsRaised() const;
   /** @brief Includes everything necessary to manage the grounded legs. */
   bool handleGroundedLegs();
   /** @brief Calculates vector induced at neutral position due to movement. */
-  Tfm::Vector3 calculateFootVector(size_t leg_idx) const;
+  Tfm::Vector3 calculateFootVector(uint8_t leg_idx) const;
   /** @brief Includes everything necessary to manage the raised legs. */
   void handleRaisedLegs();
   /** @brief Update status of each leg and request they raise if conditions met. */
   void updateLegs();
   /** @brief Converts a vector in a leg frame to the correspondng vector in the base frame. */
-  Tfm::Vector3 legToBase(size_t leg_idx, const Tfm::Vector3& v) const;
+  Tfm::Vector3 legToBase(uint8_t leg_idx, const Tfm::Vector3& v) const;
   /** @brief Return neutral position for a leg in the base frame. */
-  Tfm::Vector3 getNeutralPosition(size_t leg_idx) const;
+  Tfm::Vector3 getNeutralPosition(uint8_t leg_idx) const;
   /** @brief Return target position for a leg in the base frame. */
-  Tfm::Vector3 getTargetPosition(size_t leg_idx) const;
+  Tfm::Vector3 getTargetPosition(uint8_t leg_idx) const;
   /** @brief Return raised target position for a leg in the base frame. */
-  Tfm::Vector3 getRaisedPosition(size_t leg_idx) const;
+  Tfm::Vector3 getRaisedPosition(uint8_t leg_idx) const;
   /** @brief Update foot targets (if required) for single leg*/
-  void updateFootTarget(size_t leg_idx);
+  void updateFootTarget(uint8_t leg_idx);
   /** @brief Call updateFootTarget for all raised legs */
   void updateFootTargets();
   /** @brief Return foot position in the base frame. */
-  Tfm::Vector3 getFootPosition(size_t leg_idx) const;
+  Tfm::Vector3 getFootPosition(uint8_t leg_idx) const;
   /** @brief Clear all movement targets (walk, turn, body etc). */
   void clearTargets();
   /** @brief Set robot-wide targets to move all legs to specified joint position
@@ -218,9 +218,9 @@ class Hexapod {
   /** @brief To be called after any leg raise event. */
   void advanceGait();
   /** @brief Returns the index of the next leg to be raised. */
-  size_t gaitNextLeg();
+  uint8_t gaitNextLeg();
   /** @brief Returns the maximum number of legs that can be raised during the current gait. */
-  size_t gaitMaxRaised();
+  uint8_t gaitMaxRaised();
 };
 
 /** @brief Returns a Hexapod object consistent with example file hexapod.urdf.xacro */

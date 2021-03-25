@@ -59,9 +59,9 @@ bool Leg::validateJointAngles(const JointAngles& angles, const Vector3& pos) {
  *
  * @param pos Required foot position
  * @param[out] angles Array of joint angles to store the results
- * @return size_t Number of valid results
+ * @return uint8_t Number of valid results
  */
-size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) {
+uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) {
   bool angles_valid[2] = {false, false};  // only used after joint 3 calculated
 
   // ******* JOINT 1 *******
@@ -105,7 +105,7 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
     angles[0].theta_3 = acos(ka);
     angles[1].theta_3 = -angles[0].theta_3;
 
-    for (size_t i = 0; i < 2; i++) {
+    for (uint8_t i = 0; i < 2; i++) {
       angles[i].theta_3 = wrapAngle(angles[i].theta_3);
       if (joints_[JOINT_3].isWithinLimits(angles[i].theta_3)) {
         angles[i].theta_3 = joints_[JOINT_3].clampToLimts(angles[i].theta_3);
@@ -119,7 +119,7 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
 
   // ******* JOINT 2 *******
   // could use law of cosines again if quicker than atan version
-  for (size_t i = 0; i < 2; i++) {
+  for (uint8_t i = 0; i < 2; i++) {
     if (angles_valid[i]) {
       float kb = dims_.b + dims_.c * cos(angles[i].theta_3);
       float kc = dims_.c * sin(angles[i].theta_3);
@@ -146,7 +146,7 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
   }
 
   // clunky
-  size_t num_results = 0;
+  uint8_t num_results = 0;
   if (angles_valid[0]) {
     num_results++;
   }
@@ -171,9 +171,9 @@ size_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) 
  *
  * @param pos Required foot position
  * @param[out] result_angles Joint angles to store the results
- * @return size_t Number of valid results (0 or 1)
+ * @return uint8_t Number of valid results (0 or 1)
  */
-size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_angles) {
+uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_angles) {
   // ******* JOINT 1 *******
   // Does not handle beyond (-90,90) (including boundary)
   float th1, th2, th3;
@@ -240,9 +240,9 @@ size_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_ang
 bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
   if (ik_mode == IKMode::FULL) {
     JointAngles anglesFull[2];
-    size_t num_results = calculateJointAnglesFull(pos, anglesFull);
+    uint8_t num_results = calculateJointAnglesFull(pos, anglesFull);
     if (num_results > 0) {
-      size_t chosen_idx = chooseJointAnglesNearest(anglesFull, num_results, getJointAngles());
+      uint8_t chosen_idx = chooseJointAnglesNearest(anglesFull, num_results, getJointAngles());
       staged_angles_ = anglesFull[chosen_idx];
       return true;
     } else {
@@ -329,9 +329,9 @@ bool Leg::applyStagedAngles() { return setJointAngles(staged_angles_); }
  * @param angle_options Array of angles to choose from (maximum 2)
  * @param num_valid Number of valid angles in array
  * @param ref_angles Reference angles to compare to
- * @return size_t Index of the angle_options closest to the ref_angles angles
+ * @return uint8_t Index of the angle_options closest to the ref_angles angles
  */
-size_t Leg::chooseJointAnglesNearest(const JointAngles angle_options[2], size_t num_valid,
+uint8_t Leg::chooseJointAnglesNearest(const JointAngles angle_options[2], uint8_t num_valid,
                                      const JointAngles& ref_angles) const {
   if (num_valid == 1) {
     return 0;
@@ -512,7 +512,7 @@ bool Leg::updateStatus(const bool raise) {
  * @param foot_air_time
  */
 void Leg::updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
-                        size_t foot_air_time) {
+                        uint16_t foot_air_time) {
   target_pos_ = target_pos;
   raised_pos_ = raised_pos;
   new_step_duration_ = foot_air_time;
@@ -531,4 +531,4 @@ bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
   return result;
 }
 
-size_t Leg::getStepIdx() const { return step_idx_; }
+uint16_t Leg::getStepIdx() const { return step_idx_; }

@@ -127,11 +127,11 @@ class Leg {
   bool updateStatus(bool raise);
   /** @brief Update leg raise trajectory targets */
   void updateTargets(const Tfm::Vector3& target_pos, const Tfm::Vector3& raised_pos,
-                     size_t foot_air_time);
+                     uint16_t foot_air_time);
   /** @brief Initialise leg angles, position and targets */
   bool setStartingAngles(JointAngles starting_angles);
   /** @brief Return step index (progress through a step). 0 if on the ground. */
-  size_t getStepIdx() const;
+  uint16_t getStepIdx() const;
 
  private:
   /** @brief Current foot position relative to the leg base frame */
@@ -149,31 +149,29 @@ class Leg {
   /** @brief Store calculated joint angles (without implementing) */
   JointAngles staged_angles_;
   /** @brief Track leg movement while raised */
-  size_t step_idx_ = 0;
+  uint16_t step_idx_ = 0;
   /** @brief The number of time steps that the leg will spend raised for the current step */
-  size_t current_step_duration_;
+  uint16_t current_step_duration_;
   /** @brief The final position (in leg base frame) of the foot during a step */
   Tfm::Vector3 target_pos_;
   /** @brief The apex position (in leg base frame) of the foot during a step */
   Tfm::Vector3 raised_pos_;
   /** @brief Holds the latest calculated time for the leg step */
-  size_t new_step_duration_;
+  uint16_t new_step_duration_;
   /** @brief Indicates whether target_pos_ or raised_pos_ have been updated */
   bool target_updated_ = false;
   /** @brief Calculate joint angles for a given position (up to 2 solutions) */
-  size_t calculateJointAnglesFull(const Tfm::Vector3& pos, JointAngles angles[2]);
+  uint8_t calculateJointAnglesFull(const Tfm::Vector3& pos, JointAngles angles[2]);
   /** @brief Calculate joint angles for a given position while walking (joint 2 restricted) */
-  size_t calculateJointAnglesWalk(const Tfm::Vector3& pos, JointAngles& angles);
+  uint8_t calculateJointAnglesWalk(const Tfm::Vector3& pos, JointAngles& angles);
   /** @brief Checks whether a given set of joint angles give a specificied foot position */
   bool validateJointAngles(const JointAngles& angles, const Tfm::Vector3& pos);
   /** @brief Updates the foot position member current_pos_ to be consistent with the current joint
    * angles */
   bool updateFootPosition();
   /** @brief Returns the index of the angles closest to the reference angles */
-  size_t chooseJointAnglesNearest(const JointAngles angle_options[2], size_t num_valid,
+  uint8_t chooseJointAnglesNearest(const JointAngles angle_options[2], uint8_t num_valid,
                                   const JointAngles& ref_angles) const;
-  // size_t chooseJointAnglesWalk(const JointAngles angle_options[2], size_t num_valid,
-  //                               const JointAngles& ref_angles) const;
   /** @brief Calculates the requires incremental joint movements for a given current joint position,
    * raised position and target position */
   void calculateTrajectory();
