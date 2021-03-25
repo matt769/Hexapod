@@ -31,9 +31,12 @@ int main() {
   tf_base_to_body_new.R_.setRPYExtr(0.1f, 0.1f, 0.1f);
   hexapod.setBody(tf_base_to_body_new);
 
-  for (int i = 0; i < 10000; i++) {
+  int x = 0;
+  for (int i = 0; i < 1000; i++) {
     hexapod.update();
+    x++;
   }
+  std::cout << x << '\n';
 
 }
 
