@@ -7,7 +7,7 @@
 
 #include "transformations.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <cmath>
 
 namespace Tfm = Transformations;
