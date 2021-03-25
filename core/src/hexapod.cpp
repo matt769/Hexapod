@@ -288,6 +288,7 @@ void Hexapod::updateFootTarget(size_t leg_idx) {
   }
   // if the leg os only just about to become raised then need to calculate targets for first time
   // also do this if the foot is on the ground i.e. target update doesn't relate to a step
+  //  (this allows the leg to respond to changes in e.g. stance width)
   else {
     Vector3 neutral_pos = getNeutralPosition(leg_idx);
     Vector3 raised_pos_in_base = neutral_pos;
