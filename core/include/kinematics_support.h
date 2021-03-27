@@ -3,6 +3,10 @@
 
 #include "transformations.h"
 
+#ifdef __AVR__
+#include <Arduino.h>
+#endif
+
 namespace Tfm = Transformations;
 
 namespace KinematicsSupport {

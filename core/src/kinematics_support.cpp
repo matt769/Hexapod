@@ -3,6 +3,7 @@
 #include "transformations.h"
 
 #ifdef __AVR__
+#include <Arduino.h>
 #else
 #include <cmath>
 #endif

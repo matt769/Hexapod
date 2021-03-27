@@ -1,6 +1,7 @@
 #include "transformations.h"
 
 #ifdef __AVR__
+#include <Arduino.h>
 #else
 #include <stdint.h>
 #include <cmath>

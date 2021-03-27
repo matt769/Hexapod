@@ -4,7 +4,7 @@
 #include "transformations.h"
 
 #ifdef __AVR__
-#include <math.h>
+#include <Arduino.h>
 #else
 #include <cstddef>
 #include <cmath>
@@ -453,14 +453,18 @@ bool Leg::stepUpdate() {
 
   if (target_updated_) {
     if (!calculateJointAngles(target_pos_, IKMode::WALK)) {
+#ifndef __AVR__
       std::cout << "Could not calculate joint angles at requested foot target position\n";
+#endif
       return false;
     } else {
       target_angles_ = getStagedAngles();
     }
 
     if (!calculateJointAngles(raised_pos_, IKMode::WALK)) {
+#ifndef __AVR__
       std::cout << "Could not calculate joint angles at requested raise limit position\n";
+#endif
       return false;
     } else {
       step_apex_angles_ = getStagedAngles();

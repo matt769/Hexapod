@@ -2,6 +2,7 @@
 #define TRANSFORMATION_MATRIX_H
 
 #ifdef __AVR__
+#include <Arduino.h>
 #else
 #include <stdint.h>
 #endif

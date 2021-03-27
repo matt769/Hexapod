@@ -5,7 +5,7 @@
 #include "transformations.h"
 
 #ifdef __AVR__
-#include <math.h>
+#include <Arduino.h>
 #else
 #include <cstddef>
 #include <cmath>
@@ -97,7 +97,9 @@ bool Hexapod::calculateGroundedLegs() {
           (tf_base_to_new_body * tf_body_to_leg_[leg_idx]).inverse() * foot_in_base;
       bool result = legs_[leg_idx].calculateJointAngles(leg_to_foot_new, Leg::IKMode::WALK);
       if (!result) {
+#ifndef __AVR__
         std::cout << "Unable to find IK solution for all legs.\n";
+#endif
         return false;
       }
     }
@@ -222,7 +224,9 @@ bool Hexapod::handleGroundedLegs() {
   } else {
     tf_base_to_body_target_ = tf_base_to_body_;  // use current body position in further
                                                  // calculations since we haven't moved it
+#ifndef __AVR__
     std::cout << "Unable to find IK solution for all grounded legs.\n";
+#endif
   }
   return ik_result;
 }
@@ -254,7 +258,9 @@ void Hexapod::updateFootTarget(uint8_t leg_idx) {
     // max speed if travel full allowed distance in the minimum allowed time
     float max_v = allowed_foot_position_.dia / (float)min_foot_ground_time;
     if (speed > max_v) {
+#ifndef __AVR__
       std::cout << "Speed over limit. Capped to " << max_v << '\n';
+#endif
       speed = max_v;
     }
 
@@ -613,7 +619,9 @@ bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
 
   // check that targets are achievable
   if (!legs_[0].jointsWithinLimits(joint_targets)) {
+#ifndef __AVR__
     std::cout << "Requested movement not achievable\n";
+#endif
     return false;
   }
 
@@ -758,7 +766,9 @@ void Hexapod::handleStateChange() {
     }
     if (ready) {
       state_ = requested_state_;
+#ifndef __AVR__
       std::cout << "State changed to: STANDING\n";
+#endif
     }
   }
 
@@ -767,20 +777,26 @@ void Hexapod::handleStateChange() {
   if (state_ == State::STANDING && requested_state_ == State::WALKING &&
       compareFloat(height_, walk_height_default_, 0.0001f)) {
     state_ = requested_state_;
+#ifndef __AVR__
     std::cout << "State changed to: WALKING\n";
+#endif
   }
 
   // add some conditions for going back
   // will need to ensure that legs are allowed to finish current step
   if (state_ == State::WALKING && requested_state_ == State::STANDING && false) {
     state_ = requested_state_;
+#ifndef __AVR__
     std::cout << "State changed to: STANDING\n";
+#endif
   }
 
   // add some conditions for going back
   if (state_ == State::STANDING && requested_state_ == State::UNSUPPORTED && false) {
     state_ = requested_state_;
+#ifndef __AVR__
     std::cout << "State changed to: UNSUPPORTED\n";
+#endif
   }
 }
 
