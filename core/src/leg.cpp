@@ -375,7 +375,7 @@ void Leg::calculateTrajectory() {
 
   // the foot must go up
   // (remember, current_step_duration_ always even)
-  float steps_up = (float)fmax((current_step_duration_ / 2) - step_idx_, 0);
+  float steps_up = static_cast<float>(fmax((current_step_duration_ / 2) - step_idx_, 0));
 
   // if (steps_up > 0) {
   inc_up_angles_.theta_1 = (step_apex_angles_.theta_1 - current_joint_angles.theta_1) / steps_up;
@@ -384,7 +384,7 @@ void Leg::calculateTrajectory() {
   // } // else { doesn't matter }
 
   // and then down
-  float steps_down = (float)fmin((current_step_duration_ / 2), current_step_duration_ - step_idx_);
+  float steps_down = static_cast<float>(fmin((current_step_duration_ / 2), current_step_duration_ - step_idx_));
   if (step_idx_ < current_step_duration_ / 2) {
     // still moving up
     inc_down_angles_.theta_1 = (target_angles_.theta_1 - step_apex_angles_.theta_1) / steps_down;

@@ -256,7 +256,7 @@ void Hexapod::updateFootTarget(uint8_t leg_idx) {
     // Check desired speed within limits and cap it if not
     uint16_t min_foot_ground_time = foot_air_time_min_ * (num_legs_ - gaitMaxRaised());
     // max speed if travel full allowed distance in the minimum allowed time
-    float max_v = allowed_foot_position_.dia / (float)min_foot_ground_time;
+    float max_v = allowed_foot_position_.dia / static_cast<float>(min_foot_ground_time);
     if (speed > max_v) {
 #ifndef __AVR__
       std::cout << "Speed over limit. Capped to " << max_v << '\n';
@@ -269,7 +269,7 @@ void Hexapod::updateFootTarget(uint8_t leg_idx) {
         allowed_foot_position_.dia * foot_ground_travel_ratio_;  // stride length
     float foot_ground_time_fl = foot_ground_distance / speed;
     // and in the air - make sure it's even (round up if not)
-    float foot_air_time_fl = foot_ground_time_fl / (float)(num_legs_ - gaitMaxRaised());
+    float foot_air_time_fl = foot_ground_time_fl / static_cast<float>(num_legs_ - gaitMaxRaised());
     foot_air_time = (uint16_t)ceilf(foot_air_time_fl);
     if (foot_air_time % 2 == 1) {
       foot_air_time += 1;
@@ -307,7 +307,7 @@ void Hexapod::updateFootTarget(uint8_t leg_idx) {
     // HACK add 2 (times num feet on ground) to account for a few steps overhead in changing state
     // that means feet are actually on the ground longer than calculated
     const uint16_t foot_ground_time = 2 + foot_air_time * (num_legs_ - gaitMaxRaised());
-    const float half_distance_to_travel = ((float)foot_ground_time * speed) / 2.0f;
+    const float half_distance_to_travel = (static_cast<float>(foot_ground_time) * speed) / 2.0f;
     Vector3 target_pos_in_base = neutral_pos + half_distance_to_travel * step_unit;
     // transform the step vector from base frame to leg base
     // can ignore the new base to base stuff since we only care about the relative position to the
@@ -638,9 +638,9 @@ bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
   Leg::JointAngles angle_range{joint_targets_.theta_1 - current_angles.theta_1,
                                joint_targets_.theta_2 - current_angles.theta_2,
                                joint_targets_.theta_3 - current_angles.theta_3};
-  joint_increments_ = Leg::JointAngles{angle_range.theta_1 / (float)total_movement_steps_,
-                                       angle_range.theta_2 / (float)total_movement_steps_,
-                                       angle_range.theta_3 / (float)total_movement_steps_};
+  joint_increments_ = Leg::JointAngles{angle_range.theta_1 / static_cast<float>(total_movement_steps_),
+                                       angle_range.theta_2 / static_cast<float>(total_movement_steps_),
+                                       angle_range.theta_3 / static_cast<float>(total_movement_steps_)};
   // TODO should this stuff be stored in Leg rather than hexapod
   // I think probably yes but for now will stay here
   return true;
