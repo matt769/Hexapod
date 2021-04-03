@@ -782,7 +782,7 @@ void Hexapod::handleStateChange() {
 #endif
   }
 
-  // add some conditions for going back
+  // TODO add some conditions for going back
   // will need to ensure that legs are allowed to finish current step
   if (state_ == State::WALKING && requested_state_ == State::STANDING && false) {
     state_ = requested_state_;
@@ -791,13 +791,20 @@ void Hexapod::handleStateChange() {
 #endif
   }
 
-  // add some conditions for going back
+  // TODO add some conditions for going back
   if (state_ == State::STANDING && requested_state_ == State::UNSUPPORTED && false) {
     state_ = requested_state_;
 #ifndef __AVR__
     std::cout << "State changed to: UNSUPPORTED\n";
 #endif
   }
+
+  // immediately transition - stop all other movement
+  // note that all other state changes so far were triggered from internal changes - this one will be external
+  if (state_ != State::FULL_MANUAL && requested_state_ == State::FULL_MANUAL) {
+    state_ = State::FULL_MANUAL;
+  }
+  // TODO need sensible way to go back
 }
 
 Hexapod::State Hexapod::getState() const { return state_; }
