@@ -4,3 +4,5 @@ core/doxygen
 !core/doxygen/Doxyfile
 
 .idea
+cmake-build-debug
+cmake-build-release
