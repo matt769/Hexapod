@@ -3,11 +3,18 @@
 //
 
 #include <iostream>
+#include <ostream>
 
 #include "hexapod.h"
 #include "transformations.h"
 
 using namespace Transformations;
+
+std::ostream& operator<<(std::ostream& os, const Vector3& v) {
+  os << v.x() << ' '  << v.y() << ' ' << v.z();
+  return os;
+}
+
 
 int main() {
   Hexapod hexapod = buildDefaultHexapod();
@@ -47,10 +54,20 @@ int main() {
     joint_array[ja_idx++] = lja.theta_2;
     joint_array[ja_idx++] = lja.theta_3;
   }
-  for (uint8_t idx = 0; idx < 18; idx++) {
-    std::cout << joint_array[idx] << '\n';
-  }
+//  for (uint8_t idx = 0; idx < 18; idx++) {
+//    std::cout << joint_array[idx] << '\n';
+//  }
 
+  // see if we can test the manual mode
+  hexapod.setFullManualControl(true);
+  hexapod.update();
+  std::cout << static_cast<int>(hexapod.getState()) << '\n';
+  std::cout << hexapod.getManualControlLegIdx() << '\n';
+  std::cout << hexapod.getLeg(0).getFootPosition() << '\n';
+  hexapod.manualMoveFoot(Vector3{0.05, 0.05, 0.05});
+  std::cout << hexapod.getLeg(0).getFootPosition() << '\n';
+  hexapod.update();
+  std::cout << hexapod.getLeg(0).getFootPosition() << '\n';
 
 }
 
