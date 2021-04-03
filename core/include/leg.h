@@ -70,7 +70,7 @@ class Leg {
    * Also known as base, hip and knee joints
    * @see joints_
    */
-  enum { JOINT_1 = 0, JOINT_2, JOINT_3, NUM_JOINTS };
+  enum { JOINT_1 = 0, JOINT_2, JOINT_3, NUM_JOINTS }; // TODO name this?
   /** @brief Leg state */
   enum class State { ON_GROUND, RAISED };
   /** @brief Inverse kinematics mode
@@ -104,7 +104,7 @@ class Leg {
   /** @brief Return staged angles */
   JointAngles getStagedAngles() const;
   /** @brief Sets staged angles */
-  bool setStagedAngles(const JointAngles& angles);
+  bool setStagedAngles(const JointAngles& angles); // TODO seems redundant, should remove
   /** @brief Sets all leg joints */
   bool applyStagedAngles();
   /** @brief Returns the current foot position in the leg frame */

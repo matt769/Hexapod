@@ -442,12 +442,15 @@ bool Hexapod::update() {
     updateMoveLegs();
   } else if (state_ == State::STANDING) {
     handleGroundedLegs();
-  } else {
+  } else if (state_ == State::WALKING) {
     handleGroundedLegs();
     updateFootTargets();  // Update foot targets if required for other non-raising legs
     handleRaisedLegs();   // We can keep moving the raised legs even if we couldn't move the ones on
                           // the ground
     updateLegs();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
+  } else {
+    // state_ == State::FULL_MANUAL
+    // The legs have already been modified directly though the manualMoveFoot and manualChangeJoint functions
   }
 
   clearTargets();
@@ -816,6 +819,67 @@ const Tfm::Transform& Hexapod::getBaseToBody() const { return tf_base_to_body_; 
 const Tfm::Transform& Hexapod::getBaseMovement() const { return tf_base_movement_; }
 
 float Hexapod::getHeight() const { return height_; }
+
+void Hexapod::setFullManualControl(const bool control_on) {
+  if (state_ != State::FULL_MANUAL && control_on) {
+    requested_state_ = State::FULL_MANUAL;
+    manual_control_type_ = ManualControlType::SINGLE_LEG; // default
+  }
+  if (state_ == State::FULL_MANUAL && !control_on) {
+    // always return from MANUAL back into UNSUPPORTED // TODO review this later
+    requested_state_ = State::UNSUPPORTED;
+  }
+}
+
+void Hexapod::setManualLegControl() {
+  manual_control_type_ = ManualControlType::ALL_LEGS;
+}
+
+void Hexapod::setManualLegControl(const uint8_t leg_idx) {
+  manual_control_type_ = ManualControlType::SINGLE_LEG;
+  manual_leg_idx_ = leg_idx < num_legs_ ? leg_idx : 0;
+}
+
+void Hexapod::setManualJointControl(const uint8_t leg_idx, const uint8_t joint_idx) {
+  manual_control_type_ = ManualControlType::SINGLE_LEG;
+  manual_leg_idx_ = leg_idx < num_legs_ ? leg_idx : 0;
+  manual_joint_idx_ = joint_idx < Leg::NUM_JOINTS ? joint_idx : 0;
+}
+
+void Hexapod::manualMoveFoot(const Tfm::Vector3& movement) {
+  if (state_ == State::FULL_MANUAL && manual_control_type_== ManualControlType::SINGLE_LEG) {
+    const Tfm::Vector3 new_pos = legs_[manual_leg_idx_].getFootPosition() + movement;
+    const bool ik_result = legs_[manual_leg_idx_].calculateJointAngles(new_pos, Leg::IKMode::WALK);
+    if (ik_result) {
+      legs_[manual_leg_idx_].applyStagedAngles();
+    }
+  }
+}
+
+void Hexapod::manualChangeJoint(const float angle_change) {
+  if (state_ == State::FULL_MANUAL && manual_control_type_== ManualControlType::SINGLE_JOINT) {
+    // TODO this is very awkward/awful! Maybe some refactoring required (make JointAngles an indexable array)
+    const Joint joint = legs_[manual_leg_idx_].joints_[manual_leg_idx_];
+    const float new_angle = joint.clampToLimts(joint.angle_ + angle_change);
+    // can't set it directly, need to do so via leg, which only offers setting all the angles
+    Leg::JointAngles current_joint_angles = legs_[manual_leg_idx_].getJointAngles();
+    switch (manual_leg_idx_) {
+      case Leg::JOINT_1:
+        current_joint_angles.theta_1 = new_angle;
+        break;
+      case Leg::JOINT_2:
+        current_joint_angles.theta_2 = new_angle;
+        break;
+      case Leg::JOINT_3:
+        current_joint_angles.theta_3 = new_angle;
+        break;
+    }
+    legs_[manual_leg_idx_].setJointAngles(current_joint_angles);
+  }
+}
+
+
+
 
 /**
  * @details

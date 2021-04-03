@@ -110,8 +110,6 @@ class Hexapod {
   void setManualLegControl(uint8_t leg_idx);
   /** @brief Set ManualControlType to SINGLE_JOINT using leg and joint index into leg */
   void setManualJointControl(uint8_t leg_idx, uint8_t joint_idx);
-  /** @brief Set ManualControlType to SINGLE_JOINT using unique joint index */
-  void setManualJointControl(uint8_t joint_idx);
   /** @brief Position control of the selected foot when in ALL_LEGS or SINGLE_LEG manual mode */
   void manualMoveFoot(const Tfm::Vector3& movement);
   /** @brief Angle control of the selected joint when in SINGLE_JOINT manual mode */
@@ -187,6 +185,16 @@ class Hexapod {
   float leg_lift_height_ = leg_lift_height_default_;
   float foot_ground_travel_ratio_ = fgtr_default_;
   float total_base_rotation_ = 0.0f;
+
+  ManualControlType manual_control_type_;
+  /** @brief The currently selected leg if under Manual SINGLE_LEG control */
+  uint8_t manual_leg_idx_;
+  /** @brief The currently selected leg if under Manual SINGLE_JOINT control */
+  uint8_t manual_joint_idx_; // index into Leg::JointAngles
+
+
+
+
 
   /** @brief Calculate the required joint angles for all grounded legs */
   bool calculateGroundedLegs();
