@@ -108,13 +108,15 @@ class Hexapod {
   void setManualLegControl();
   /** @brief Set ManualControlType to SINGLE_LEG */
   void setManualLegControl(uint8_t leg_idx);
-  /** @brief Set ManualControlType to SINGLE_JOINT using leg and joint index into leg */
-  void setManualJointControl(uint8_t leg_idx, uint8_t joint_idx);
+  /** @brief Set ManualControlType to SINGLE_JOINT using joint index into leg */
+  void setManualJointControl(uint8_t joint_idx);
   /** @brief Position control of the selected foot when in ALL_LEGS or SINGLE_LEG manual mode */
   void manualMoveFoot(const Tfm::Vector3& movement);
   /** @brief Angle control of the selected joint when in SINGLE_JOINT manual mode */
   void manualChangeJoint(float angle_change);
   ManualControlType getManualControlType() const;
+  uint8_t getManualControlLegIdx() const;
+  uint8_t getManualControlJointIdx() const;
 
 
  private:

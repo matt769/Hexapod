@@ -824,6 +824,8 @@ void Hexapod::setFullManualControl(const bool control_on) {
   if (state_ != State::FULL_MANUAL && control_on) {
     requested_state_ = State::FULL_MANUAL;
     manual_control_type_ = ManualControlType::SINGLE_LEG; // default
+    manual_leg_idx_ = 0;
+    manual_joint_idx_ = 0;
   }
   if (state_ == State::FULL_MANUAL && !control_on) {
     // always return from MANUAL back into UNSUPPORTED // TODO review this later
@@ -840,9 +842,8 @@ void Hexapod::setManualLegControl(const uint8_t leg_idx) {
   manual_leg_idx_ = leg_idx < num_legs_ ? leg_idx : 0;
 }
 
-void Hexapod::setManualJointControl(const uint8_t leg_idx, const uint8_t joint_idx) {
-  manual_control_type_ = ManualControlType::SINGLE_LEG;
-  manual_leg_idx_ = leg_idx < num_legs_ ? leg_idx : 0;
+void Hexapod::setManualJointControl(const uint8_t joint_idx) {
+  manual_control_type_ = ManualControlType::SINGLE_JOINT;
   manual_joint_idx_ = joint_idx < Leg::NUM_JOINTS ? joint_idx : 0;
 }
 
@@ -882,7 +883,13 @@ Hexapod::ManualControlType Hexapod::getManualControlType() const {
   return manual_control_type_;
 }
 
+uint8_t Hexapod::getManualControlLegIdx() const {
+  return manual_leg_idx_;
+}
 
+uint8_t Hexapod::getManualControlJointIdx() const {
+  return manual_joint_idx_;
+}
 
 /**
  * @details
