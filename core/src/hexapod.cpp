@@ -878,6 +878,9 @@ void Hexapod::manualChangeJoint(const float angle_change) {
   }
 }
 
+Hexapod::ManualControlType Hexapod::getManualControlType() const {
+  return manual_control_type_;
+}
 
 
 

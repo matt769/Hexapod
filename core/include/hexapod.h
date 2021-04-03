@@ -114,6 +114,7 @@ class Hexapod {
   void manualMoveFoot(const Tfm::Vector3& movement);
   /** @brief Angle control of the selected joint when in SINGLE_JOINT manual mode */
   void manualChangeJoint(float angle_change);
+  ManualControlType getManualControlType() const;
 
 
  private:
