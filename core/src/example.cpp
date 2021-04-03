@@ -38,5 +38,19 @@ int main() {
   }
   std::cout << x << '\n';
 
+  // example of extracting joint angles
+  float joint_array[18];
+  uint8_t ja_idx = 0;
+  for (uint8_t leg_idx = 0; leg_idx < hexapod.num_legs_; leg_idx++) {
+    Leg::JointAngles lja = hexapod.getLeg(leg_idx).getJointAngles();
+    joint_array[ja_idx++] = lja.theta_1;
+    joint_array[ja_idx++] = lja.theta_2;
+    joint_array[ja_idx++] = lja.theta_3;
+  }
+  for (uint8_t idx = 0; idx < 18; idx++) {
+    std::cout << joint_array[idx] << '\n';
+  }
+
+
 }
 
