@@ -73,7 +73,17 @@ void Controller::getInput() {
   puts("-: Decrease leg height        Backspace: Standard mode");
   puts("/: Reset leg height           `: (Press) Set legs to ground / (Hold) Raise body");
   puts("-------------------------------------------------------------------------------");
+  puts("Space bar: toggle manual mode. While in manual mode...");
+  puts("L: Leg mode / Cycle through legs      J: Joint mode / Cycle through joints");
+  puts("While in Leg mode");
+  puts("W: Increase foot in X    S: Decrease foot in X");
+  puts("A: Increase foot in Y    D: Decrease foot in Y");
+  puts("Q: Increase foot in Z    E: Decrease foot in Z");
+  puts("While in Joint mode");
+  puts("W: Increase joint    S: Decrease joint");
+  puts("-------------------------------------------------------------------------------");
   puts("                        Now reading from keyboard...");
+
 
   for (;;) {
     // get the next event from the keyboard

@@ -12,13 +12,78 @@ Receiver::Receiver(const ros::NodeHandle& nh, Hexapod* hexapod) : nh_(nh), hexap
 }
 
 void Receiver::update() {
-  hexapod_->setWalk(current_walk, current_turn);
+  if (hexapod_->getState() != Hexapod::State::FULL_MANUAL) {
+    hexapod_->setWalk(current_walk, current_turn);
+  }
   // everything else is set within the callback itself
 }
 
 void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
   int32_t keyCode = msg->data;
   std::cout << "Key code pressed: " << msg->data << '\n';
+
+  // If we're in manual mode, alternative commands
+  if (hexapod_->getState() == Hexapod::State::FULL_MANUAL) {
+    Hexapod::ManualControlType mct = hexapod_->getManualControlType();
+    switch (keyCode) {
+      case 108: // L
+        if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
+          hexapod_->setManualLegControl(hexapod_->getManualControlLegIdx() + 1); // will be wrapped if too high
+        }
+        else {
+          hexapod_->setManualLegControl(0);
+        }
+        break;
+      case 106: // J
+        if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
+          hexapod_->setManualJointControl(hexapod_->getManualControlJointIdx() + 1);
+        }
+        else {
+          hexapod_->setManualJointControl(0);
+        }
+        break;
+      case 119: // W
+        if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
+          hexapod_->manualMoveFoot(manual_fb);
+        }
+        else if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
+          hexapod_->manualChangeJoint(manual_joint);
+        }
+        break;
+      case 97: // A
+        if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
+          hexapod_->manualMoveFoot(manual_lr);
+        }
+        break;
+      case 115: // S
+        if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
+          hexapod_->manualMoveFoot(-manual_fb);
+        }
+        else if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
+          hexapod_->manualChangeJoint(-manual_joint);
+        }
+        break;
+      case 100: // D
+        if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
+          hexapod_->manualMoveFoot(-manual_lr);
+        }
+        break;
+      case 113:
+        if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
+          hexapod_->manualMoveFoot(manual_ud);
+        }
+        break;
+      case 101:
+        if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
+          hexapod_->manualMoveFoot(-manual_ud);
+        }
+        break;
+    }
+    return;
+  }
+
+
+  // 'Standard' control
 
   Transform body_change;
 
@@ -160,6 +225,12 @@ void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
       }
       if (hexapod_->getState() == Hexapod::State::STANDING) {
         hexapod_->riseToWalk();
+      }
+      break;
+    // Manual control
+    case 32:  // Space bar
+      if (hexapod_->getState() != Hexapod::State::FULL_MANUAL) {
+        hexapod_->setFullManualControl(true); // TODO allow turning off in future
       }
       break;
 

@@ -22,6 +22,10 @@ class Receiver {
   const float walk_increment = 0.001f;
   const Tfm::Vector3 walk_increment_fb{walk_increment, 0.0f, 0.0f};
   const Tfm::Vector3 walk_increment_lr{0.0f, walk_increment, 0.0f};
+  const Tfm::Vector3 manual_fb{0.01, 0.0f, 0.0f};
+  const Tfm::Vector3 manual_lr{0.0f, 0.01, 0.0f};
+  const Tfm::Vector3 manual_ud{0.0f, 0.0f, 0.01};
+  const float manual_joint{0.025f};
   Tfm::Vector3 current_walk{0.0f, 0.0f, 0.0f};
   const float turn_increment{0.03f * M_PI / 180.0f};
   float current_turn{0.0f};
