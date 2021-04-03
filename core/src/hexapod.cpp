@@ -823,7 +823,7 @@ float Hexapod::getHeight() const { return height_; }
 void Hexapod::setFullManualControl(const bool control_on) {
   if (state_ != State::FULL_MANUAL && control_on) {
     requested_state_ = State::FULL_MANUAL;
-    manual_control_type_ = ManualControlType::SINGLE_LEG; // default
+    setManualLegControl(0); // default
     manual_leg_idx_ = 0;
     manual_joint_idx_ = 0;
   }
@@ -835,6 +835,7 @@ void Hexapod::setFullManualControl(const bool control_on) {
 
 void Hexapod::setManualLegControl() {
   manual_control_type_ = ManualControlType::ALL_LEGS;
+  // TODO not yet implemented
 }
 
 void Hexapod::setManualLegControl(const uint8_t leg_idx) {
