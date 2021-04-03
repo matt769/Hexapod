@@ -69,5 +69,29 @@ int main() {
   hexapod.update();
   std::cout << hexapod.getLeg(0).getFootPosition() << '\n';
 
+  hexapod.setManualJointControl(0);
+  std::cout << static_cast<int>(hexapod.getManualControlJointIdx()) << '\n';
+  hexapod.setManualJointControl(1);
+  std::cout << static_cast<int>(hexapod.getManualControlJointIdx()) << '\n';
+  hexapod.setManualJointControl(2);
+  std::cout << static_cast<int>(hexapod.getManualControlJointIdx()) << '\n';
+  hexapod.setManualJointControl(3);
+  std::cout << static_cast<int>(hexapod.getManualControlJointIdx()) << '\n';
+
+  std::cout << hexapod.getLeg(0).getJointAngles().theta_1 << '\t'
+    << hexapod.getLeg(0).getJointAngles().theta_2 << '\t'
+    << hexapod.getLeg(0).getJointAngles().theta_3 << '\n';
+  hexapod.manualChangeJoint(0.1);
+  std::cout << hexapod.getLeg(0).getJointAngles().theta_1 << '\t'
+            << hexapod.getLeg(0).getJointAngles().theta_2 << '\t'
+            << hexapod.getLeg(0).getJointAngles().theta_3 << '\n';
+
+  hexapod.setManualJointControl(1);
+  std::cout << static_cast<int>(hexapod.getManualControlJointIdx()) << '\n';
+  hexapod.manualChangeJoint(0.1);
+  std::cout << hexapod.getLeg(0).getJointAngles().theta_1 << '\t'
+            << hexapod.getLeg(0).getJointAngles().theta_2 << '\t'
+            << hexapod.getLeg(0).getJointAngles().theta_3 << '\n';
+
 }
 
