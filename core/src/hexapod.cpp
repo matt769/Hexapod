@@ -851,7 +851,7 @@ void Hexapod::setManualJointControl(const uint8_t joint_idx) {
 void Hexapod::manualMoveFoot(const Tfm::Vector3& movement) {
   if (state_ == State::FULL_MANUAL && manual_control_type_== ManualControlType::SINGLE_LEG) {
     const Tfm::Vector3 new_pos = legs_[manual_leg_idx_].getFootPosition() + movement;
-    const bool ik_result = legs_[manual_leg_idx_].calculateJointAngles(new_pos, Leg::IKMode::WALK);
+    const bool ik_result = legs_[manual_leg_idx_].calculateJointAngles(new_pos, Leg::IKMode::FULL);
     if (ik_result) {
       legs_[manual_leg_idx_].applyStagedAngles();
     }
@@ -861,11 +861,11 @@ void Hexapod::manualMoveFoot(const Tfm::Vector3& movement) {
 void Hexapod::manualChangeJoint(const float angle_change) {
   if (state_ == State::FULL_MANUAL && manual_control_type_== ManualControlType::SINGLE_JOINT) {
     // TODO this is very awkward/awful! Maybe some refactoring required (make JointAngles an indexable array)
-    const Joint joint = legs_[manual_leg_idx_].joints_[manual_leg_idx_];
+    const Joint joint = legs_[manual_leg_idx_].joints_[manual_joint_idx_];
     const float new_angle = joint.clampToLimts(joint.angle_ + angle_change);
     // can't set it directly, need to do so via leg, which only offers setting all the angles
     Leg::JointAngles current_joint_angles = legs_[manual_leg_idx_].getJointAngles();
-    switch (manual_leg_idx_) {
+    switch (manual_joint_idx_) {
       case Leg::JOINT_1:
         current_joint_angles.theta_1 = new_angle;
         break;
