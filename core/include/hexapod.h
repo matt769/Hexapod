@@ -253,6 +253,8 @@ class Hexapod {
 Hexapod buildDefaultHexapod();
 /** @brief Returns a Hexapod object consistent with example file hexapod2.urdf.xacro */
 Hexapod buildDefaultHexapod2();
+
+Hexapod buildPhantomX();
 /** @brief Returns a Hexapod object consistent with example file octapod.urdf.xacro */
 Hexapod buildDefaultOctapod();
 
