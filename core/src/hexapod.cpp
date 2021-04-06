@@ -695,7 +695,8 @@ bool Hexapod::updateMoveLegs() {
  * upright
  *  position supported by the legs from which it can start walking.
  *
- * TODO - maybe refactor.
+ * TODO - maybe refactor. I'd rather it only needed to get called once, and robot would continue the movement
+ *  (while update() is called) until it's standing
  *
  * @return true
  * @return false
@@ -706,7 +707,7 @@ bool Hexapod::riseToWalk() {
   }
 
   if (height_ < walk_height_default_) {
-    changeBase(Vector3(0, 0, 0.01f));
+    changeBase(Vector3(0, 0, 0.01f)); // TODO this should depend on dimensions
     requested_state_ = State::WALKING;
     return true;
   }
@@ -778,7 +779,7 @@ void Hexapod::handleStateChange() {
   // go from standing to walking if base it at some predefined position
   // hexapod doesn't actually know base position except the height
   if (state_ == State::STANDING && requested_state_ == State::WALKING &&
-      compareFloat(height_, walk_height_default_, 0.0001f)) {
+      height_ >= walk_height_default_) {
     state_ = requested_state_;
 #ifndef __AVR__
     std::cout << "State changed to: WALKING\n";
