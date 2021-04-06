@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<robot name="hexapod" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="length" value="0.24" />
+  <xacro:property name="width" value="0.12" />
+  <xacro:property name="width_mid" value="0.20" />
+  <xacro:property name="depth" value="0.07" />
+  <!-- Very approx for servo 'joint' measurements. Only used for visuals anyway. -->
+  <xacro:property name="servo_joint_length" value="0.032" />
+  <xacro:property name="servo_joint_radius" value="0.0125" />
+  <!-- Taken from manual measurements rather than CAD files or similar. Seem ok though. -->
+  <xacro:property name="coxa_length" value="0.050" />
+  <xacro:property name="femur_length" value="0.066" />
+  <xacro:property name="tibia_length" value="0.132" />
+  <!-- Rough limits. Offsets from manual measurements again. -->
+  <xacro:property name="joint_1_lower_limit" value="${-pi}" />
+  <xacro:property name="joint_1_upper_limit" value="${pi}" />
+  <xacro:property name="joint_2_lower_limit" value="${-pi}" />
+  <xacro:property name="joint_2_upper_limit" value="${pi}" />
+  <xacro:property name="joint_2_offset" value="${14.0*pi/180.0}" />
+  <xacro:property name="joint_3_lower_limit" value="${-pi}" />
+  <xacro:property name="joint_3_upper_limit" value="${pi}" />
+  <xacro:property name="joint_3_offset" value="${46.0*pi/180.0}" />
+
+
+  <link name="base_link">
+  </link>
+
+  <joint name="base_to_body" type="floating">
+    <parent link="base_link"/>
+    <child link="body_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
+  <link name="body_link">
+    <visual>
+      <geometry>
+        <box size="${length} ${width} ${depth}"/>
+      </geometry>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${servo_joint_length} ${width_mid} ${servo_joint_length}"/>
+      </geometry>
+    </visual>
+  </link>
+
+
+  <xacro:macro name="joint_shape">
+        <cylinder length="${servo_joint_length}" radius="${servo_joint_radius}"/>
+  </xacro:macro >
+
+
+  <xacro:macro name="leg" params="row side position base_angle">
+
+  <joint name="leg_${row}_${side}_joint_1" type="revolute">
+    <parent link="body_link"/>
+    <child link="leg_${row}_${side}_link_1"/>
+    <origin rpy="0 0 ${base_angle}" xyz="${position}"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${joint_1_lower_limit}" upper="${joint_1_upper_limit}" effort="100" velocity="100" />
+  </joint>
+
+  <link name="leg_${row}_${side}_link_1">
+    <visual>
+      <geometry>
+        <xacro:joint_shape />
+      </geometry>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${coxa_length} ${servo_joint_length} ${servo_joint_length}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${coxa_length/2} 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="leg_${row}_${side}_joint_2" type="revolute">
+    <parent link="leg_${row}_${side}_link_1"/>
+    <child link="leg_${row}_${side}_link_2"/>
+    <origin rpy="${pi/2} ${joint_2_offset} 0" xyz="${coxa_length} 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${joint_2_lower_limit}" upper="${joint_2_upper_limit}" effort="100" velocity="100" />
+  </joint>
+
+  <link name="leg_${row}_${side}_link_2">
+    <visual>
+      <geometry>
+        <xacro:joint_shape />
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${femur_length} ${servo_joint_length} ${servo_joint_length}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${femur_length/2} 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="leg_${row}_${side}_joint_3" type="revolute">
+    <parent link="leg_${row}_${side}_link_2"/>
+    <child link="leg_${row}_${side}_link_3"/>
+    <origin rpy="0 0 -${joint_3_offset}" xyz="${femur_length} 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${joint_3_lower_limit}" upper="${joint_3_upper_limit}" effort="100" velocity="100" />
+  </joint>
+
+  <link name="leg_${row}_${side}_link_3">
+    <visual>
+      <geometry>
+        <xacro:joint_shape />
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${tibia_length*2/3} ${servo_joint_length} ${servo_joint_length}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${tibia_length/3} 0 0"/>
+    </visual>
+    <visual>
+      <geometry>
+        <box size="${tibia_length} ${servo_joint_length/4} ${servo_joint_length/4}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${tibia_length/2} 0 0"/>
+    </visual>
+
+  </link>
+
+  <joint name="leg_${row}_${side}_joint_4_fixed" type="fixed">
+    <parent link="leg_${row}_${side}_link_3"/>
+    <child link="leg_${row}_${side}_foot"/>
+    <origin rpy="0 0 0" xyz="${tibia_length} 0 0"/>
+  </joint>
+
+  <link name="leg_${row}_${side}_foot">
+  </link>
+
+  </xacro:macro>
+
+
+  <xacro:leg row="row00" side="left" position="${length/2} ${width/2} 0" base_angle="${pi/4}"/>
+  <xacro:leg row="row00" side="right" position="${length/2} ${-width/2} 0" base_angle="${-pi/4}"/>
+  <xacro:leg row="row01" side="left" position="0 ${width_mid/2} 0" base_angle="${pi/2}"/>
+  <xacro:leg row="row01" side="right" position="0 ${-width_mid/2} 0" base_angle="${-pi/2}"/>
+  <xacro:leg row="row02" side="left" position="${-length/2} ${width/2} 0" base_angle="${pi*3/4}"/>
+  <xacro:leg row="row02" side="right" position="${-length/2} ${-width/2} 0" base_angle="${-pi*3/4}"/> 
+
+
+</robot>
