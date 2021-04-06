@@ -17,7 +17,13 @@ using namespace Transformations;
 Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f) {}
 
 Joint::Joint(const float lower_limit, const float upper_limit, const float angle, const float offset)
-    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset) {}
+    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset) {
+
+  if (offset_ != 0.0f) {
+    lower_limit_ -= offset_;
+    upper_limit_ -= offset_;
+  }
+}
 
 bool Joint::isWithinLimits(const float angle) const {
   return (angle >= lower_limit_ - KinematicsSupport::eps) &&
@@ -26,6 +32,10 @@ bool Joint::isWithinLimits(const float angle) const {
 
 float Joint::clampToLimts(const float angle) const {
   return fmax(fmin(angle, upper_limit_), lower_limit_);
+}
+
+float Joint::angle() const {
+  return angle_ + offset_;
 }
 
 Leg::Leg() {}
@@ -522,6 +532,12 @@ void Leg::updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
 
 Leg::JointAngles Leg::getJointAngles() const {
   return JointAngles{joints_[JOINT_1].angle_, joints_[JOINT_2].angle_, joints_[JOINT_3].angle_};
+}
+
+Leg::JointAngles Leg::getJointAnglesWithOffset() const {
+  return JointAngles{joints_[JOINT_1].angle_ + joints_[JOINT_1].offset_,
+                     joints_[JOINT_2].angle_ + joints_[JOINT_2].offset_,
+                     joints_[JOINT_3].angle_ + joints_[JOINT_3].offset_};
 }
 
 bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {

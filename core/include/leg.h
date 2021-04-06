@@ -18,6 +18,10 @@ namespace Tfm = Transformations;
 
 /** @class Joint
     @brief Wraps current angle and limits, plus some basic utility functions.
+    @details It may be convenient to provide an offset value if the physical or modelled joint isn't
+    actually at zero when the frames for the joints are in the 'default' place
+    The joint limits should be provided as normal i.e. do not modify to take into account the offset,
+     this will be done automatically.
 */
 class Joint {
  public:
@@ -29,6 +33,8 @@ class Joint {
   Joint(float lower_limit, float upper_limit, float angle = 0.0f, float offset = 0.0f);
   bool isWithinLimits(float angle) const;
   float clampToLimts(float angle) const;
+  /** @brief Returns the angle PLUS offset */
+  float angle() const;
 };
 
 /** @class Leg
@@ -120,6 +126,8 @@ class Leg {
   Tfm::Vector3 getRaisedPosition() const;
   /** @brief Returns the current joint angles */
   JointAngles getJointAngles() const;
+    /** @brief Returns the current joint angles plus any offset for external use. */
+  JointAngles getJointAnglesWithOffset() const;
   /** @brief Updates joint angles as required by current trajectory. Must be called every period
    * when leg raised. */
   bool stepUpdate();
