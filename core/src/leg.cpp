@@ -14,20 +14,17 @@
 using namespace KinematicsSupport;
 using namespace Transformations;
 
-Joint::Joint() : lower_limit_(-1.48f), upper_limit_(1.48f), angle_(0.0f) {}
+Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f) {}
 
-Joint::Joint(float lower_limit, float upper_limit)
-    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(0.0f) {}
-
-Joint::Joint(float lower_limit, float upper_limit, float angle)
-    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle) {}
+Joint::Joint(const float lower_limit, const float upper_limit, const float angle, const float offset)
+    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset) {}
 
 bool Joint::isWithinLimits(const float angle) const {
   return (angle >= lower_limit_ - KinematicsSupport::eps) &&
          (angle < upper_limit_ + KinematicsSupport::eps);
 }
 
-float Joint::clampToLimts(float angle) const {
+float Joint::clampToLimts(const float angle) const {
   return fmax(fmin(angle, upper_limit_), lower_limit_);
 }
 

@@ -24,9 +24,9 @@ class Joint {
   float lower_limit_;
   float upper_limit_;
   float angle_;
+  float offset_;
   Joint();
-  Joint(float lower_limit, float upper_limit);
-  Joint(float lower_limit, float upper_limit, float angle);
+  Joint(float lower_limit, float upper_limit, float angle = 0.0f, float offset = 0.0f);
   bool isWithinLimits(float angle) const;
   float clampToLimts(float angle) const;
 };
