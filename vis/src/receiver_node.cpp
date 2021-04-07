@@ -19,13 +19,14 @@
 using namespace Transformations;
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "demo_walk");
+  ros::init(argc, argv, "receiver_node");
   ros::NodeHandle nh;
 
   // Hexapod hexapod = buildDefaultHexapod();
   // Hexapod hexapod = buildDefaultHexapod2();
   // Hexapod hexapod = buildDefaultOctapod();
   Hexapod hexapod = BuildFromURDF::buildFromURDF();
+  // Hexapod hexapod = buildPhantomX();
   Vis visualiser(nh, &hexapod);
   Receiver receiver(nh, &hexapod);
 
