@@ -50,6 +50,21 @@ Hexapod::Hexapod(uint8_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg
     tf_body_to_leg_[leg_idx] = tf_body_to_leg[leg_idx];
     legs_[leg_idx] = legs[leg_idx];
   }
+
+
+  // set various movement parameters based on body/leg dimensions
+  walk_height_default_ = legs_[0].dims_.c / 2.0;
+  stance_width_default_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) * 0.5f;
+  stance_width_min_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) * 0.25f;
+  stance_width_max_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) * 0.75f;
+  leg_lift_height_min_ = walk_height_default_ * 0.1f;
+  leg_lift_height_max_ = walk_height_default_;
+  leg_lift_height_default_ = walk_height_default_ * 0.3f;
+  allowed_foot_position_diameter_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) / 3.0;
+
+  stance_width_ = stance_width_default_;
+  leg_lift_height_ = leg_lift_height_default_;
+
 }
 
 Hexapod::~Hexapod() {
@@ -256,7 +271,7 @@ void Hexapod::updateFootTarget(uint8_t leg_idx) {
     // Check desired speed within limits and cap it if not
     uint16_t min_foot_ground_time = foot_air_time_min_ * (num_legs_ - gaitMaxRaised());
     // max speed if travel full allowed distance in the minimum allowed time
-    float max_v = allowed_foot_position_.dia / static_cast<float>(min_foot_ground_time);
+    float max_v = allowed_foot_position_diameter_ / static_cast<float>(min_foot_ground_time);
     if (speed > max_v) {
 #ifndef __AVR__
       std::cout << "Speed over limit. Capped to " << max_v << '\n';
@@ -266,7 +281,7 @@ void Hexapod::updateFootTarget(uint8_t leg_idx) {
 
     // Convert speed to number of time steps that foot will be on the ground
     float foot_ground_distance =
-        allowed_foot_position_.dia * foot_ground_travel_ratio_;  // stride length
+        allowed_foot_position_diameter_ * foot_ground_travel_ratio_;  // stride length
     float foot_ground_time_fl = foot_ground_distance / speed;
     // and in the air - make sure it's even (round up if not)
     float foot_air_time_fl = foot_ground_time_fl / static_cast<float>(num_legs_ - gaitMaxRaised());

@@ -34,22 +34,6 @@ class Hexapod {
   enum class State { UNSUPPORTED, STANDING, WALKING, FULL_MANUAL };
   /** @brief Gait identifier. Also used as index into gait_seq_ */
   enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, NUM_GAITS };
-  /** @brief During start up, hexapod will rise to this height before entering walking state */
-  static constexpr float walk_height_default_ = 0.4;
-  /** @brief Number of periods leg will be in air if raised while walk speed is zero */
-  static constexpr uint16_t foot_air_time_default_ = 20;
-  /** @brief Minimum time foot can be in air during a raise i.e. fastest raise movement */
-  static constexpr uint16_t foot_air_time_min_ = 6;
-  static constexpr float stance_width_min_ = 0.2f;  // TODO REVIEW - maybe this should come from Leg
-  static constexpr float stance_width_max_ = 0.9f;  // TODO REVIEW
-  static constexpr float stance_width_default_ = 0.6f;
-  static constexpr float leg_lift_height_min_ = 0.03f;
-  static constexpr float leg_lift_height_max_ = 0.3f;
-  static constexpr float leg_lift_height_default_ = 0.05f;
-  static constexpr float fgtr_min_ = 0.1f;
-  static constexpr float fgtr_max_ = 0.9f;
-  /** @brief Default stride length as proportion of allowed foot movement */
-  static constexpr float fgtr_default_ = 0.5f;
 
   /** @brief Construct a new Hexapod object */
   Hexapod(uint8_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg, Leg* legs);
@@ -120,6 +104,23 @@ class Hexapod {
 
 
  private:
+   /** @brief During start up, hexapod will rise to this height before entering walking state */
+  float walk_height_default_;
+  /** @brief Number of periods leg will be in air if raised while walk speed is zero */
+  static constexpr uint16_t foot_air_time_default_ = 20;
+  /** @brief Minimum time foot can be in air during a raise i.e. fastest raise movement */
+  static constexpr uint16_t foot_air_time_min_ = 6;
+  float stance_width_min_;
+  float stance_width_max_;
+  float stance_width_default_;
+  float leg_lift_height_min_;
+  float leg_lift_height_max_;
+  float leg_lift_height_default_;
+  static constexpr float fgtr_min_ = 0.1f;
+  static constexpr float fgtr_max_ = 0.9f;
+  /** @brief Default stride length as proportion of allowed foot movement */
+  static constexpr float fgtr_default_ = 0.5f;
+
   /** @brief Used to control movements while in unsupported state TODO this is horrible */
   enum class SubState { NOT_STARTED, IN_PROGRESS, FINISHED };
   Leg* legs_;
@@ -172,15 +173,9 @@ class Hexapod {
    * @brief Describes a circle of allowed foot movement around the neutral point.
    *
    * @details
-   * TODO review this. Don't think min and max are even used.
-   * Ideally have better solution to managing range of movement.
-   * Only using dia - but not modifying if neutral point has changed (via stance width)
+   * TODO review this. Ideally have better solution to managing range of movement.
    */
-  struct AllowedFootPosition {
-    float x_min = 0.4f;
-    float y_min = -0.2f;
-    float dia = 0.4f;
-  } allowed_foot_position_;
+  float allowed_foot_position_diameter_;
 
   uint8_t current_gait_seq_ = Gait::RIPPLE;
   uint8_t gait_current_pos_ = 0;
