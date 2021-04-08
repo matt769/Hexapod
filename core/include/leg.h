@@ -22,6 +22,8 @@ namespace Tfm = Transformations;
     actually at zero when the frames for the joints are in the 'default' place
     The joint limits should be provided as normal i.e. do not modify to take into account the offset,
      this will be done automatically.
+    Internally, the leg will only use the angle and limits. The flip and offset can be applied to translate this angle
+     back to a physical joint angle
 */
 class Joint {
  public:
@@ -34,8 +36,6 @@ class Joint {
   Joint(float lower_limit, float upper_limit, float angle = 0.0f, float offset = 0.0f, bool flip_axis = false);
   bool isWithinLimits(float angle) const;
   float clampToLimts(float angle) const;
-  /** @brief Returns the angle PLUS offset */
-  float angle() const;
 };
 
 /** @class Leg

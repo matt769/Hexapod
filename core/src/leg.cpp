@@ -14,7 +14,7 @@
 using namespace KinematicsSupport;
 using namespace Transformations;
 
-Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f) {}
+Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f, false) {}
 
 /**
  * @brief Construct a new Joint object
@@ -28,21 +28,20 @@ Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f) {}
  * @param flip_axis If the physical model uses a joint that has its Z axis reversed
  */
 Joint::Joint(const float lower_limit, const float upper_limit, const float angle, const float offset, const bool flip_axis)
-    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset), flip_axis_(flip_axis) {
+    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset), flip_axis_(1.0f) {
+
+  auto sign = [](const float& num) -> float { return (num >= 0.0) ? 1.0 : -1.0; };
 
   if (flip_axis) {
+    // Swap limits, but keep the signs (LL should stay lower than UL)
     flip_axis_ = -1.0;
-    float tmp_lower_limit = lower_limit_;
-    lower_limit_ = upper_limit_;
-    lower_limit_ = tmp_lower_limit;
-  }
-  else {
-    flip_axis_ = 1.0;
+    lower_limit_ = sign(lower_limit)*fabs(upper_limit);
+    upper_limit_ = sign(upper_limit)*fabs(lower_limit);
   }
 
   if (offset_ != 0.0f) {
-    lower_limit_ -= offset_;
-    upper_limit_ -= offset_;
+    lower_limit_ -= flip_axis_ * offset_;
+    upper_limit_ -= flip_axis_ * offset_;
     angle_ -= offset_;
   }
 }
@@ -56,14 +55,10 @@ float Joint::clampToLimts(const float angle) const {
   return fmax(fmin(angle, upper_limit_), lower_limit_);
 }
 
-float Joint::angle() const {
-  return angle_ + offset_;
-}
-
 Leg::Leg() {}
 
 Leg::Leg(Dims dims, Joint* joints)
-    : dims_(dims), neutral_pos_{(dims.a + dims.b + dims.c) / 2.0f, 0.0f, 0.0f}, step_idx_{0} {
+    : dims_(dims), neutral_pos_{(dims.a + dims.b + dims.c) * 2.0f/3.0f, 0.0f, 0.0f}, step_idx_{0} {
   joints_[JOINT_1] = joints[0];
   joints_[JOINT_2] = joints[1];
   joints_[JOINT_3] = joints[2];
