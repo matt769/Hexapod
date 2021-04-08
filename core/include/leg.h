@@ -29,8 +29,9 @@ class Joint {
   float upper_limit_;
   float angle_;
   float offset_;
+  float flip_axis_;
   Joint();
-  Joint(float lower_limit, float upper_limit, float angle = 0.0f, float offset = 0.0f);
+  Joint(float lower_limit, float upper_limit, float angle = 0.0f, float offset = 0.0f, bool flip_axis = false);
   bool isWithinLimits(float angle) const;
   float clampToLimts(float angle) const;
   /** @brief Returns the angle PLUS offset */

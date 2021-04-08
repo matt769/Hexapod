@@ -16,12 +16,34 @@ using namespace Transformations;
 
 Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f) {}
 
-Joint::Joint(const float lower_limit, const float upper_limit, const float angle, const float offset)
-    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset) {
+/**
+ * @brief Construct a new Joint object
+ * @details All input should relate to the physical joint used - it will be modified to fit the internal
+ *  hexapod reference frames based on the offset and flip_axis parameters.
+ * 
+ * @param lower_limit The joint limit in the clockwise direction of the physical joint
+ * @param upper_limit  The joint limit in the anti-clockwise direction of the physical joint
+ * @param angle The starting angle of the joint
+ * @param offset Offset between IK result and actual physical joint angle (TODO improve this terrible explanation)
+ * @param flip_axis If the physical model uses a joint that has its Z axis reversed
+ */
+Joint::Joint(const float lower_limit, const float upper_limit, const float angle, const float offset, const bool flip_axis)
+    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset), flip_axis_(flip_axis) {
+
+  if (flip_axis) {
+    flip_axis_ = -1.0;
+    float tmp_lower_limit = lower_limit_;
+    lower_limit_ = upper_limit_;
+    lower_limit_ = tmp_lower_limit;
+  }
+  else {
+    flip_axis_ = 1.0;
+  }
 
   if (offset_ != 0.0f) {
     lower_limit_ -= offset_;
     upper_limit_ -= offset_;
+    angle_ -= offset_;
   }
 }
 
@@ -535,9 +557,9 @@ Leg::JointAngles Leg::getJointAngles() const {
 }
 
 Leg::JointAngles Leg::getJointAnglesWithOffset() const {
-  return JointAngles{joints_[JOINT_1].angle_ + joints_[JOINT_1].offset_,
-                     joints_[JOINT_2].angle_ + joints_[JOINT_2].offset_,
-                     joints_[JOINT_3].angle_ + joints_[JOINT_3].offset_};
+  return JointAngles{joints_[JOINT_1].flip_axis_ * joints_[JOINT_1].angle_ + joints_[JOINT_1].offset_,
+                     joints_[JOINT_2].flip_axis_ * joints_[JOINT_2].angle_ + joints_[JOINT_2].offset_,
+                     joints_[JOINT_3].flip_axis_ * joints_[JOINT_3].angle_ + joints_[JOINT_3].offset_};
 }
 
 bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {

@@ -1116,8 +1116,8 @@ Hexapod buildPhantomX() {
   constexpr float joint_3_offset = 46.0 * kDegToRad;
   Joint joints[num_joints];
   joints[0] = Joint(-90.0f * kDegToRad, 90.0f * kDegToRad, 0.0, 0.0);
-  joints[1] = Joint(-150.0f * kDegToRad, 150.0f * kDegToRad, 0.0, joint_2_offset);
-  joints[2] = Joint(-150.0f * kDegToRad, 150.0f * kDegToRad, 0.0, joint_3_offset);
+  joints[1] = Joint(-150.0f * kDegToRad, 150.0f * kDegToRad, joint_2_offset, joint_2_offset);
+  joints[2] = Joint(-150.0f * kDegToRad, 150.0f * kDegToRad, joint_3_offset, joint_3_offset);
 
   Leg leg(leg_dims, joints);
 
