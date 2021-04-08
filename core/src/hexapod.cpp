@@ -764,6 +764,9 @@ bool Hexapod::setLegsToGround() {
   Vector3 grounded_position = legs_[0].getNeutralPosition();
   grounded_position.z() = -height_;
   bool result = legs_[0].calculateJointAngles(grounded_position, Leg::IKMode::WALK);
+  std::cout << result << legs_[0].getStagedAngles().theta_1 << '\t'
+                      << legs_[0].getStagedAngles().theta_2 << '\t'
+                      << legs_[0].getStagedAngles().theta_3 << '\n';
   if (result) {
     result &= setTargetsMoveLegs(legs_[0].getStagedAngles());
   }
@@ -1115,9 +1118,9 @@ Hexapod buildPhantomX() {
   constexpr float joint_2_offset = 14.0 * kDegToRad;
   constexpr float joint_3_offset = 46.0 * kDegToRad;
   Joint joints[num_joints];
-  joints[0] = Joint(-90.0f * kDegToRad, 90.0f * kDegToRad, 0.0, 0.0);
-  joints[1] = Joint(-150.0f * kDegToRad, 150.0f * kDegToRad, joint_2_offset, joint_2_offset);
-  joints[2] = Joint(-150.0f * kDegToRad, 150.0f * kDegToRad, joint_3_offset, joint_3_offset);
+  joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
+  joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
+  joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset, joint_3_offset);
 
   Leg leg(leg_dims, joints);
 
