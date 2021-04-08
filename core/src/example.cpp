@@ -93,5 +93,16 @@ int main() {
             << hexapod.getLeg(0).getJointAngles().theta_2 << '\t'
             << hexapod.getLeg(0).getJointAngles().theta_3 << '\n';
 
+
+  Hexapod px = buildPhantomX();
+
+  std::cout << hexapod.getLeg(0).getJointAnglesWithOffset().theta_1 << '\t'
+            << hexapod.getLeg(0).getJointAnglesWithOffset().theta_2 << '\t'
+            << hexapod.getLeg(0).getJointAnglesWithOffset().theta_3 << '\n';
+  std::cout << hexapod.getLeg(1).getJointAnglesWithOffset().theta_1 << '\t'
+            << hexapod.getLeg(1).getJointAnglesWithOffset().theta_2 << '\t'
+            << hexapod.getLeg(1).getJointAnglesWithOffset().theta_3 << '\n';
+
+
 }
 
