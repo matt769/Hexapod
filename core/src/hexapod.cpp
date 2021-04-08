@@ -764,9 +764,9 @@ bool Hexapod::setLegsToGround() {
   Vector3 grounded_position = legs_[0].getNeutralPosition();
   grounded_position.z() = -height_;
   bool result = legs_[0].calculateJointAngles(grounded_position, Leg::IKMode::WALK);
-  std::cout << result << legs_[0].getStagedAngles().theta_1 << '\t'
-                      << legs_[0].getStagedAngles().theta_2 << '\t'
-                      << legs_[0].getStagedAngles().theta_3 << '\n';
+  std::cout << result << '\t' << legs_[0].getStagedAngles().theta_1 << '\t'
+                              << legs_[0].getStagedAngles().theta_2 << '\t'
+                              << legs_[0].getStagedAngles().theta_3 << '\n';
   if (result) {
     result &= setTargetsMoveLegs(legs_[0].getStagedAngles());
   }
@@ -1105,30 +1105,37 @@ Hexapod buildDefaultHexapod2() {
   return Hexapod(num_legs, hex_dims, tf_body_to_leg, legs);
 }
 
+/**
+ * @details This 'build' is specific to an actual physical robot where some of the servos are flipped / not in
+ *  the same orientation as the internal hexapod model assumes, hence the need for flip/offset variables
+ * @return
+ */
 Hexapod buildPhantomX() {
-  // TODO this is much smaller in absolute values than the others
-  //  have given measurements in mm rather than than m
-  //  check if OK!
   constexpr uint8_t num_joints = 3;
   Leg::Dims leg_dims{0.05f, 0.066f, 0.132f};
 
   constexpr float kDegToRad = M_PI / 180.0;
 
-  // TODO try to start off with the legs level (just to test offset handling etc)
   constexpr float joint_2_offset = 14.0 * kDegToRad;
   constexpr float joint_3_offset = 46.0 * kDegToRad;
-  Joint joints[num_joints];
-  joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
-  joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
-  joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset, joint_3_offset);
+  Joint rhs_leg_joints[num_joints];
+  rhs_leg_joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
+  rhs_leg_joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
+  rhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset, joint_3_offset);
+  Leg rhs_leg(leg_dims, rhs_leg_joints);
 
-  Leg leg(leg_dims, joints);
+  Joint lhs_leg_joints[num_joints];
+  lhs_leg_joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
+  lhs_leg_joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, -joint_2_offset, -joint_2_offset, true);
+  lhs_leg_joints[2] = Joint(-88.0f * kDegToRad, 120.0f * kDegToRad, -joint_3_offset, -joint_3_offset, true);
+  Leg lhs_leg(leg_dims, lhs_leg_joints);
 
   // Make an array of legs and copy the one we just made into all elements
   constexpr uint8_t num_legs = 6;
   Leg* legs = new Leg[num_legs];
-  for (uint8_t leg_idx = 0; leg_idx < num_legs; leg_idx++) {
-    legs[leg_idx] = leg;
+  for (uint8_t leg_idx = 0; leg_idx < num_legs; leg_idx += 2) {
+    legs[leg_idx] = lhs_leg;
+    legs[leg_idx+1] = rhs_leg;
   }
 
   // Hexapod body dimensions
@@ -1165,6 +1172,75 @@ Hexapod buildPhantomX() {
 
   return Hexapod(num_legs, hex_dims, tf_body_to_leg, legs);
 }
+
+/**
+ * @details This 'build' assumes all joints are oriented as per the URDF (no flipping like on the physical model)
+ * @return
+ */
+Hexapod buildPhantomXForVis() {
+  constexpr uint8_t num_joints = 3;
+  Leg::Dims leg_dims{0.05f, 0.066f, 0.132f};
+
+  constexpr float kDegToRad = M_PI / 180.0;
+
+  constexpr float joint_2_offset = 14.0 * kDegToRad;
+  constexpr float joint_3_offset = 46.0 * kDegToRad;
+  Joint rhs_leg_joints[num_joints];
+  // Start off with legs 'flat' / pointing directly out
+  rhs_leg_joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
+  rhs_leg_joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
+  rhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset, joint_3_offset);
+  Leg rhs_leg(leg_dims, rhs_leg_joints);
+
+  Joint lhs_leg_joints[num_joints];
+  lhs_leg_joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
+  lhs_leg_joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
+  lhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset, joint_3_offset);
+  Leg lhs_leg(leg_dims, lhs_leg_joints);
+
+  // Make an array of legs and copy the one we just made into all elements
+  constexpr uint8_t num_legs = 6;
+  Leg* legs = new Leg[num_legs];
+  for (uint8_t leg_idx = 0; leg_idx < num_legs; leg_idx += 2) {
+    legs[leg_idx] = lhs_leg;
+    legs[leg_idx+1] = rhs_leg;
+  }
+
+  // Hexapod body dimensions
+  constexpr float length = 0.24f;
+  constexpr float width = 0.12f;
+  constexpr float width_mid = 0.20f;
+  constexpr float depth = 0.07f;
+  const Hexapod::Dims hex_dims{length, width, depth};
+
+  // Transformations between body frame and leg base frames
+  // LHS leg base frames need to be rotated by 90, RHS by -90
+  Transform* tf_body_to_leg = new Transform[num_legs];
+
+  // Legs MUST be ordered this way i.e. left then right, then next row left ...
+  enum { FRONT_LEFT = 0, FRONT_RIGHT, MIDDLE_LEFT, MIDDLE_RIGHT, BACK_LEFT, BACK_RIGHT };
+
+  tf_body_to_leg[FRONT_LEFT].t_ = Vector3{length/2.0, width/2.0, 0.0};
+  tf_body_to_leg[FRONT_LEFT].R_.setRPYExtr(0, 0, M_PI / 4.0);
+
+  tf_body_to_leg[MIDDLE_LEFT].t_ = Vector3{0.0, width_mid/2.0, 0.0};
+  tf_body_to_leg[MIDDLE_LEFT].R_.setRPYExtr(0, 0, M_PI / 2.0);
+
+  tf_body_to_leg[BACK_LEFT].t_ = Vector3{-length/2.0, width/2.0, 0.0};
+  tf_body_to_leg[BACK_LEFT].R_.setRPYExtr(0, 0, M_PI * 3.0 / 4.0);
+
+  tf_body_to_leg[FRONT_RIGHT].t_ = Vector3{length/2.0, -width/2.0, 0.0};
+  tf_body_to_leg[FRONT_RIGHT].R_.setRPYExtr(0, 0, -M_PI / 4.0);
+
+  tf_body_to_leg[MIDDLE_RIGHT].t_ = Vector3{0.0, -width_mid/2.0, 0.0};
+  tf_body_to_leg[MIDDLE_RIGHT].R_.setRPYExtr(0, 0, -M_PI / 2.0);
+
+  tf_body_to_leg[BACK_RIGHT].t_ = Vector3{-length/2.0, -width/2.0, 0.0};
+  tf_body_to_leg[BACK_RIGHT].R_.setRPYExtr(0, 0, -M_PI * 3.0/ 4.0);
+
+  return Hexapod(num_legs, hex_dims, tf_body_to_leg, legs);
+}
+
 
 Hexapod buildDefaultOctapod() {
   // Construct a leg (they are all the same in this default robot)

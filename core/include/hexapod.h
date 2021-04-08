@@ -250,6 +250,7 @@ Hexapod buildDefaultHexapod();
 Hexapod buildDefaultHexapod2();
 
 Hexapod buildPhantomX();
+Hexapod buildPhantomXForVis();
 /** @brief Returns a Hexapod object consistent with example file octapod.urdf.xacro */
 Hexapod buildDefaultOctapod();
 
