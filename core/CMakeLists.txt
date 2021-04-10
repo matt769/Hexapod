@@ -11,7 +11,7 @@ find_package(catkin REQUIRED)
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES hexapod_core
+    LIBRARIES ${PROJECT_NAME}
 )
 
 add_library(${PROJECT_NAME} STATIC
@@ -19,6 +19,7 @@ add_library(${PROJECT_NAME} STATIC
   src/leg.cpp
   src/kinematics_support.cpp
   src/transformations.cpp
+  src/receiver.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
