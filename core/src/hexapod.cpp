@@ -757,7 +757,7 @@ bool Hexapod::changeBase(Vector3 move_base) {
  * @return true if an IK solution was found for all legs
  */
 bool Hexapod::setLegsToGround() {
-  if (!state_ != State::UNSUPPORTED) {
+  if (state_ != State::UNSUPPORTED) {
     return false;
   }
   // some default position
