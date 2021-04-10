@@ -8,7 +8,7 @@
 #include "hexapod.h"
 #include "transformations.h"
 
-using namespace Transformations;
+using namespace hexapod;
 
 std::ostream& operator<<(std::ostream& os, const Vector3& v) {
   os << v.x() << ' '  << v.y() << ' ' << v.z();

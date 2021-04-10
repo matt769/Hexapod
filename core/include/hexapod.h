@@ -10,7 +10,7 @@
 #include <cstddef>
 #endif
 
-namespace Tfm = Transformations;
+namespace hexapod {
 
 /** @class Hexapod
  * @brief A hexapod contains a body and a number of legs (not actually limited to 6), and manages
@@ -36,22 +36,22 @@ class Hexapod {
   enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, NUM_GAITS };
 
   /** @brief Construct a new Hexapod object */
-  Hexapod(uint8_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg, Leg* legs);
+  Hexapod(uint8_t num_legs, Dims hex_dims, Transform *tf_body_to_leg, Leg *legs);
   ~Hexapod();
   Hexapod(const Hexapod&) = delete;
   Hexapod(Hexapod&&) = default;
   Hexapod& operator=(const Hexapod&) = delete;
   Hexapod& operator=(Hexapod&&) = default;
   /** @brief Set walk or turn movement for the next period */
-  bool setWalk(const Tfm::Vector3& walk_step, float angle_step);
+  bool setWalk(const Vector3& walk_step, float angle_step);
   /** @brief Set walk or turn movement for the next period */
-  bool setWalk(const Tfm::Vector3& walk_step);
+  bool setWalk(const Vector3& walk_step);
   /** @brief Set walk or turn movement for the next period */
   bool setWalk(float angle_step);
   /** @brief Set absolute body rotation and translation relative to the base */
-  bool setBody(const Tfm::Transform& tf_base_to_body_target);
+  bool setBody(const Transform& tf_base_to_body_target);
   /** @brief Apply incremental rotation and translation to the body, relative to the base */
-  bool changeBody(const Tfm::Transform& tf_base_to_body_change);
+  bool changeBody(const Transform& tf_base_to_body_change);
   /** @brief Resets any walk or turn commands. Does not affect body rotation or translation. */
   bool clearMovement();
   /** @brief Resets any body tilt or translation. Does not affect walk or turn. */
@@ -79,9 +79,9 @@ class Hexapod {
   /** @brief For visualisation */
   const Leg& getLeg(uint8_t leg_idx) const;
   /** @brief For visualisation */
-  const Tfm::Transform& getBaseToBody() const;
+  const Transform& getBaseToBody() const;
   /** @brief For visualisation */
-  const Tfm::Transform& getBaseMovement() const;
+  const Transform& getBaseMovement() const;
   /** @brief For visualisation */
   float getHeight() const;
   /** @brief Toggle full manual control mode (allowing various manual movements) */
@@ -95,16 +95,15 @@ class Hexapod {
   /** @brief Set ManualControlType to SINGLE_JOINT using joint index into leg */
   void setManualJointControl(uint8_t joint_idx);
   /** @brief Position control of the selected foot when in ALL_LEGS or SINGLE_LEG manual mode */
-  void manualMoveFoot(const Tfm::Vector3& movement);
+  void manualMoveFoot(const Vector3& movement);
   /** @brief Angle control of the selected joint when in SINGLE_JOINT manual mode */
   void manualChangeJoint(float angle_change);
   ManualControlType getManualControlType() const;
   uint8_t getManualControlLegIdx() const;
   uint8_t getManualControlJointIdx() const;
 
-
  private:
-   /** @brief During start up, hexapod will rise to this height before entering walking state */
+  /** @brief During start up, hexapod will rise to this height before entering walking state */
   float walk_height_default_;
   /** @brief Number of periods leg will be in air if raised while walk speed is zero */
   static constexpr uint16_t foot_air_time_default_ = 20;
@@ -123,31 +122,31 @@ class Hexapod {
 
   /** @brief Used to control movements while in unsupported state TODO this is horrible */
   enum class SubState { NOT_STARTED, IN_PROGRESS, FINISHED };
-  Leg* legs_;
+  Leg *legs_;
   /** @brief Height of base frame above ground */
   float height_;
   /** @brief Relationship between base frame and body frame */
-  Tfm::Transform tf_base_to_body_, tf_base_to_body_prev_;  //
+  Transform tf_base_to_body_, tf_base_to_body_prev_;  //
   /** @brief Fixed relationship between body frame and leg frames */
-  Tfm::Transform* tf_body_to_leg_;
+  Transform *tf_body_to_leg_;
   MoveMode move_mode_ = MoveMode::STANDARD;
   State state_ = State::UNSUPPORTED;
   State requested_state_ = State::UNSUPPORTED;
   SubState sub_state_ = SubState::NOT_STARTED;
   /** @brief For visualisation. New base expressed in old base frame. */
-  Tfm::Transform tf_base_movement_;
+  Transform tf_base_movement_;
   /** @brief Target walk movement expressed in current base frame */
-  Tfm::Transform tf_base_to_new_base_;
+  Transform tf_base_to_new_base_;
   /** @brief Target base to body transform expressed in current base frame */
-  Tfm::Transform tf_base_to_body_target_;
+  Transform tf_base_to_body_target_;
   /** @brief Hold calculated angles for all legs before applying them.
    * TODO - probably move to leg class
    */
-  Leg::JointAngles* staged_angles_;
+  Leg::JointAngles *staged_angles_;
   /** @brief Current walk vector. TODO review naming. */
-  Tfm::Vector3 walk_step_current_;
+  Vector3 walk_step_current_;
   /** @brief Requested walk vector. */
-  Tfm::Vector3 walk_step_new_;
+  Vector3 walk_step_new_;
   /** @brief Current walk vector. TODO review naming. */
   float turn_step_current_;
   /** @brief Requested turn angle. */
@@ -203,25 +202,25 @@ class Hexapod {
   /** @brief Includes everything necessary to manage the grounded legs. */
   bool handleGroundedLegs();
   /** @brief Calculates vector induced at neutral position due to movement. */
-  Tfm::Vector3 calculateFootVector(uint8_t leg_idx) const;
+  Vector3 calculateFootVector(uint8_t leg_idx) const;
   /** @brief Includes everything necessary to manage the raised legs. */
   void handleRaisedLegs();
   /** @brief Update status of each leg and request they raise if conditions met. */
   void updateLegs();
   /** @brief Converts a vector in a leg frame to the correspondng vector in the base frame. */
-  Tfm::Vector3 legToBase(uint8_t leg_idx, const Tfm::Vector3& v) const;
+  Vector3 legToBase(uint8_t leg_idx, const Vector3& v) const;
   /** @brief Return neutral position for a leg in the base frame. */
-  Tfm::Vector3 getNeutralPosition(uint8_t leg_idx) const;
+  Vector3 getNeutralPosition(uint8_t leg_idx) const;
   /** @brief Return target position for a leg in the base frame. */
-  Tfm::Vector3 getTargetPosition(uint8_t leg_idx) const;
+  Vector3 getTargetPosition(uint8_t leg_idx) const;
   /** @brief Return raised target position for a leg in the base frame. */
-  Tfm::Vector3 getRaisedPosition(uint8_t leg_idx) const;
+  Vector3 getRaisedPosition(uint8_t leg_idx) const;
   /** @brief Update foot targets (if required) for single leg*/
   void updateFootTarget(uint8_t leg_idx);
   /** @brief Call updateFootTarget for all raised legs */
   void updateFootTargets();
   /** @brief Return foot position in the base frame. */
-  Tfm::Vector3 getFootPosition(uint8_t leg_idx) const;
+  Vector3 getFootPosition(uint8_t leg_idx) const;
   /** @brief Clear all movement targets (walk, turn, body etc). */
   void clearTargets();
   /** @brief Set robot-wide targets to move all legs to specified joint position
@@ -231,7 +230,7 @@ class Hexapod {
   /** @brief Update function for movements in UNSUPPORTED state. */
   bool updateMoveLegs();
   /** @brief Set a movement of the base. Only used in specific situtations e.g. start up. */
-  bool changeBase(Tfm::Vector3 move_base);
+  bool changeBase(Vector3 move_base);
   /** @brief Check for state change conditions and apply if met. */
   void handleStateChange();
   /** @brief Clear variables used by visualisation. */
@@ -253,5 +252,7 @@ Hexapod buildPhantomX();
 Hexapod buildPhantomXForVis();
 /** @brief Returns a Hexapod object consistent with example file octapod.urdf.xacro */
 Hexapod buildDefaultOctapod();
+
+} // namespace hexapod
 
 #endif

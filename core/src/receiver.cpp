@@ -9,12 +9,12 @@
 #include "hexapod.h"
 #include "transformations.h"
 
-using namespace Transformations;
+namespace hexapod {
 
 Receiver::Receiver() : Receiver(nullptr) {}
-Receiver::Receiver(Hexapod* hexapod) : hexapod_(hexapod) {}
+Receiver::Receiver(Hexapod *hexapod) : hexapod_(hexapod) {}
 
-void Receiver::setRobot(Hexapod* hexapod) {
+void Receiver::setRobot(Hexapod *hexapod) {
   hexapod_ = hexapod;
 }
 
@@ -26,7 +26,6 @@ void Receiver::update() {
   // everything else is set within processCommand
 }
 
-
 void Receiver::processCommand(const uint8_t cmd) {
   if (!hexapod_) return;
 
@@ -37,24 +36,21 @@ void Receiver::processCommand(const uint8_t cmd) {
       case 108: // l
         if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
           hexapod_->setManualLegControl(hexapod_->getManualControlLegIdx() + 1); // will be wrapped if too high
-        }
-        else {
+        } else {
           hexapod_->setManualLegControl(0);
         }
         break;
       case 106: // j
         if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
           hexapod_->setManualJointControl(hexapod_->getManualControlJointIdx() + 1);
-        }
-        else {
+        } else {
           hexapod_->setManualJointControl(0);
         }
         break;
       case 119: // w
         if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
           hexapod_->manualMoveFoot(manual_fb);
-        }
-        else if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
+        } else if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
           hexapod_->manualChangeJoint(manual_joint);
         }
         break;
@@ -66,8 +62,7 @@ void Receiver::processCommand(const uint8_t cmd) {
       case 115: // s
         if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
           hexapod_->manualMoveFoot(-manual_fb);
-        }
-        else if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
+        } else if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
           hexapod_->manualChangeJoint(-manual_joint);
         }
         break;
@@ -167,76 +162,57 @@ void Receiver::processCommand(const uint8_t cmd) {
       body_change.R_.setRPYExtr(0.0f, body_rotation_increment, 0.0f);
       hexapod_->changeBody(body_change);
       break;
-    case 107:
-      body_change.R_.setRPYExtr(0.0f, -body_rotation_increment, 0.0f);
+    case 107:body_change.R_.setRPYExtr(0.0f, -body_rotation_increment, 0.0f);
       hexapod_->changeBody(body_change);
       break;
-    case 106:
-      body_change.R_.setRPYExtr(body_rotation_increment, 0.0f, 0.0f);
+    case 106:body_change.R_.setRPYExtr(body_rotation_increment, 0.0f, 0.0f);
       hexapod_->changeBody(body_change);
       break;
-    case 108:
-      body_change.R_.setRPYExtr(-body_rotation_increment, 0.0f, 0.0f);
+    case 108:body_change.R_.setRPYExtr(-body_rotation_increment, 0.0f, 0.0f);
       hexapod_->changeBody(body_change);
       break;
-    case 117:
-      body_change.R_.setRPYExtr(0.0f, 0.0f, body_rotation_increment);
+    case 117:body_change.R_.setRPYExtr(0.0f, 0.0f, body_rotation_increment);
       hexapod_->changeBody(body_change);
       break;
-    case 111:
-      body_change.R_.setRPYExtr(0.0f, 0.0f, -body_rotation_increment);
+    case 111:body_change.R_.setRPYExtr(0.0f, 0.0f, -body_rotation_increment);
       hexapod_->changeBody(body_change);
       break;
-    case 44:
-      hexapod_->setBody(body_change);  // TODO implement resetBody()
+    case 44:hexapod_->setBody(body_change);  // TODO implement resetBody()
       break;
 
-    case 49:
-      hexapod_->changeGait(Hexapod::Gait::RIPPLE);
+    case 49:hexapod_->changeGait(Hexapod::Gait::RIPPLE);
       break;
-    case 50:
-      hexapod_->changeGait(Hexapod::Gait::LEFT_RIGHT_LEFT_RIGHT);
+    case 50:hexapod_->changeGait(Hexapod::Gait::LEFT_RIGHT_LEFT_RIGHT);
       break;
-    case 51:
-      hexapod_->changeGait(Hexapod::Gait::LHS_THEN_RHS);
+    case 51:hexapod_->changeGait(Hexapod::Gait::LHS_THEN_RHS);
       break;
-    case 52:
-      hexapod_->changeGait(Hexapod::Gait::AROUND_THE_CLOCK);
+    case 52:hexapod_->changeGait(Hexapod::Gait::AROUND_THE_CLOCK);
       break;
 
-    case 93:
-      hexapod_->changeStanceWidth(stance_width_increment);
+    case 93:hexapod_->changeStanceWidth(stance_width_increment);
       break;
-    case 91:
-      hexapod_->changeStanceWidth(-stance_width_increment);
+    case 91:hexapod_->changeStanceWidth(-stance_width_increment);
       break;
-    case 59:
-      hexapod_->resetStanceWidth();
+    case 59:hexapod_->resetStanceWidth();
       break;
 
-    // Change foot ground travel ratio
-    case 35:
-      hexapod_->changeFootGroundTravelRatio(ftgr_increment);
+      // Change foot ground travel ratio
+    case 35:hexapod_->changeFootGroundTravelRatio(ftgr_increment);
       break;
-    case 39:
-      hexapod_->changeFootGroundTravelRatio(-ftgr_increment);
+    case 39:hexapod_->changeFootGroundTravelRatio(-ftgr_increment);
       break;
-    case 47:
-      hexapod_->resetFootGroundTravelRatio();
+    case 47:hexapod_->resetFootGroundTravelRatio();
       break;
 
-    // Change leg raise height
-    case 61:
-      hexapod_->changeLegRaiseHeight(leg_raise_increment);
+      // Change leg raise height
+    case 61:hexapod_->changeLegRaiseHeight(leg_raise_increment);
       break;
-    case 45:
-      hexapod_->changeLegRaiseHeight(-leg_raise_increment);
+    case 45:hexapod_->changeLegRaiseHeight(-leg_raise_increment);
       break;
-    case 48:
-      hexapod_->resetLegRaiseHeight();
+    case 48:hexapod_->resetLegRaiseHeight();
       break;
 
-    // TODO change to toggle
+      // TODO change to toggle
     case 127:  // backspace
       hexapod_->setMoveMode(Hexapod::MoveMode::STANDARD);
       break;
@@ -252,7 +228,7 @@ void Receiver::processCommand(const uint8_t cmd) {
         hexapod_->riseToWalk();
       }
       break;
-    // Manual control
+      // Manual control
     case 32:  // Space bar
       if (hexapod_->getState() != Hexapod::State::FULL_MANUAL) {
         hexapod_->setFullManualControl(true); // TODO allow turning off in future
@@ -267,10 +243,12 @@ void Receiver::processCommand(const uint8_t cmd) {
 
     default:
 #ifdef __AVR__
-  Serial.print("Unrecognised key: ");
-  Serial.println(cmd);
+      Serial.print("Unrecognised key: ");
+      Serial.println(cmd);
 #else
       std::cout << "Unrecognised key: " << cmd << '\n';
 #endif
   }
 }
+
+} // namespace hexapod

@@ -11,8 +11,9 @@
 #include <iostream>
 #endif
 
-using namespace KinematicsSupport;
-using namespace Transformations;
+namespace hexapod {
+
+using namespace util;
 
 Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f, false) {}
 
@@ -27,7 +28,11 @@ Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f, false) {}
  * @param offset Offset between IK result and actual physical joint angle (TODO improve this terrible explanation)
  * @param flip_axis If the physical model uses a joint that has its Z axis reversed
  */
-Joint::Joint(const float lower_limit, const float upper_limit, const float angle, const float offset, const bool flip_axis)
+Joint::Joint(const float lower_limit,
+             const float upper_limit,
+             const float angle,
+             const float offset,
+             const bool flip_axis)
     : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset), flip_axis_(1.0f) {
 
   auto sign = [](const float& num) -> float { return (num >= 0.0) ? 1.0 : -1.0; };
@@ -35,8 +40,8 @@ Joint::Joint(const float lower_limit, const float upper_limit, const float angle
   if (flip_axis) {
     // Swap limits, but keep the signs (LL should stay lower than UL)
     flip_axis_ = -1.0;
-    lower_limit_ = sign(lower_limit)*fabs(upper_limit);
-    upper_limit_ = sign(upper_limit)*fabs(lower_limit);
+    lower_limit_ = sign(lower_limit) * fabs(upper_limit);
+    upper_limit_ = sign(upper_limit) * fabs(lower_limit);
   }
 
   if (offset_ != 0.0f) {
@@ -47,8 +52,8 @@ Joint::Joint(const float lower_limit, const float upper_limit, const float angle
 }
 
 bool Joint::isWithinLimits(const float angle) const {
-  return (angle >= lower_limit_ - KinematicsSupport::eps) &&
-         (angle < upper_limit_ + KinematicsSupport::eps);
+  return (angle >= lower_limit_ - util::eps) &&
+      (angle < upper_limit_ + util::eps);
 }
 
 float Joint::clampToLimts(const float angle) const {
@@ -57,8 +62,8 @@ float Joint::clampToLimts(const float angle) const {
 
 Leg::Leg() {}
 
-Leg::Leg(Dims dims, Joint* joints)
-    : dims_(dims), neutral_pos_{(dims.a + dims.b + dims.c) * 2.0f/3.0f, 0.0f, 0.0f}, step_idx_{0} {
+Leg::Leg(Dims dims, Joint *joints)
+    : dims_(dims), neutral_pos_{(dims.a + dims.b + dims.c) * 2.0f / 3.0f, 0.0f, 0.0f}, step_idx_{0} {
   joints_[JOINT_1] = joints[0];
   joints_[JOINT_2] = joints[1];
   joints_[JOINT_3] = joints[2];
@@ -123,7 +128,7 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
     ha = pos.y() / sin_theta_1 - dims_.a;
   }
   float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) /
-             (2 * dims_.b * dims_.c);
+      (2 * dims_.b * dims_.c);
 
   if (clamp(ka, -1.0f, 1.0f)) {
     angles[0].theta_3 = acos(ka);
@@ -217,11 +222,11 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
     ha = pos.y() / sin(th1) - dims_.a;
   }
   float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) /
-             (2 * dims_.b * dims_.c);
+      (2 * dims_.b * dims_.c);
   if (clamp(ka, -1.0f, 1.0f)) {
     th3 = -acos(ka);  // acos result always positive (between 0 and pi)
-                      // but the negative version also valid
-                      // and for walking, we want to option where J3 is negative
+    // but the negative version also valid
+    // and for walking, we want to option where J3 is negative
     if (joints_[JOINT_3].isWithinLimits(th3)) {
       th3 = joints_[JOINT_3].clampToLimts(th3);
     } else {
@@ -288,8 +293,8 @@ bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
  */
 bool Leg::jointsWithinLimits(const JointAngles& joint_angles) const {
   return (joints_[JOINT_1].isWithinLimits(joint_angles.theta_1) &&
-          joints_[JOINT_2].isWithinLimits(joint_angles.theta_2) &&
-          joints_[JOINT_3].isWithinLimits(joint_angles.theta_3));
+      joints_[JOINT_2].isWithinLimits(joint_angles.theta_2) &&
+      joints_[JOINT_3].isWithinLimits(joint_angles.theta_3));
 }
 
 /**
@@ -356,7 +361,7 @@ bool Leg::applyStagedAngles() { return setJointAngles(staged_angles_); }
  * @return uint8_t Index of the angle_options closest to the ref_angles angles
  */
 uint8_t Leg::chooseJointAnglesNearest(const JointAngles angle_options[2], uint8_t num_valid,
-                                     const JointAngles& ref_angles) const {
+                                      const JointAngles& ref_angles) const {
   if (num_valid == 1) {
     return 0;
   } else {
@@ -520,7 +525,7 @@ bool Leg::updateStatus(const bool raise) {
     state_ = State::ON_GROUND;
     step_idx_ = 0;
   }
-  // If it's already at its target then don't lift but return true as if it had
+    // If it's already at its target then don't lift but return true as if it had
   else if (raise && state_ == State::ON_GROUND) {
     float d = (current_pos_ - target_pos_).norm();
     if (!compareFloat(d, 0.0f, target_tolerance)) {
@@ -566,3 +571,5 @@ bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
 }
 
 uint16_t Leg::getStepIdx() const { return step_idx_; }
+
+} // namespace hexapod

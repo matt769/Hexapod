@@ -14,7 +14,7 @@
 #include <cmath>
 #endif
 
-namespace Tfm = Transformations;
+namespace hexapod {
 
 /** @class Joint
     @brief Wraps current angle and limits, plus some basic utility functions.
@@ -99,11 +99,11 @@ class Leg {
    * along the x-axis of the leg base frame.
    * The foot will be at distance a+b+c (no offsets in y or z) from the leg base.
    */
-  Leg(Dims dims, Joint* joints);
+  Leg(Dims dims, Joint *joints);
   /** @brief Calculate joint angles for a given foot position */
-  bool calculateJointAngles(const Tfm::Vector3& pos, const IKMode ik_mode);
+  bool calculateJointAngles(const Vector3& pos, const IKMode ik_mode);
   /** @brief Calculate foot position for given joint angles */
-  bool calculateFootPosition(const JointAngles& angles, Tfm::Vector3& pos);
+  bool calculateFootPosition(const JointAngles& angles, Vector3& pos);
   /** @brief Check if a set of joint angles are allowed by the leg joint limits */
   bool jointsWithinLimits(const JointAngles& joint_angles) const;
   /** @brief Sets all leg joints */
@@ -115,19 +115,19 @@ class Leg {
   /** @brief Sets all leg joints */
   bool applyStagedAngles();
   /** @brief Returns the current foot position in the leg frame */
-  Tfm::Vector3 getFootPosition() const;
+  Vector3 getFootPosition() const;
   /** @brief Returns the neutral foot position in the leg frame. Z unknown by the leg, and is always
    * zero. */
-  Tfm::Vector3 getNeutralPosition() const;
+  Vector3 getNeutralPosition() const;
   /** @brief Returns the neutral foot position for modification. */
-  Tfm::Vector3& getNeutralPosition();
+  Vector3& getNeutralPosition();
   /** @brief Returns the current target position in the leg frame */
-  Tfm::Vector3 getTargetPosition() const;
+  Vector3 getTargetPosition() const;
   /** @brief Returns the current raised target position in the leg frame */
-  Tfm::Vector3 getRaisedPosition() const;
+  Vector3 getRaisedPosition() const;
   /** @brief Returns the current joint angles */
   JointAngles getJointAngles() const;
-    /** @brief Returns the current joint angles plus any offset for external use. */
+  /** @brief Returns the current joint angles plus any offset for external use. */
   JointAngles getJointAnglesWithOffset() const;
   /** @brief Updates joint angles as required by current trajectory. Must be called every period
    * when leg raised. */
@@ -135,7 +135,7 @@ class Leg {
   /** @brief Updates leg status. Must be called every period. */
   bool updateStatus(bool raise);
   /** @brief Update leg raise trajectory targets */
-  void updateTargets(const Tfm::Vector3& target_pos, const Tfm::Vector3& raised_pos,
+  void updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
                      uint16_t foot_air_time);
   /** @brief Initialise leg angles, position and targets */
   bool setStartingAngles(JointAngles starting_angles);
@@ -144,9 +144,9 @@ class Leg {
 
  private:
   /** @brief Current foot position relative to the leg base frame */
-  Tfm::Vector3 current_pos_;
+  Vector3 current_pos_;
   /** @brief Neutral position relative to the leg base frame. Z unknown by leg (always zero). */
-  Tfm::Vector3 neutral_pos_;
+  Vector3 neutral_pos_;
   /** @brief The final position (in joint space) of the foot during a step */
   JointAngles target_angles_;
   /** @brief The apex position (in joint space) of the foot during a step */
@@ -162,25 +162,25 @@ class Leg {
   /** @brief The number of time steps that the leg will spend raised for the current step */
   uint16_t current_step_duration_;
   /** @brief The final position (in leg base frame) of the foot during a step */
-  Tfm::Vector3 target_pos_;
+  Vector3 target_pos_;
   /** @brief The apex position (in leg base frame) of the foot during a step */
-  Tfm::Vector3 raised_pos_;
+  Vector3 raised_pos_;
   /** @brief Holds the latest calculated time for the leg step */
   uint16_t new_step_duration_;
   /** @brief Indicates whether target_pos_ or raised_pos_ have been updated */
   bool target_updated_ = false;
   /** @brief Calculate joint angles for a given position (up to 2 solutions) */
-  uint8_t calculateJointAnglesFull(const Tfm::Vector3& pos, JointAngles angles[2]);
+  uint8_t calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]);
   /** @brief Calculate joint angles for a given position while walking (joint 2 restricted) */
-  uint8_t calculateJointAnglesWalk(const Tfm::Vector3& pos, JointAngles& angles);
+  uint8_t calculateJointAnglesWalk(const Vector3& pos, JointAngles& angles);
   /** @brief Checks whether a given set of joint angles give a specificied foot position */
-  bool validateJointAngles(const JointAngles& angles, const Tfm::Vector3& pos);
+  bool validateJointAngles(const JointAngles& angles, const Vector3& pos);
   /** @brief Updates the foot position member current_pos_ to be consistent with the current joint
    * angles */
   bool updateFootPosition();
   /** @brief Returns the index of the angles closest to the reference angles */
   uint8_t chooseJointAnglesNearest(const JointAngles angle_options[2], uint8_t num_valid,
-                                  const JointAngles& ref_angles) const;
+                                   const JointAngles& ref_angles) const;
   /** @brief Calculates the requires incremental joint movements for a given current joint position,
    * raised position and target position */
   void calculateTrajectory();
@@ -188,5 +188,7 @@ class Leg {
    */
   void incrementLeg();
 };
+
+} // namespace hexapod
 
 #endif

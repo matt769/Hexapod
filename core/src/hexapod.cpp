@@ -12,8 +12,9 @@
 #include <iostream>
 #endif
 
-using namespace KinematicsSupport;
-using namespace Transformations;
+namespace hexapod {
+
+using namespace util;
 
 /**
  * @details
@@ -35,7 +36,7 @@ using namespace Transformations;
  * @param tf_body_to_leg - array of transforms relating each leg to the body
  * @param legs - array of Legs
  */
-Hexapod::Hexapod(uint8_t num_legs, Dims hex_dims, Tfm::Transform* tf_body_to_leg, Leg* legs)
+Hexapod::Hexapod(uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_leg, Leg* legs)
     : dims_(hex_dims), num_legs_(num_legs), height_(hex_dims.depth / 2.0f) {
   tf_base_to_body_ = Transform();
   tf_base_to_body_prev_ = Transform();
@@ -834,9 +835,9 @@ Hexapod::State Hexapod::getState() const { return state_; }
 
 const Leg& Hexapod::getLeg(uint8_t leg_idx) const { return legs_[leg_idx]; }
 
-const Tfm::Transform& Hexapod::getBaseToBody() const { return tf_base_to_body_; }
+const Transform& Hexapod::getBaseToBody() const { return tf_base_to_body_; }
 
-const Tfm::Transform& Hexapod::getBaseMovement() const { return tf_base_movement_; }
+const Transform& Hexapod::getBaseMovement() const { return tf_base_movement_; }
 
 float Hexapod::getHeight() const { return height_; }
 
@@ -868,9 +869,9 @@ void Hexapod::setManualJointControl(const uint8_t joint_idx) {
   manual_joint_idx_ = joint_idx < Leg::NUM_JOINTS ? joint_idx : 0;
 }
 
-void Hexapod::manualMoveFoot(const Tfm::Vector3& movement) {
+void Hexapod::manualMoveFoot(const Vector3& movement) {
   if (state_ == State::FULL_MANUAL && manual_control_type_== ManualControlType::SINGLE_LEG) {
-    const Tfm::Vector3 new_pos = legs_[manual_leg_idx_].getFootPosition() + movement;
+    const Vector3 new_pos = legs_[manual_leg_idx_].getFootPosition() + movement;
     const bool ik_result = legs_[manual_leg_idx_].calculateJointAngles(new_pos, Leg::IKMode::FULL);
     if (ik_result) {
       legs_[manual_leg_idx_].applyStagedAngles();
@@ -1319,3 +1320,5 @@ Hexapod buildDefaultOctapod() {
 
   return Hexapod(num_legs, hex_dims, tf_body_to_leg, legs);
 }
+
+} // namespace hexapod
