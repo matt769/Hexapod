@@ -717,7 +717,7 @@ bool Hexapod::updateMoveLegs() {
  * @return false
  */
 bool Hexapod::riseToWalk() {
-  if (!(state_ == State::STANDING)) {
+  if (state_ != State::STANDING) {
     return false;
   }
 
@@ -757,7 +757,7 @@ bool Hexapod::changeBase(Vector3 move_base) {
  * @return true if an IK solution was found for all legs
  */
 bool Hexapod::setLegsToGround() {
-  if (!(state_ == State::UNSUPPORTED)) {
+  if (!state_ != State::UNSUPPORTED) {
     return false;
   }
   // some default position
@@ -785,7 +785,9 @@ void Hexapod::handleStateChange() {
     }
     if (ready) {
       state_ = requested_state_;
-#ifndef __AVR__
+#ifdef __AVR__
+      Serial.print(F("State changed to: STANDING\n"));
+#else
       std::cout << "State changed to: STANDING\n";
 #endif
     }
@@ -796,7 +798,9 @@ void Hexapod::handleStateChange() {
   if (state_ == State::STANDING && requested_state_ == State::WALKING &&
       height_ >= walk_height_default_) {
     state_ = requested_state_;
-#ifndef __AVR__
+#ifdef __AVR__
+    Serial.print(F("State changed to: WALKING\n"));
+#else
     std::cout << "State changed to: WALKING\n";
 #endif
   }
