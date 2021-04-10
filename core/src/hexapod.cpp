@@ -764,9 +764,6 @@ bool Hexapod::setLegsToGround() {
   Vector3 grounded_position = legs_[0].getNeutralPosition();
   grounded_position.z() = -height_;
   bool result = legs_[0].calculateJointAngles(grounded_position, Leg::IKMode::WALK);
-  std::cout << result << '\t' << legs_[0].getStagedAngles().theta_1 << '\t'
-                              << legs_[0].getStagedAngles().theta_2 << '\t'
-                              << legs_[0].getStagedAngles().theta_3 << '\n';
   if (result) {
     result &= setTargetsMoveLegs(legs_[0].getStagedAngles());
   }
