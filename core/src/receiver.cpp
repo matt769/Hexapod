@@ -87,6 +87,22 @@ void Receiver::processCommand(const uint8_t cmd) {
         }
         break;
     }
+    uint8_t current_leg_idx = hexapod_->getManualControlLegIdx();
+    uint8_t current_joint_idx = hexapod_->getManualControlJointIdx();
+
+#ifdef __AVR__
+    Serial.print(F("Manual mode: "));
+    Serial.print(static_cast<uint8_t>(mct));
+    Serial.print('\t');
+    Serial.print(F("Leg: "));
+    Serial.print(current_leg_idx);
+    Serial.print('\t');
+    Serial.print(F("Joint: "));
+    Serial.print(current_joint_idx);
+    Serial.print('\n');
+#else
+    // TODO
+#endif
     return;
   }
 
@@ -240,6 +256,12 @@ void Receiver::processCommand(const uint8_t cmd) {
     case 32:  // Space bar
       if (hexapod_->getState() != Hexapod::State::FULL_MANUAL) {
         hexapod_->setFullManualControl(true); // TODO allow turning off in future
+
+#ifdef __AVR__
+        Serial.println("Entering manual mode");
+#else
+        std::cout << "Entering manual mode\n";
+#endif
       }
       break;
 
