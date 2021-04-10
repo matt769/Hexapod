@@ -16,14 +16,12 @@
 
 #include <string>
 
-using namespace Transformations;
+namespace hexapod {
 
-Vis::Vis(const ros::NodeHandle& nh, Hexapod* hexapod)
+Vis::Vis(const ros::NodeHandle& nh, Hexapod *hexapod)
     : nh_(nh),
       hexapod_(hexapod),
-      num_legs_(hexapod->num_legs_)
-
-{
+      num_legs_(hexapod->num_legs_) {
   const size_t number_of_joints = num_legs_ * 3;
   joint_names_.resize(number_of_joints);
   joint_angles_.resize(number_of_joints);
@@ -173,3 +171,5 @@ void Vis::update() {
   updateWorld();
   updateBody();
 }
+
+} // namespace hexapod

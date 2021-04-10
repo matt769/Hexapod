@@ -3,7 +3,7 @@
 
 #include "hexapod.h"
 
-namespace BuildFromURDF {
+namespace hexapod {
 
 Hexapod buildFromURDF();
 }

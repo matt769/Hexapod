@@ -16,7 +16,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
-using namespace Transformations;
+using namespace hexapod;
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "receiver_node");

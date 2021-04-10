@@ -13,7 +13,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
-using namespace Transformations;
+using namespace hexapod;
 
 void demo_walk(Hexapod& hexapod);
 void demo_turn(Hexapod& hexapod);

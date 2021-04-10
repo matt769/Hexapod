@@ -7,26 +7,26 @@
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 
-namespace Tfm = Transformations;
+namespace hexapod {
 
 class Receiver {
  public:
-  Receiver(const ros::NodeHandle& nh, Hexapod* hexapod);
+  Receiver(const ros::NodeHandle& nh, Hexapod *hexapod);
   void update();
 
  private:
   ros::NodeHandle nh_;
-  Hexapod* const hexapod_;
+  Hexapod *const hexapod_;
   ros::Subscriber input_sub_;
 
   const float walk_increment = 0.0001f;
-  const Tfm::Vector3 walk_increment_fb{walk_increment, 0.0f, 0.0f};
-  const Tfm::Vector3 walk_increment_lr{0.0f, walk_increment, 0.0f};
-  const Tfm::Vector3 manual_fb{0.001, 0.0f, 0.0f};
-  const Tfm::Vector3 manual_lr{0.0f, 0.001, 0.0f};
-  const Tfm::Vector3 manual_ud{0.0f, 0.0f, 0.001};
+  const Vector3 walk_increment_fb{walk_increment, 0.0f, 0.0f};
+  const Vector3 walk_increment_lr{0.0f, walk_increment, 0.0f};
+  const Vector3 manual_fb{0.001, 0.0f, 0.0f};
+  const Vector3 manual_lr{0.0f, 0.001, 0.0f};
+  const Vector3 manual_ud{0.0f, 0.0f, 0.001};
   const float manual_joint{0.025f};
-  Tfm::Vector3 current_walk{0.0f, 0.0f, 0.0f};
+  Vector3 current_walk{0.0f, 0.0f, 0.0f};
   const float turn_increment{0.03f * M_PI / 180.0f};
   float current_turn{0.0f};
   const float body_rotation_increment{1.0f * M_PI / 180.0};
@@ -37,5 +37,7 @@ class Receiver {
 
   void callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg);
 };
+
+} // namespace hexapod
 
 #endif
