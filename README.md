@@ -209,7 +209,12 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - Better definition of allowed foot movement range.
  - Foot sensors to determine when a foot has actually touched the ground. This would help to allow handling of non-flat terrain.
  - IMU to determine actual body pose.
- - Build it!
+ - Get the PhantomX urdf representing the full physical model (including axis flips and maybe adding the meshes), and buildFromUrdf() can produce a correct model from it
+ - Set more movement parameters and receiver parameters based on the hexapod dimensions
+ - Is there a better way to manage multiple receiver types? And different settings for different models?
+
+### Package structure
+ - Probably fully split the core and visualisation packages at some point
 
 ### Bits and pieces
  - Does base_to_body floating joint really belong in the urdf? Probably not 
