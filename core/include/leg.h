@@ -127,8 +127,8 @@ class Leg {
   Vector3 getRaisedPosition() const;
   /** @brief Returns the current joint angles */
   JointAngles getJointAngles() const;
-  /** @brief Returns the current joint angles plus any offset for external use. */
-  JointAngles getJointAnglesWithOffset() const;
+  /** @brief Returns the current joint angles taking into account offset and axis flip for external use. */
+  JointAngles getJointAnglesPhysical() const;
   /** @brief Updates joint angles as required by current trajectory. Must be called every period
    * when leg raised. */
   bool stepUpdate();

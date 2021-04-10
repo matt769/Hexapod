@@ -556,7 +556,7 @@ Leg::JointAngles Leg::getJointAngles() const {
   return JointAngles{joints_[JOINT_1].angle_, joints_[JOINT_2].angle_, joints_[JOINT_3].angle_};
 }
 
-Leg::JointAngles Leg::getJointAnglesWithOffset() const {
+Leg::JointAngles Leg::getJointAnglesPhysical() const {
   return JointAngles{joints_[JOINT_1].flip_axis_ * joints_[JOINT_1].angle_ + joints_[JOINT_1].offset_,
                      joints_[JOINT_2].flip_axis_ * joints_[JOINT_2].angle_ + joints_[JOINT_2].offset_,
                      joints_[JOINT_3].flip_axis_ * joints_[JOINT_3].angle_ + joints_[JOINT_3].offset_};

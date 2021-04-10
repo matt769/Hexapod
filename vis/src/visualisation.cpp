@@ -90,7 +90,7 @@ void Vis::generateJointNames() {
 
 void Vis::updateJoints() {
   for (size_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    const Leg::JointAngles leg_joint_angles = hexapod_->getLeg(leg_idx).getJointAnglesWithOffset();
+    const Leg::JointAngles leg_joint_angles = hexapod_->getLeg(leg_idx).getJointAnglesPhysical();
     joint_angles_.at(3 * leg_idx + 0) = leg_joint_angles.theta_1;
     joint_angles_.at(3 * leg_idx + 1) = leg_joint_angles.theta_2;
     joint_angles_.at(3 * leg_idx + 2) = leg_joint_angles.theta_3;
