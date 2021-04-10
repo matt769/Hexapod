@@ -1115,16 +1115,17 @@ Hexapod buildPhantomX() {
 
   constexpr float joint_2_offset = 14.0 * kDegToRad;
   constexpr float joint_3_offset = 46.0 * kDegToRad;
+  constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
   Joint rhs_leg_joints[num_joints];
   rhs_leg_joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
   rhs_leg_joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
-  rhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset, joint_3_offset);
+  rhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
   Leg rhs_leg(leg_dims, rhs_leg_joints);
 
   Joint lhs_leg_joints[num_joints];
   lhs_leg_joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
   lhs_leg_joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, -joint_2_offset, -joint_2_offset, true);
-  lhs_leg_joints[2] = Joint(-88.0f * kDegToRad, 120.0f * kDegToRad, -joint_3_offset, -joint_3_offset, true);
+  lhs_leg_joints[2] = Joint(-88.0f * kDegToRad, 120.0f * kDegToRad, -joint_3_offset_mod, -joint_3_offset_mod, true);
   Leg lhs_leg(leg_dims, lhs_leg_joints);
 
   // Make an array of legs and copy the one we just made into all elements
@@ -1182,17 +1183,18 @@ Hexapod buildPhantomXForVis() {
 
   constexpr float joint_2_offset = 14.0 * kDegToRad;
   constexpr float joint_3_offset = 46.0 * kDegToRad;
+  constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
   Joint rhs_leg_joints[num_joints];
   // Start off with legs 'flat' / pointing directly out
   rhs_leg_joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
   rhs_leg_joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
-  rhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset, joint_3_offset);
+  rhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
   Leg rhs_leg(leg_dims, rhs_leg_joints);
 
   Joint lhs_leg_joints[num_joints];
   lhs_leg_joints[0] = Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
   lhs_leg_joints[1] = Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
-  lhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset, joint_3_offset);
+  lhs_leg_joints[2] = Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
   Leg lhs_leg(leg_dims, lhs_leg_joints);
 
   // Make an array of legs and copy the one we just made into all elements

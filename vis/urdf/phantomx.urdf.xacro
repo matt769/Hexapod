@@ -13,6 +13,7 @@
   <xacro:property name="femur_length" value="0.066" />
   <xacro:property name="tibia_length" value="0.132" />
   <!-- Rough limits. Offsets from manual measurements again. -->
+  <!-- TODO update limits. -->
   <xacro:property name="joint_1_lower_limit" value="${-pi}" />
   <xacro:property name="joint_1_upper_limit" value="${pi}" />
   <xacro:property name="joint_2_lower_limit" value="${-pi}" />
@@ -101,7 +102,7 @@
   <joint name="leg_${row}_${side}_joint_3" type="revolute">
     <parent link="leg_${row}_${side}_link_2"/>
     <child link="leg_${row}_${side}_link_3"/>
-    <origin rpy="0 0 -${joint_3_offset}" xyz="${femur_length} 0 0"/>
+    <origin rpy="0 0 ${-(joint_3_offset-joint_2_offset)}" xyz="${femur_length} 0 0"/>
     <axis xyz="0 0 1"/>
     <limit lower="${joint_3_lower_limit}" upper="${joint_3_upper_limit}" effort="100" velocity="100" />
   </joint>
