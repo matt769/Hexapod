@@ -36,6 +36,9 @@ class Joint {
   Joint(float lower_limit, float upper_limit, float angle = 0.0f, float offset = 0.0f, bool flip_axis = false);
   bool isWithinLimits(float angle) const;
   float clampToLimts(float angle) const;
+  float fromPhysicalAngle(float physical_angle) const;
+  float toPhysicalAngle() const;
+  void setFromPhysicalAngle(float physical_angle);
 };
 
 /** @class Leg
@@ -108,6 +111,8 @@ class Leg {
   bool jointsWithinLimits(const JointAngles& joint_angles) const;
   /** @brief Sets all leg joints */
   bool setJointAngles(const JointAngles& angles);
+  /** @brief Sets all leg joints using the physical joint angle values */
+  bool setJointAnglesFromPhysical(const JointAngles& angles);
   /** @brief Return staged angles */
   JointAngles getStagedAngles() const;
   /** @brief Sets staged angles */

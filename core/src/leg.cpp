@@ -22,10 +22,10 @@ Joint::Joint() : Joint(-1.48f, 1.48f, 0.0f, 0.0f, false) {}
  * @details All input should relate to the physical joint used - it will be modified to fit the internal
  *  hexapod reference frames based on the offset and flip_axis parameters.
  * 
- * @param lower_limit The joint limit in the clockwise direction of the physical joint
- * @param upper_limit  The joint limit in the anti-clockwise direction of the physical joint
+ * @param lower_limit The joint limit in the clockwise direction of the physical joint. Always less than upper.
+ * @param upper_limit  The joint limit in the anti-clockwise direction of the physical joint. Always more than lower.
  * @param angle The starting angle of the joint
- * @param offset Offset between IK result and actual physical joint angle (TODO improve this terrible explanation)
+ * @param offset The physical angle at which the model joint is at zero degrees
  * @param flip_axis If the physical model uses a joint that has its Z axis reversed
  */
 Joint::Joint(const float lower_limit,
@@ -36,6 +36,7 @@ Joint::Joint(const float lower_limit,
     : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset), flip_axis_(1.0f) {
 
   auto sign = [](const float& num) -> float { return (num >= 0.0) ? 1.0 : -1.0; };
+  // change function to something like 'copy_sign' and just apply the sign of a to b
 
   if (flip_axis) {
     // Swap limits, but keep the signs (LL should stay lower than UL)
@@ -48,6 +49,7 @@ Joint::Joint(const float lower_limit,
     lower_limit_ -= flip_axis_ * offset_;
     upper_limit_ -= flip_axis_ * offset_;
     angle_ -= offset_;
+    // TODO pretty sure we need to modify x (currently working because x-offset = 0)
   }
 }
 
@@ -59,6 +61,20 @@ bool Joint::isWithinLimits(const float angle) const {
 float Joint::clampToLimts(const float angle) const {
   return fmax(fmin(angle, upper_limit_), lower_limit_);
 }
+
+
+float Joint::fromPhysicalAngle(const float physical_angle) const {
+  return (physical_angle - offset_) * flip_axis_;
+}
+
+float Joint::toPhysicalAngle() const {
+  return (flip_axis_ * angle_) - offset_;
+}
+
+void Joint::setFromPhysicalAngle(const float physical_angle) {
+  angle_ = fromPhysicalAngle(physical_angle);
+}
+
 
 Leg::Leg() {}
 
@@ -338,6 +354,14 @@ bool Leg::setJointAngles(const JointAngles& angles) {
   return true;
 }
 
+bool Leg::setJointAnglesFromPhysical(const JointAngles& angles) {
+  joints_[JOINT_1].setFromPhysicalAngle(angles.theta_1);
+  joints_[JOINT_2].setFromPhysicalAngle(angles.theta_2);
+  joints_[JOINT_3].setFromPhysicalAngle(angles.theta_3);
+  updateFootPosition();
+  return true;
+}
+
 Leg::JointAngles Leg::getStagedAngles() const { return staged_angles_; }
 
 bool Leg::setStagedAngles(const JointAngles& angles) {
@@ -557,9 +581,9 @@ Leg::JointAngles Leg::getJointAngles() const {
 }
 
 Leg::JointAngles Leg::getJointAnglesPhysical() const {
-  return JointAngles{joints_[JOINT_1].flip_axis_ * joints_[JOINT_1].angle_ + joints_[JOINT_1].offset_,
-                     joints_[JOINT_2].flip_axis_ * joints_[JOINT_2].angle_ + joints_[JOINT_2].offset_,
-                     joints_[JOINT_3].flip_axis_ * joints_[JOINT_3].angle_ + joints_[JOINT_3].offset_};
+  return JointAngles{joints_[JOINT_1].toPhysicalAngle(),
+                     joints_[JOINT_2].toPhysicalAngle(),
+                     joints_[JOINT_3].toPhysicalAngle()};
 }
 
 bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
