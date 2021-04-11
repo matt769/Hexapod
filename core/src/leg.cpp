@@ -33,10 +33,9 @@ Joint::Joint(const float lower_limit,
              const float angle,
              const float offset,
              const bool flip_axis)
-    : lower_limit_(lower_limit), upper_limit_(upper_limit), angle_(angle), offset_(offset), flip_axis_(1.0f) {
+    : lower_limit_(lower_limit), upper_limit_(upper_limit), offset_(offset), flip_axis_(1.0f) {
 
   auto sign = [](const float& num) -> float { return (num >= 0.0) ? 1.0 : -1.0; };
-  // change function to something like 'copy_sign' and just apply the sign of a to b
 
   if (flip_axis) {
     // Swap limits, but keep the signs (LL should stay lower than UL)
@@ -48,9 +47,9 @@ Joint::Joint(const float lower_limit,
   if (offset_ != 0.0f) {
     lower_limit_ -= flip_axis_ * offset_;
     upper_limit_ -= flip_axis_ * offset_;
-    angle_ -= offset_;
-    // TODO pretty sure we need to modify x (currently working because x-offset = 0)
   }
+
+  setFromPhysicalAngle(angle);
 }
 
 bool Joint::isWithinLimits(const float angle) const {
