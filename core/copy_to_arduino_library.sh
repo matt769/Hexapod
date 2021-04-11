@@ -8,3 +8,5 @@ cp src/kinematics_support.cpp /home/$USER/Arduino/libraries/Hexapod/
 cp src/leg.cpp /home/$USER/Arduino/libraries/Hexapod/
 cp src/transformations.cpp /home/$USER/Arduino/libraries/Hexapod/
 cp src/receiver.cpp /home/$USER/Arduino/libraries/Hexapod/
+cp src/joint.cpp /home/$USER/Arduino/libraries/Hexapod/
+cp src/build_hexapod.cpp /home/$USER/Arduino/libraries/Hexapod/
