@@ -17,6 +17,7 @@ catkin_package(
 add_library(${PROJECT_NAME} STATIC
   src/hexapod.cpp
   src/leg.cpp
+  src/joint.cpp
   src/kinematics_support.cpp
   src/transformations.cpp
   src/receiver.cpp

@@ -3,6 +3,7 @@
 #include "kinematics_support.h"
 #include "leg.h"
 #include "transformations.h"
+#include "joint.h"
 
 #ifdef __AVR__
 #include <Arduino.h>
