@@ -1,5 +1,5 @@
-#ifndef HEX_RECEIVER_H
-#define HEX_RECEIVER_H
+#ifndef HEXAPOD_RECEIVER_H
+#define HEXAPOD_RECEIVER_H
 
 #include "hexapod.h"
 #include "transformations.h"
@@ -42,4 +42,4 @@ class Receiver {
 
 } // namespace hexapod
 
-#endif
+#endif // HEXAPOD_RECEIVER_H

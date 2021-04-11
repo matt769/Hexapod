@@ -1,5 +1,5 @@
-#ifndef TRANSFORMATION_MATRIX_H
-#define TRANSFORMATION_MATRIX_H
+#ifndef HEXAPOD_TRANSFORMATIONS_H
+#define HEXAPOD_TRANSFORMATIONS_H
 
 #ifdef __AVR__
 #include <Arduino.h>
@@ -86,4 +86,4 @@ RotationMatrix QuaternionToRotationMatrix(const Quaternion& q);
 
 } // namespace hexapod
 
-#endif
+#endif // HEXAPOD_TRANSFORMATIONS_H

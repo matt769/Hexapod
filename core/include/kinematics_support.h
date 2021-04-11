@@ -1,5 +1,5 @@
-#ifndef KINEMATICS_SUPPORT_H
-#define KINEMATICS_SUPPORT_H
+#ifndef HEXAPOD_UTIL_H
+#define HEXAPOD_UTIL_H
 
 #include "transformations.h"
 
@@ -21,4 +21,4 @@ bool clamp(float& val, float lower, float upper);
 } // namespace util
 } // namespace hexapod
 
-#endif
+#endif // HEXAPOD_UTIL_H

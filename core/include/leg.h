@@ -2,8 +2,8 @@
     @brief Header for Joint and Leg classes
 */
 
-#ifndef LEG_H
-#define LEG_H
+#ifndef HEXAPOD_LEG_H
+#define HEXAPOD_LEG_H
 
 #include "transformations.h"
 #include "joint.h"
@@ -172,4 +172,4 @@ class Leg {
 
 } // namespace hexapod
 
-#endif
+#endif // HEXAPOD_LEG_H

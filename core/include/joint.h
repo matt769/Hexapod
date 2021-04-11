@@ -2,8 +2,8 @@
 // Created by matt on 12/04/2021.
 //
 
-#ifndef JOINT_H_
-#define JOINT_H_
+#ifndef HEXAPOD_JOINT_H_
+#define HEXAPOD_JOINT_H_
 
 namespace hexapod {
 
@@ -34,4 +34,4 @@ class Joint {
 
 } // namespace hexapod
 
-#endif // JOINT_H_
+#endif // HEXAPOD_JOINT_H_

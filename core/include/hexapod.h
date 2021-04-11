@@ -255,4 +255,4 @@ Hexapod buildDefaultOctapod();
 
 } // namespace hexapod
 
-#endif
+#endif // HEXAPOD_H
