@@ -21,6 +21,7 @@ add_library(${PROJECT_NAME} STATIC
   src/kinematics_support.cpp
   src/transformations.cpp
   src/receiver.cpp
+  src/build_hexapod.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 

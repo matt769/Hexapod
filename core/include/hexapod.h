@@ -243,16 +243,6 @@ class Hexapod {
   uint8_t gaitMaxRaised();
 };
 
-/** @brief Returns a Hexapod object consistent with example file hexapod.urdf.xacro */
-Hexapod buildDefaultHexapod();
-/** @brief Returns a Hexapod object consistent with example file hexapod2.urdf.xacro */
-Hexapod buildDefaultHexapod2();
-
-Hexapod buildPhantomX();
-Hexapod buildPhantomXForVis();
-/** @brief Returns a Hexapod object consistent with example file octapod.urdf.xacro */
-Hexapod buildDefaultOctapod();
-
 } // namespace hexapod
 
 #endif // HEXAPOD_H
