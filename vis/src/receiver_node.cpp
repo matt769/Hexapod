@@ -1,6 +1,7 @@
 #include "receiver.h"
 #include "build_from_urdf.h"
 #include "hexapod.h"
+#include "build_hexapod.h"
 #include "kinematics_support.h"
 #include "transformations.h"
 #include "visualisation.h"
