@@ -56,7 +56,7 @@ float Joint::fromPhysicalAngle(const float physical_angle) const {
   return (physical_angle - offset_) * flip_axis_;
 }
 float Joint::toPhysicalAngle() const {
-  return (flip_axis_ * angle_) - offset_;
+  return (flip_axis_ * angle_) + offset_;
 }
 void Joint::setFromPhysicalAngle(const float physical_angle) {
   angle_ = fromPhysicalAngle(physical_angle);
