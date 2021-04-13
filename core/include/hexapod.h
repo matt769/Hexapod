@@ -159,14 +159,6 @@ class Hexapod {
   bool recalculate_all_feet_targets_ = false;
   /** @brief Flag to recalculate targets for any raised feet. */
   bool recalculate_raised_feet_targets_ = false;
-  /** @brief Joint targets when in unsupported state. */
-  Leg::JointAngles joint_targets_;
-  /** @brief Joint movement increments when in unsupported state. */
-  Leg::JointAngles joint_increments_;
-  /** @brief Number periods over which unsupported movements. */
-  uint16_t total_movement_steps_;
-  /** @brief Current progress of unsupported movements. */
-  uint16_t current_movement_step_;
 
   /**
    * @brief Describes a circle of allowed foot movement around the neutral point.

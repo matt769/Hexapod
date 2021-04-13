@@ -353,7 +353,7 @@ Vector3 Leg::getRaisedPosition() const { return raised_pos_; }
  * @details
  * Calculate a trajectory for the leg in joint space. The trajectory will take the leg from the
  * ground,
- * move forward and up towards target_angles_raised_
+ * move forward and up towards step_apex_angles_
  * and then forward and down back to target_angles_ (on the ground)
  *
  * This function will always be called when the foot is first about to be raised.
@@ -391,6 +391,20 @@ void Leg::calculateTrajectory() {
   }
 }
 
+void Leg::setTrajectory(const Leg::JointAngles& target,
+                   const Leg::JointAngles& increment_up,
+                   const Leg::JointAngles& midpoint,
+                   const Leg::JointAngles& increment_down,
+                   const uint16_t duration) {
+  step_idx_ = 0;
+  current_step_duration_ = duration;
+  target_angles_ = target;
+  inc_up_angles_ = increment_up;
+  step_apex_angles_ = midpoint;
+  inc_down_angles_ = increment_down;
+}
+
+
 /**
  * @details
  * Apply the pre-calculated joint increments to the current joint angles.
@@ -418,6 +432,7 @@ void Leg::incrementLeg() {
     current_joint_angles.theta_3 += inc_down_angles_.theta_3;
   }
   setJointAngles(current_joint_angles);
+  step_idx_++;
 }
 
 /**
@@ -467,7 +482,6 @@ bool Leg::stepUpdate() {
 
   incrementLeg();
   target_updated_ = false;
-  step_idx_++;
   return true;
 }
 
@@ -535,5 +549,7 @@ bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
 }
 
 uint16_t Leg::getStepIdx() const { return step_idx_; }
+
+uint16_t Leg::getCurrentStepDuration() const { return current_step_duration_; }
 
 } // namespace hexapod

@@ -628,7 +628,13 @@ void Hexapod::setMoveMode(MoveMode move_mode) {
  * upright
  *  position supported by the legs from which it can start walking.
  *
- * TODO - maybe refactor.
+ * TODO - refactor.
+ *  1- change to set all legs separately (and then the increment should be applied via Leg::incrementLeg()
+ *    rather than Hexapod::updateMoveLegs()
+ *  2- Change some of the function names
+ *  3- Allow this function to take angles for all legs
+ *  4- Consider whether should split the increment calculation (as then have option to set leg targets separately)?
+ *  5- where should the actual angles be calculated (from position)?
  *
  * @param joint_targets
  * @return true if the requested targets were set
@@ -639,31 +645,46 @@ bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
   }
 
   // check that targets are achievable
-  if (!legs_[0].jointsWithinLimits(joint_targets)) {
+  bool joint_check_result = true;
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    joint_check_result &= legs_[leg_idx].jointsWithinLimits(joint_targets);
+  }
+  if (!joint_check_result) {
 #ifndef __AVR__
     std::cout << "Requested movement not achievable\n";
 #endif
     return false;
   }
 
+
   // movement time DEFAULT
-  total_movement_steps_ = 50;
-  current_movement_step_ = 0;
+  const uint16_t duration = 50;
   sub_state_ = SubState::IN_PROGRESS;
 
   // calculate trajectory
   // if start and end angles were ok, then everything in between should be too
   // since we never try and go the 'shorter' way around i.e. don't cross -180/+180 boundary
-  joint_targets_ = joint_targets;
-  Leg::JointAngles current_angles = legs_[0].getJointAngles();
-  Leg::JointAngles angle_range{joint_targets_.theta_1 - current_angles.theta_1,
-                               joint_targets_.theta_2 - current_angles.theta_2,
-                               joint_targets_.theta_3 - current_angles.theta_3};
-  joint_increments_ = Leg::JointAngles{angle_range.theta_1 / static_cast<float>(total_movement_steps_),
-                                       angle_range.theta_2 / static_cast<float>(total_movement_steps_),
-                                       angle_range.theta_3 / static_cast<float>(total_movement_steps_)};
-  // TODO should this stuff be stored in Leg rather than hexapod
-  // I think probably yes but for now will stay here
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+
+    Leg::JointAngles current_angles = legs_[leg_idx].getJointAngles();
+    Leg::JointAngles angle_range{joint_targets.theta_1 - current_angles.theta_1,
+                                 joint_targets.theta_2 - current_angles.theta_2,
+                                 joint_targets.theta_3 - current_angles.theta_3};
+    Leg::JointAngles joint_increments{angle_range.theta_1 / static_cast<float>(duration),
+                                      angle_range.theta_2 / static_cast<float>(duration),
+                                      angle_range.theta_3 / static_cast<float>(duration)};
+    // To fit existing setup will need to calculate midpoint although not strictly required
+    Leg::JointAngles
+        midpoint{current_angles.theta_1 + joint_increments.theta_1 * static_cast<float>(duration/2),
+                 current_angles.theta_2 + joint_increments.theta_2 * static_cast<float>(duration/2),
+                 current_angles.theta_3 + joint_increments.theta_3 * static_cast<float>(duration/2)};
+
+    legs_[leg_idx].setTrajectory(joint_targets,
+                                 joint_increments,
+                                 midpoint,
+                                 joint_increments,
+                                 duration);
+  }
   return true;
 }
 
@@ -686,25 +707,18 @@ bool Hexapod::updateMoveLegs() {
     return false;
   }
 
-  // We don't check if joints were set
-  // We just assume they were
-  if (current_movement_step_ >= total_movement_steps_) {
-    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-      legs_[leg_idx].setJointAngles(joint_targets_);
-    }
-    sub_state_ = SubState::FINISHED;
-  } else {
-    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-      Leg::JointAngles current_angles = legs_[leg_idx].getJointAngles();
-      Leg::JointAngles new_angles{current_angles.theta_1 + joint_increments_.theta_1,
-                                  current_angles.theta_2 + joint_increments_.theta_2,
-                                  current_angles.theta_3 + joint_increments_.theta_3};
-      legs_[leg_idx].setJointAngles(new_angles);
-    }
-    current_movement_step_++;
+  bool finished = true;
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    legs_[leg_idx].incrementLeg();
+    finished &= (legs_[leg_idx].getStepIdx() >= legs_[leg_idx].getCurrentStepDuration());
   }
-
-  return true;
+  if (finished) {
+    sub_state_ = SubState::FINISHED;
+    return true;
+  }
+  else {
+    return false;
+  }
 }
 
 /**

@@ -122,6 +122,18 @@ class Leg {
   bool setStartingAngles(JointAngles starting_angles);
   /** @brief Return step index (progress through a step). 0 if on the ground. */
   uint16_t getStepIdx() const;
+  /** @brief Returns the duration of the currently set trajectory. */
+  uint16_t getCurrentStepDuration() const;
+
+  /** @brief Sets a manually calculated trajectory */
+  void setTrajectory(const JointAngles& target,
+                     const JointAngles& increment_up,
+                     const JointAngles& midpoint,
+                     const JointAngles& increment_down,
+                     uint16_t duration);
+  /** @brief Updates the current joint angles according to the current joint targets and increments
+    */
+  void incrementLeg();
 
  private:
   /** @brief Current foot position relative to the leg base frame */
@@ -165,9 +177,6 @@ class Leg {
   /** @brief Calculates the requires incremental joint movements for a given current joint position,
    * raised position and target position */
   void calculateTrajectory();
-  /** @brief Updates the current joint angles according to the current joint targets and increments
-   */
-  void incrementLeg();
 };
 
 } // namespace hexapod
