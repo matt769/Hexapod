@@ -154,14 +154,16 @@ uint8_t Hexapod::getNumLegsRaised() const {
  * If there's no base change flag (includes zero speed) then don't request raise
  *
  */
-void Hexapod::updateLegs() {
+void Hexapod::updateLegsStatus() {
   uint8_t num_legs_raised = getNumLegsRaised();
   bool raise_result = false;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     // check if this leg is next to be lifted, and if we want to allow it
     if (base_change_ && legs_[leg_idx].state_ == Leg::State::ON_GROUND &&
         gaitNextLeg() == leg_idx && num_legs_raised < gaitMaxRaised()) {
-      updateFootTarget(leg_idx);
+      updateFootTarget(leg_idx); // TODO I think this can (and should) be removed because it's already called for
+                                  // all legs in updateFootTargets called in update() (unless there's anything
+                                  // significant happening inbetween but I don't think so
       raise_result = legs_[leg_idx].updateStatus(true);
     } else {
       legs_[leg_idx].updateStatus(false);  // ignore return result (will be false)
@@ -449,7 +451,7 @@ void Hexapod::clearVisualisationChanges() { tf_base_movement_ = Transform(); }
  * after update() is called
  *  and before the next update() is called.
  *
- * TODO - move updateFootTargets and updateLegs into handleRaisedLegs?
+ * TODO - move updateFootTargets and updateLegsStatus into handleRaisedLegs?
  *
  * @return true always - this is now redundant
  */
@@ -465,7 +467,7 @@ bool Hexapod::update() {
     updateFootTargets();  // Update foot targets if required for other non-raising legs
     handleRaisedLegs();   // We can keep moving the raised legs even if we couldn't move the ones on
                           // the ground
-    updateLegs();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
+    updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
   } else {
     // state_ == State::FULL_MANUAL
     // The legs have already been modified directly though the manualMoveFoot and manualChangeJoint functions

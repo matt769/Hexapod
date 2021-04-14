@@ -198,7 +198,7 @@ class Hexapod {
   /** @brief Includes everything necessary to manage the raised legs. */
   void handleRaisedLegs();
   /** @brief Update status of each leg and request they raise if conditions met. */
-  void updateLegs();
+  void updateLegsStatus();
   /** @brief Converts a vector in a leg frame to the correspondng vector in the base frame. */
   Vector3 legToBase(uint8_t leg_idx, const Vector3& v) const;
   /** @brief Return neutral position for a leg in the base frame. */
