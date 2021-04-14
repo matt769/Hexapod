@@ -661,7 +661,6 @@ bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
 
   // movement time DEFAULT
   const uint16_t duration = 50;
-  sub_state_ = SubState::IN_PROGRESS;
 
   // calculate trajectory
   // if start and end angles were ok, then everything in between should be too
@@ -693,34 +692,17 @@ bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
 /**
  * @details
  * One of several basic functions for getting the hexapod to move from a starting position to an
- * upright
- *  position supported by the legs from which it can start walking.
+ * upright position supported by the legs from which it can start walking.
  *
- * TODO - maybe refactor.
- *
- * @return true if the movement was achieved
+ * @return true if all legs have completed their trajectories
  */
 bool Hexapod::updateMoveLegs() {
-  if (state_ == State::STANDING) {
-    return false;
-  }
-
-  if (!(sub_state_ == SubState::IN_PROGRESS)) {
-    return false;
-  }
-
   bool finished = true;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     legs_[leg_idx].incrementLeg();
     finished &= (legs_[leg_idx].getStepIdx() >= legs_[leg_idx].getCurrentStepDuration());
   }
-  if (finished) {
-    sub_state_ = SubState::FINISHED;
-    return true;
-  }
-  else {
-    return false;
-  }
+  return finished;
 }
 
 /**

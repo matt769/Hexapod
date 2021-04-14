@@ -120,8 +120,6 @@ class Hexapod {
   /** @brief Default stride length as proportion of allowed foot movement */
   static constexpr float fgtr_default_ = 0.5f;
 
-  /** @brief Used to control movements while in unsupported state TODO this is horrible */
-  enum class SubState { NOT_STARTED, IN_PROGRESS, FINISHED };
   Leg *legs_;
   /** @brief Height of base frame above ground */
   float height_;
@@ -132,7 +130,6 @@ class Hexapod {
   MoveMode move_mode_ = MoveMode::STANDARD;
   State state_ = State::UNSUPPORTED;
   State requested_state_ = State::UNSUPPORTED;
-  SubState sub_state_ = SubState::NOT_STARTED;
   /** @brief For visualisation. New base expressed in old base frame. */
   Transform tf_base_movement_;
   /** @brief Target walk movement expressed in current base frame */
