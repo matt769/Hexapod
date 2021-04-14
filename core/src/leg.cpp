@@ -426,10 +426,12 @@ void Leg::incrementLeg() {
     current_joint_angles.theta_1 += inc_up_angles_.theta_1;
     current_joint_angles.theta_2 += inc_up_angles_.theta_2;
     current_joint_angles.theta_3 += inc_up_angles_.theta_3;
-  } else {
+  } else if (step_idx_ < current_step_duration_) {
     current_joint_angles.theta_1 += inc_down_angles_.theta_1;
     current_joint_angles.theta_2 += inc_down_angles_.theta_2;
     current_joint_angles.theta_3 += inc_down_angles_.theta_3;
+  } else {
+    return; // trajectory has finished, incrementLeg() should have no effect
   }
   setJointAngles(current_joint_angles);
   step_idx_++;
