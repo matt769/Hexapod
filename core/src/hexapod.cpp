@@ -68,6 +68,8 @@ Hexapod::Hexapod(uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_leg, Leg
   stance_width_ = stance_width_default_;
   leg_lift_height_ = leg_lift_height_default_;
 
+  rising_increment_ = (walk_height_default_-height_) / 20.0f; // TODO ideally hexapod model should have an idea of what frequency it will be updated
+
 }
 
 Hexapod::~Hexapod() {
@@ -708,33 +710,26 @@ bool Hexapod::updateMoveLegs() {
 /**
  * @details
  * One of several basic functions for getting the hexapod to move from a starting position to an
- * upright
- *  position supported by the legs from which it can start walking.
- *
- * TODO - maybe refactor. I'd rather it only needed to get called once, and robot would continue the movement
- *  (while update() is called) until it's standing
+ * upright position supported by the legs from which it can start walking.
+ * Basically facilitates the transition from STANDING state to WALKING state
  *
  * @return true
  * @return false
  */
 bool Hexapod::riseToWalk() {
-  if (state_ != State::STANDING) {
-    return false;
-  }
-
-  if (height_ < walk_height_default_) {
-    changeBase(Vector3(0, 0, 0.01f)); // TODO this should depend on dimensions
+  if (state_ == State::STANDING && height_ < walk_height_default_) {
+    changeBase(Vector3(0, 0, rising_increment_));
     requested_state_ = State::WALKING;
     return true;
+  } else {
+    return false;
   }
-  return false;
 }
 
 /**
  * @details
  * One of several basic functions for getting the hexapod to move from a starting position to an
- * upright
- *  position supported by the legs from which it can start walking.
+ * upright position supported by the legs from which it can start walking.
  *
  * TODO - maybe refactor.
  *
@@ -742,7 +737,7 @@ bool Hexapod::riseToWalk() {
  * @return true always
  */
 bool Hexapod::changeBase(Vector3 move_base) {
-  tf_base_to_new_base_.t_.z() = move_base.z();
+  tf_base_to_new_base_.t_ = move_base;
   base_change_ = true;
   return true;
 }
@@ -750,8 +745,7 @@ bool Hexapod::changeBase(Vector3 move_base) {
 /**
  * @details
  * One of several basic functions for getting the hexapod to move from a starting position to an
- * upright
- *  position supported by the legs from which it can start walking.
+ * upright position supported by the legs from which it can start walking.
  *
  * TODO - maybe refactor, does not currently support different sized legs.
  *

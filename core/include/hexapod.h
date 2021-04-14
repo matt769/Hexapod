@@ -120,6 +120,9 @@ class Hexapod {
   /** @brief Default stride length as proportion of allowed foot movement */
   static constexpr float fgtr_default_ = 0.5f;
 
+   /** @brief For moving the body up from the ground to a walking position */
+   float rising_increment_;
+
   Leg *legs_;
   /** @brief Height of base frame above ground */
   float height_;
