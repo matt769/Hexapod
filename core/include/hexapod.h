@@ -215,10 +215,10 @@ class Hexapod {
   Vector3 getFootPosition(uint8_t leg_idx) const;
   /** @brief Clear all movement targets (walk, turn, body etc). */
   void clearTargets();
-  /** @brief Set robot-wide targets to move all legs to specified joint position
-   * when in unsupported state.
-  */
-  bool setLegTargets(Leg::JointAngles joint_targets);
+  /** @brief Set robot-wide targets to move all legs to specified joint positions when in unsupported state. */
+  bool setLegTargets(const Leg::JointAngles joint_targets[]);
+  /** @brief Set robot-wide targets to move all legs to common joint position when in unsupported state. */
+  bool setLegTargets(const Leg::JointAngles& joint_targets);
   /** @brief Update function for movements in UNSUPPORTED state. */
   bool updateMoveLegs();
   /** @brief Set a movement of the base. Only used in specific situtations e.g. start up. */
