@@ -633,9 +633,6 @@ void Hexapod::setMoveMode(MoveMode move_mode) {
  *  position supported by the legs from which it can start walking.
  *
  * TODO - refactor.
- *  1- change to set all legs separately (and then the increment should be applied via Leg::incrementLeg()
- *    rather than Hexapod::updateMoveLegs()
- *  2- Change some of the function names
  *  3- Allow this function to take angles for all legs
  *  4- Consider whether should split the increment calculation (as then have option to set leg targets separately)?
  *  5- where should the actual angles be calculated (from position)?
@@ -643,7 +640,7 @@ void Hexapod::setMoveMode(MoveMode move_mode) {
  * @param joint_targets
  * @return true if the requested targets were set
  */
-bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
+bool Hexapod::setLegTargets(Leg::JointAngles joint_targets) {
   if (state_ != State::UNSUPPORTED) {
     return false;
   }
@@ -660,9 +657,8 @@ bool Hexapod::setTargetsMoveLegs(Leg::JointAngles joint_targets) {
     return false;
   }
 
-
   // movement time DEFAULT
-  const uint16_t duration = 50;
+  const uint16_t duration = 50; // TODO should be based on expected update frequency OR take as parameter
 
   // calculate trajectory
   // if start and end angles were ok, then everything in between should be too
@@ -760,7 +756,7 @@ bool Hexapod::setLegsToGround() {
   grounded_position.z() = -height_;
   bool result = legs_[0].calculateJointAngles(grounded_position, Leg::IKMode::WALK);
   if (result) {
-    result &= setTargetsMoveLegs(legs_[0].getStagedAngles());
+    result &= setLegTargets(legs_[0].getStagedAngles());
   }
   requested_state_ = State::STANDING;
   return result;

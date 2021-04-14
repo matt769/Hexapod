@@ -218,7 +218,7 @@ class Hexapod {
   /** @brief Set robot-wide targets to move all legs to specified joint position
    * when in unsupported state.
   */
-  bool setTargetsMoveLegs(Leg::JointAngles joint_targets);
+  bool setLegTargets(Leg::JointAngles joint_targets);
   /** @brief Update function for movements in UNSUPPORTED state. */
   bool updateMoveLegs();
   /** @brief Set a movement of the base. Only used in specific situtations e.g. start up. */
