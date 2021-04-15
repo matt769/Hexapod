@@ -84,7 +84,7 @@ Hexapod::~Hexapod() {
  * @param starting_angles
  * @return true if ajoint angles set successfully
  */
-bool Hexapod::setStartingPosition(Leg::JointAngles starting_angles) {
+bool Hexapod::setStartingPosition(const Leg::JointAngles& starting_angles) {
   bool result = true;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     result &=
@@ -747,7 +747,7 @@ bool Hexapod::riseToWalk() {
  * @param move_base
  * @return true always
  */
-bool Hexapod::changeBase(Vector3 move_base) {
+bool Hexapod::changeBase(const Vector3& move_base) {
   tf_base_to_new_base_.t_ = move_base;
   base_change_ = true;
   return true;

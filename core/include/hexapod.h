@@ -70,7 +70,7 @@ class Hexapod {
   bool changeLegRaiseHeight(float change);
   bool resetLegRaiseHeight();
   void setMoveMode(MoveMode move_mode);
-  bool setStartingPosition(Leg::JointAngles starting_angles);
+  bool setStartingPosition(const Leg::JointAngles& starting_angles);
   /** @brief From unsupported state set feet targets to the ground. */
   bool setLegsToGround();
   /** @brief Set the base to move upwards until walk_height_default_ reached */
@@ -102,6 +102,11 @@ class Hexapod {
   uint8_t getManualControlLegIdx() const;
   uint8_t getManualControlJointIdx() const;
 
+  /** @brief Set robot-wide targets to move all legs to specified joint positions when in unsupported state. */
+  bool setLegTargets(const Leg::JointAngles joint_targets[]);
+  /** @brief Set robot-wide targets to move all legs to common joint position when in unsupported state. */
+  bool setLegTargets(const Leg::JointAngles& joint_targets);
+
  private:
   /** @brief During start up, hexapod will rise to this height before entering walking state */
   float walk_height_default_;
@@ -123,7 +128,7 @@ class Hexapod {
    /** @brief For moving the body up from the ground to a walking position */
    float rising_increment_;
 
-  Leg *legs_;
+  Leg* legs_;
   /** @brief Height of base frame above ground */
   float height_;
   /** @brief Relationship between base frame and body frame */
@@ -215,14 +220,10 @@ class Hexapod {
   Vector3 getFootPosition(uint8_t leg_idx) const;
   /** @brief Clear all movement targets (walk, turn, body etc). */
   void clearTargets();
-  /** @brief Set robot-wide targets to move all legs to specified joint positions when in unsupported state. */
-  bool setLegTargets(const Leg::JointAngles joint_targets[]);
-  /** @brief Set robot-wide targets to move all legs to common joint position when in unsupported state. */
-  bool setLegTargets(const Leg::JointAngles& joint_targets);
   /** @brief Update function for movements in UNSUPPORTED state. */
   bool updateMoveLegs();
   /** @brief Set a movement of the base. Only used in specific situtations e.g. start up. */
-  bool changeBase(Vector3 move_base);
+  bool changeBase(const Vector3& move_base);
   /** @brief Check for state change conditions and apply if met. */
   void handleStateChange();
   /** @brief Clear variables used by visualisation. */
