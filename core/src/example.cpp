@@ -26,7 +26,7 @@ int main() {
 
   Hexapod hexapod = buildDefaultHexapod();
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};
-  hexapod.setStartingPosition(starting_angles);
+  hexapod.setStartingAngles(starting_angles);
 
   hexapod.setLegsToGround();
   while (hexapod.getState() != Hexapod::State::STANDING) {

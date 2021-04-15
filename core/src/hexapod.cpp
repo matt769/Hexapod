@@ -84,7 +84,7 @@ Hexapod::~Hexapod() {
  * @param starting_angles
  * @return true if ajoint angles set successfully
  */
-bool Hexapod::setStartingPosition(const Leg::JointAngles& starting_angles) {
+bool Hexapod::setStartingAngles(const Leg::JointAngles& starting_angles) {
   bool result = true;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     result &=
