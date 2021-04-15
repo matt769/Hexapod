@@ -5,6 +5,10 @@
 #ifndef HEXAPOD_JOINT_H_
 #define HEXAPOD_JOINT_H_
 
+#ifdef __AVR__
+#include <Arduino.h>
+#endif
+
 namespace hexapod {
 
 /** @class Joint

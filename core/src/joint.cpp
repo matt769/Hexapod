@@ -4,7 +4,11 @@
 
 #include "joint.h"
 
+#ifdef __AVR__
+#include <Arduino.h>
+#else
 #include <cmath>
+#endif
 
 #include "kinematics_support.h"
 
