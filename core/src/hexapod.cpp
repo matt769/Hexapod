@@ -78,28 +78,43 @@ Hexapod::~Hexapod() {
 }
 
 /**
- * @details
- * Mostly redundant - will likely be removed later.
+ * @details Expected to be used only at start up when robot is in UNSUPPORTED state
  *
- * @param starting_angles
- * @return true if ajoint angles set successfully
+ * @param starting_angles array of all angles in standard library convention order
+ * @return true if joint angles set successfully
  */
-bool Hexapod::setStartingAngles(const Leg::JointAngles& starting_angles) {
+bool Hexapod::setStartingAngles(const Leg::JointAngles starting_angles[]) {
+  if (state_ != State::UNSUPPORTED) {
+    return false;
+  }
+
   bool result = true;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    result &=
-        legs_[leg_idx].setStartingAngles(starting_angles);  // get into close enough position so
-                                                            // that IK will pick the right option
-                                                            // later
+    result &= legs_[leg_idx].jointsWithinLimits(starting_angles[leg_idx]);
   }
-  // if legs below body, then adjust height_
-  // TODO they shouldn't be below - remove this section?
-  float leg_pos_z = legs_[0].getFootPosition().z();
-  if (leg_pos_z < -height_) {
-    height_ = -leg_pos_z;
+
+  if (result) {
+    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+      legs_[leg_idx].setStartingAngles(starting_angles[leg_idx]);
+    }
   }
+
   return result;
 }
+
+
+bool Hexapod::setStartingAngles(const Leg::JointAngles& starting_angles) {
+  if (state_ != State::UNSUPPORTED) {
+    return false;
+  }
+
+  Leg::JointAngles starting_angles_all[num_legs_];
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    starting_angles_all[leg_idx] = starting_angles;
+  }
+  return setStartingAngles(starting_angles_all);
+}
+
 
 /**
  * @details

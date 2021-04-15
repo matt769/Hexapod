@@ -543,6 +543,7 @@ Leg::JointAngles Leg::getJointAnglesPhysical() const {
 }
 
 bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
+  // TODO setJointAngles always returns true - review this
   bool result = setJointAngles(starting_angles);
   if (result) {
     target_pos_ = current_pos_;
