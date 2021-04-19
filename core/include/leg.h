@@ -111,9 +111,9 @@ class Leg {
   /** @brief Returns the current joint angles taking into account offset and axis flip for external use. */
   JointAngles getJointAnglesPhysical() const;
 
-  /** @brief Conversion from physical to model joint angles, based on the specific joint for this leg. **/
+  /** @brief Conversion from physical to model joint angles, based on the specific joints for this leg. **/
   JointAngles fromPhysicalAngles(const Leg::JointAngles& physical_angles) const;
-  /** @brief Conversion from model to physical joint angles, based on the specific joint for this leg. **/
+  /** @brief Conversion from model to physical joint angles, based on the specific joints for this leg. **/
   JointAngles toPhysicalAngles(const Leg::JointAngles& model_angles) const;
 
   /** @brief Updates joint angles as required by current trajectory. Must be called every period
