@@ -212,6 +212,7 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - Get the PhantomX urdf representing the full physical model (including axis flips and maybe adding the meshes), and buildFromUrdf() can produce a correct model from it
  - Set more movement parameters and receiver parameters based on the hexapod dimensions
  - Is there a better way to manage multiple receiver types? And different settings for different models?
+ - Review Hexapod and Leg interfaces - they're a bit messy, especially with physical and model version of various set/get angles type functions. Should Joint even support the mapping to 'physical', or should that be outside the hexapod model entirely?
 
 ### Package structure
  - Probably fully split the core and visualisation packages at some point
