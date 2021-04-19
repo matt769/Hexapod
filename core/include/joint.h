@@ -32,6 +32,7 @@ class Joint {
   bool isWithinLimits(float angle) const;
   float clampToLimts(float angle) const;
   float fromPhysicalAngle(float physical_angle) const;
+  float toPhysicalAngle(float model_angle) const;
   float toPhysicalAngle() const;
   void setFromPhysicalAngle(float physical_angle);
 };

@@ -115,6 +115,22 @@ bool Hexapod::setStartingAngles(const Leg::JointAngles& starting_angles) {
   return setStartingAngles(starting_angles_all);
 }
 
+bool Hexapod::setStartingAnglesPhysical(const Leg::JointAngles starting_angles_physical[]) {
+  Leg::JointAngles starting_angles_model[num_legs_];
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    starting_angles_model[leg_idx] = legs_[leg_idx].fromPhysicalAngles(starting_angles_physical[leg_idx]);
+  }
+  return setStartingAngles(starting_angles_model);
+}
+
+//bool Hexapod::setStartingAnglesPhysical(const Leg::JointAngles& starting_angles_physical) {
+//  Leg::JointAngles starting_angles_model[num_legs_];
+//  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+//    starting_angles_model[leg_idx] = legs_[leg_idx].fromPhysicalAngles(starting_angles_physical);
+//  }
+//  return setStartingAngles(starting_angles_model);
+//}
+
 
 /**
  * @details

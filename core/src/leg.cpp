@@ -542,6 +542,20 @@ Leg::JointAngles Leg::getJointAnglesPhysical() const {
                      joints_[JOINT_3].toPhysicalAngle()};
 }
 
+
+Leg::JointAngles Leg::fromPhysicalAngles(const Leg::JointAngles& physical_angles) const {
+  return Leg::JointAngles{joints_[JOINT_1].fromPhysicalAngle(physical_angles.theta_1),
+                          joints_[JOINT_2].fromPhysicalAngle(physical_angles.theta_2),
+                          joints_[JOINT_3].fromPhysicalAngle(physical_angles.theta_3)};
+}
+
+Leg::JointAngles Leg::toPhysicalAngles(const Leg::JointAngles& model_angles) const {
+  return Leg::JointAngles{joints_[JOINT_1].toPhysicalAngle(model_angles.theta_1),
+                          joints_[JOINT_2].toPhysicalAngle(model_angles.theta_2),
+                          joints_[JOINT_3].toPhysicalAngle(model_angles.theta_3)};
+}
+
+
 bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
   // TODO setJointAngles always returns true - review this
   bool result = setJointAngles(starting_angles);

@@ -59,6 +59,11 @@ float Joint::clampToLimts(const float angle) const {
 float Joint::fromPhysicalAngle(const float physical_angle) const {
   return (physical_angle - offset_) * flip_axis_;
 }
+
+float Joint::toPhysicalAngle(float model_angle) const {
+  return (flip_axis_ * model_angle) + offset_;
+}
+
 float Joint::toPhysicalAngle() const {
   return (flip_axis_ * angle_) + offset_;
 }
