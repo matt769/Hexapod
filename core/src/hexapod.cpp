@@ -131,6 +131,18 @@ bool Hexapod::setStartingAnglesPhysical(const Leg::JointAngles starting_angles_p
 //  return setStartingAngles(starting_angles_model);
 //}
 
+bool Hexapod::setLegJoints(const uint8_t leg_idx, const Leg::JointAngles& joint_angles) {
+  if (legs_[leg_idx].jointsWithinLimits(joint_angles)) {
+    legs_[leg_idx].setJointAngles(joint_angles);
+    return true;
+  }
+  return false;
+}
+
+bool Hexapod::setLegJointsPhysical(const uint8_t leg_idx, const Leg::JointAngles& physical_joint_angles) {
+  Leg::JointAngles model_joint_angles = legs_[leg_idx].fromPhysicalAngles(physical_joint_angles);
+  return setLegJoints(leg_idx, model_joint_angles);
+}
 
 /**
  * @details
@@ -676,7 +688,9 @@ bool Hexapod::setLegTargets(const Leg::JointAngles joint_targets[]) {
     joint_check_result &= legs_[leg_idx].jointsWithinLimits(joint_targets[leg_idx]);
   }
   if (!joint_check_result) {
-#ifndef __AVR__
+#ifdef __AVR__
+    Serial.print(F("Requested movement not achievable\n"));
+#else
     std::cout << "Requested movement not achievable\n";
 #endif
     return false;
@@ -793,19 +807,30 @@ bool Hexapod::changeBase(const Vector3& move_base) {
  *
  * @return true if an IK solution was found for all legs
  */
-bool Hexapod::setLegsToGround() {
+bool Hexapod::setLegTargetsToGround() {
   if (state_ != State::UNSUPPORTED) {
     return false;
   }
-  // some default position
-  Vector3 grounded_position = legs_[0].getNeutralPosition();
-  grounded_position.z() = -height_;
-  bool result = legs_[0].calculateJointAngles(grounded_position, Leg::IKMode::WALK);
-  if (result) {
-    result &= setLegTargets(legs_[0].getStagedAngles());
+
+  bool ik_result = true;
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    // some default position
+    Vector3 grounded_position = legs_[leg_idx].getNeutralPosition();
+    grounded_position.z() = -height_;
+    ik_result &= legs_[leg_idx].calculateJointAngles(grounded_position, Leg::IKMode::WALK);
   }
-  requested_state_ = State::STANDING;
-  return result;
+  if (ik_result) {
+    bool set_target_result = true; // unnecessary?
+    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+      set_target_result &= setLegTargets(legs_[0].getStagedAngles());
+    }
+    if (set_target_result) {
+      requested_state_ = State::STANDING;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void Hexapod::handleStateChange() {

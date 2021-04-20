@@ -74,10 +74,12 @@ class Hexapod {
   bool setStartingAngles(const Leg::JointAngles starting_angles[]);
   bool setStartingAnglesPhysical(const Leg::JointAngles starting_angles[]);
 //  bool setStartingAnglesPhysical(const Leg::JointAngles& starting_angles);
+  bool setLegJoints(uint8_t leg_idx, const Leg::JointAngles& joint_angles);
+  bool setLegJointsPhysical(uint8_t leg_idx, const Leg::JointAngles& physical_joint_angles);
 
 
   /** @brief From unsupported state set feet targets to the ground. */
-  bool setLegsToGround();
+  bool setLegTargetsToGround();
   /** @brief Set the base to move upwards until walk_height_default_ reached */
   bool riseToWalk();
   State getState() const;
