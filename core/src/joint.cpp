@@ -42,11 +42,6 @@ Joint::Joint(const float lower_limit,
     upper_limit_ = sign(upper_limit) * fabs(lower_limit);
   }
 
-  if (offset_ != 0.0f) {
-    lower_limit_ -= flip_axis_ * offset_;
-    upper_limit_ -= flip_axis_ * offset_;
-  }
-
   setFromPhysicalAngle(angle);
 }
 bool Joint::isWithinLimits(const float angle) const {
