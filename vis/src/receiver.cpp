@@ -183,7 +183,7 @@ void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
 
     case 96:  // backtick
       if (hexapod_->getState() == Hexapod::State::UNSUPPORTED) {
-        hexapod_->setLegTargetsToGround();
+        hexapod_->setLegTargetsToGround(50);
       }
       if (hexapod_->getState() == Hexapod::State::STANDING) {
         hexapod_->riseToWalk();

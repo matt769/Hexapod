@@ -79,7 +79,7 @@ class Hexapod {
 
 
   /** @brief From unsupported state set feet targets to the ground. */
-  bool setLegTargetsToGround();
+  bool setLegTargetsToGround(uint16_t duration);
   /** @brief Set the base to move upwards until walk_height_default_ reached */
   bool riseToWalk();
   State getState() const;
@@ -110,9 +110,9 @@ class Hexapod {
   uint8_t getManualControlJointIdx() const;
 
   /** @brief Set robot-wide targets to move all legs to specified joint positions when in unsupported state. */
-  bool setLegTargets(const Leg::JointAngles joint_targets[]);
+  bool setLegTargets(const Leg::JointAngles joint_targets[], uint16_t duration);
   /** @brief Set robot-wide targets to move all legs to common joint position when in unsupported state. */
-  bool setLegTargets(const Leg::JointAngles& joint_targets);
+  bool setLegTargets(const Leg::JointAngles& joint_targets, uint16_t duration);
 
  private:
   /** @brief During start up, hexapod will rise to this height before entering walking state */

@@ -677,7 +677,7 @@ void Hexapod::setMoveMode(MoveMode move_mode) {
  * @param joint_targets
  * @return true if the requested targets were set
  */
-bool Hexapod::setLegTargets(const Leg::JointAngles joint_targets[]) {
+bool Hexapod::setLegTargets(const Leg::JointAngles joint_targets[], const uint16_t duration) {
   if (state_ != State::UNSUPPORTED) {
     return false;
   }
@@ -695,9 +695,6 @@ bool Hexapod::setLegTargets(const Leg::JointAngles joint_targets[]) {
 #endif
     return false;
   }
-
-  // movement time DEFAULT
-  const uint16_t duration = 50; // TODO should be based on expected update frequency OR take as parameter
 
   // calculate trajectory
   // if start and end angles were ok, then everything in between should be too
@@ -731,7 +728,7 @@ bool Hexapod::setLegTargets(const Leg::JointAngles joint_targets[]) {
  * @param joint_targets
  * @return true if the requested targets were set
  */
-bool Hexapod::setLegTargets(const Leg::JointAngles& joint_targets) {
+bool Hexapod::setLegTargets(const Leg::JointAngles& joint_targets, const uint16_t duration) {
   if (state_ != State::UNSUPPORTED) {
     return false;
   }
@@ -741,7 +738,7 @@ bool Hexapod::setLegTargets(const Leg::JointAngles& joint_targets) {
     joint_targets_all[leg_idx] = joint_targets;
   }
 
-  return setLegTargets(joint_targets_all);
+  return setLegTargets(joint_targets_all, duration);
 }
 
 
@@ -807,7 +804,7 @@ bool Hexapod::changeBase(const Vector3& move_base) {
  *
  * @return true if an IK solution was found for all legs
  */
-bool Hexapod::setLegTargetsToGround() {
+bool Hexapod::setLegTargetsToGround(const uint16_t duration) {
   if (state_ != State::UNSUPPORTED) {
     return false;
   }
@@ -822,7 +819,7 @@ bool Hexapod::setLegTargetsToGround() {
   if (ik_result) {
     bool set_target_result = true; // unnecessary?
     for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-      set_target_result &= setLegTargets(legs_[0].getStagedAngles());
+      set_target_result &= setLegTargets(legs_[0].getStagedAngles(), duration);
     }
     if (set_target_result) {
       requested_state_ = State::STANDING;

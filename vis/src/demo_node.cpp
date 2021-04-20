@@ -57,7 +57,7 @@ void demo_stand(Hexapod& hexapod) {
   static size_t sim_step = 0;
 
   if (sim_step == 100) {
-    hexapod.setLegTargetsToGround();
+    hexapod.setLegTargetsToGround(50);
   }
 
   if (hexapod.getState() == Hexapod::State::STANDING) {
@@ -304,7 +304,7 @@ void demo_all(Hexapod& hexapod) {
   static Transform tf_base_to_body_new;
 
   if (stage == 0 && sim_step_no == 100) {
-    hexapod.setLegTargetsToGround();
+    hexapod.setLegTargetsToGround(50);
   }
   if (stage == 0 && hexapod.getState() == Hexapod::State::STANDING) {
     hexapod.riseToWalk();
