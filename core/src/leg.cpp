@@ -57,8 +57,8 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
     angles[0].theta_1 = joints_[JOINT_1].clampToLimts(angles[0].theta_1);
   } else {
     // TODO change to be consistent with approach for joint 2
-    float test_angle_1 = angles[0].theta_1 + M_PI;
-    float test_angle_2 = angles[0].theta_1 - M_PI;
+    const float test_angle_1 = angles[0].theta_1 + M_PI;
+    const float test_angle_2 = angles[0].theta_1 - M_PI;
     if (joints_[JOINT_1].isWithinLimits(test_angle_1)) {
       angles[0].theta_1 = test_angle_1;
     } else if (joints_[JOINT_1].isWithinLimits(test_angle_2)) {
@@ -76,8 +76,8 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
   // TODO is there a more efficient way?
   // slightly, can check |x| > |y| and use cos(theta1) if so
   // eliminates 1 trig call
-  float cos_theta_1 = cos(angles[0].theta_1);
-  float sin_theta_1 = sin(angles[0].theta_1);
+  const float cos_theta_1 = cos(angles[0].theta_1);
+  const float sin_theta_1 = sin(angles[0].theta_1);
   if (cos_theta_1 > fabs(sin_theta_1)) {
     ha = pos.x() / cos_theta_1 - dims_.a;
   } else {
@@ -106,8 +106,8 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
   // could use law of cosines again if quicker than atan version
   for (uint8_t i = 0; i < 2; i++) {
     if (angles_valid[i]) {
-      float kb = dims_.b + dims_.c * cos(angles[i].theta_3);
-      float kc = dims_.c * sin(angles[i].theta_3);
+      const float kb = dims_.b + dims_.c * cos(angles[i].theta_3);
+      const float kc = dims_.c * sin(angles[i].theta_3);
       angles[i].theta_2 = atan2(pos.z(), ha) - atan2(kc, kb);
       angles[i].theta_2 = wrapAngle(angles[i].theta_2);
       if (joints_[JOINT_2].isWithinLimits(angles[i].theta_2)) {
@@ -147,7 +147,7 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
 
 /**
  * @details
- * To avoid choosing an technically correct but undesirable set of joint angles while walking,
+ * To avoid choosing a technically correct but undesirable set of joint angles while walking,
  *  this version of inverse kinematics restricts joint 3 to being negative.
  *
  * A similar effect could be achieved through setting the appropriate joint limits but
@@ -225,9 +225,9 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
 bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
   if (ik_mode == IKMode::FULL) {
     JointAngles anglesFull[2];
-    uint8_t num_results = calculateJointAnglesFull(pos, anglesFull);
+    const uint8_t num_results = calculateJointAnglesFull(pos, anglesFull);
     if (num_results > 0) {
-      uint8_t chosen_idx = chooseJointAnglesNearest(anglesFull, num_results, getJointAngles());
+      const uint8_t chosen_idx = chooseJointAnglesNearest(anglesFull, num_results, getJointAngles());
       staged_angles_ = anglesFull[chosen_idx];
       return true;
     } else {
@@ -262,7 +262,7 @@ bool Leg::jointsWithinLimits(const JointAngles& joint_angles) const {
  * @return true always TODO make void or add checks
  */
 bool Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
-  float h =
+  const float h =
       dims_.a + dims_.b * cos(angles.theta_2) + dims_.c * cos(angles.theta_2 + angles.theta_3);
   pos.x() = h * cos(angles.theta_1);
   pos.y() = h * sin(angles.theta_1);
@@ -364,11 +364,11 @@ Vector3 Leg::getRaisedPosition() const { return raised_pos_; }
  * (which may not lie on the old trajectory anymore).
  */
 void Leg::calculateTrajectory() {
-  JointAngles current_joint_angles = getJointAngles();
+  const JointAngles current_joint_angles = getJointAngles();
 
   // the foot must go up
   // (remember, current_step_duration_ always even)
-  float steps_up = static_cast<float>(fmax((current_step_duration_ / 2) - step_idx_, 0));
+  const float steps_up = static_cast<float>(fmax((current_step_duration_ / 2) - step_idx_, 0));
 
   // if (steps_up > 0) {
   inc_up_angles_.theta_1 = (step_apex_angles_.theta_1 - current_joint_angles.theta_1) / steps_up;
@@ -377,7 +377,7 @@ void Leg::calculateTrajectory() {
   // } // else { doesn't matter }
 
   // and then down
-  float steps_down = static_cast<float>(fmin((current_step_duration_ / 2), current_step_duration_ - step_idx_));
+  const float steps_down = static_cast<float>(fmin((current_step_duration_ / 2), current_step_duration_ - step_idx_));
   if (step_idx_ < current_step_duration_ / 2) {
     // still moving up
     inc_down_angles_.theta_1 = (target_angles_.theta_1 - step_apex_angles_.theta_1) / steps_down;
@@ -507,7 +507,7 @@ bool Leg::updateStatus(const bool raise) {
   }
     // If it's already at its target then don't lift but return true as if it had
   else if (raise && state_ == State::ON_GROUND) {
-    float d = (current_pos_ - target_pos_).norm();
+    const float d = (current_pos_ - target_pos_).norm();
     if (!compareFloat(d, 0.0f, target_tolerance)) {
       state_ = State::RAISED;
     }
@@ -558,7 +558,7 @@ Leg::JointAngles Leg::toPhysicalAngles(const Leg::JointAngles& model_angles) con
 
 bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
   // TODO setJointAngles always returns true - review this
-  bool result = setJointAngles(starting_angles);
+  const bool result = setJointAngles(starting_angles);
   if (result) {
     target_pos_ = current_pos_;
   }
