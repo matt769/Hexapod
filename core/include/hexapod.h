@@ -36,7 +36,7 @@ class Hexapod {
   enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, NUM_GAITS };
 
   /** @brief Construct a new Hexapod object */
-  Hexapod(uint8_t num_legs, Dims hex_dims, Transform *tf_body_to_leg, Leg *legs);
+  Hexapod(uint8_t num_legs, Dims hex_dims, Transform *tf_body_to_leg, Leg *legs, uint16_t update_frequency = 50);
   ~Hexapod();
   Hexapod(const Hexapod&) = delete;
   Hexapod(Hexapod&&) = default;
@@ -76,6 +76,7 @@ class Hexapod {
 //  bool setStartingAnglesPhysical(const Leg::JointAngles& starting_angles);
   bool setLegJoints(uint8_t leg_idx, const Leg::JointAngles& joint_angles);
   bool setLegJointsPhysical(uint8_t leg_idx, const Leg::JointAngles& physical_joint_angles);
+  uint16_t getUpdateFrequency() const;
 
 
   /** @brief From unsupported state set feet targets to the ground. */
@@ -115,6 +116,8 @@ class Hexapod {
   bool setLegTargets(const Leg::JointAngles& joint_targets, uint16_t duration);
 
  private:
+  /** @brief At what frequency (per second) will update() be called. Used to set speed of some movements. */
+  uint16_t update_frequency_;
   /** @brief During start up, hexapod will rise to this height before entering walking state */
   float walk_height_default_;
   /** @brief Number of periods leg will be in air if raised while walk speed is zero */
@@ -131,9 +134,8 @@ class Hexapod {
   static constexpr float fgtr_max_ = 0.9f;
   /** @brief Default stride length as proportion of allowed foot movement */
   static constexpr float fgtr_default_ = 0.5f;
-
-   /** @brief For moving the body up from the ground to a walking position */
-   float rising_increment_;
+  /** @brief For moving the body up from the ground to a walking position */
+  float rising_increment_;
 
   Leg* legs_;
   /** @brief Height of base frame above ground */

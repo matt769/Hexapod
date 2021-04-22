@@ -37,9 +37,10 @@ using namespace util;
  * @param hex_dims - hexapod body dimensions
  * @param tf_body_to_leg - array of transforms relating each leg to the body
  * @param legs - array of Legs
+ * @param update_frequency
  */
-Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_leg, Leg* legs)
-    : dims_(hex_dims), num_legs_(num_legs), height_(hex_dims.depth / 2.0f) {
+Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_leg, Leg* legs, const uint16_t update_frequency)
+    : dims_(hex_dims), num_legs_(num_legs), update_frequency_(update_frequency), height_(hex_dims.depth / 2.0f) {
   tf_base_to_body_ = Transform();
   tf_base_to_body_prev_ = Transform();
   tf_base_movement_ = Transform();
@@ -143,6 +144,11 @@ bool Hexapod::setLegJointsPhysical(const uint8_t leg_idx, const Leg::JointAngles
   const Leg::JointAngles model_joint_angles = legs_[leg_idx].fromPhysicalAngles(physical_joint_angles);
   return setLegJoints(leg_idx, model_joint_angles);
 }
+
+uint16_t Hexapod::getUpdateFrequency() const {
+  return update_frequency_;
+}
+
 
 /**
  * @details
