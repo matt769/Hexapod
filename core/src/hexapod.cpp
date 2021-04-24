@@ -785,7 +785,7 @@ bool Hexapod::setLegTargetsToGround(const uint16_t duration) {
 }
 
 bool Hexapod::setLegTargetsToGround() {
-  setLegTargetsToGround(update_frequency_);
+  return setLegTargetsToGround(update_frequency_);
 }
 
 
