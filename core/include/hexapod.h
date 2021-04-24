@@ -81,6 +81,7 @@ class Hexapod {
 
   /** @brief From unsupported state set feet targets to the ground. */
   bool setLegTargetsToGround(uint16_t duration);
+  bool setLegTargetsToGround();
   /** @brief Set the base to move upwards until walk_height_default_ reached */
   bool riseToWalk();
   State getState() const;
@@ -121,9 +122,9 @@ class Hexapod {
   /** @brief During start up, hexapod will rise to this height before entering walking state */
   float walk_height_default_;
   /** @brief Number of periods leg will be in air if raised while walk speed is zero */
-  static constexpr uint16_t foot_air_time_default_ = 20;
+  uint16_t foot_air_time_default_;
   /** @brief Minimum time foot can be in air during a raise i.e. fastest raise movement */
-  static constexpr uint16_t foot_air_time_min_ = 6;
+  uint16_t foot_air_time_min_;
   float stance_width_min_;
   float stance_width_max_;
   float stance_width_default_;

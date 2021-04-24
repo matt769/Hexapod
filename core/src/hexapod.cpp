@@ -56,6 +56,10 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   }
 
 
+  foot_air_time_default_ = (update_frequency_ / 4) * 2; // divide by 2 and round to even - 0.5s
+  foot_air_time_min_ = (update_frequency_ / 10) * 2; // divide by 5 and round to even - 0.2s
+  std::cout << foot_air_time_default_ << '\t' << foot_air_time_min_ << '\n';
+
   // set various movement parameters based on body/leg dimensions
   walk_height_default_ = legs_[0].dims_.c / 2.0;
   stance_width_default_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) * 0.5f;
@@ -69,7 +73,7 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   stance_width_ = stance_width_default_;
   leg_lift_height_ = leg_lift_height_default_;
 
-  rising_increment_ = (walk_height_default_-height_) / 20.0f; // TODO ideally hexapod model should have an idea of what frequency it will be updated
+  rising_increment_ = (walk_height_default_ - height_) / static_cast<float>(update_frequency_);
 
 }
 
@@ -833,6 +837,11 @@ bool Hexapod::setLegTargetsToGround(const uint16_t duration) {
 
   return false;
 }
+
+bool Hexapod::setLegTargetsToGround() {
+  setLegTargetsToGround(update_frequency_);
+}
+
 
 void Hexapod::handleStateChange() {
   if (state_ == State::UNSUPPORTED && requested_state_ == State::STANDING) {
