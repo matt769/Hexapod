@@ -32,8 +32,12 @@ int main(int argc, char** argv) {
   ros::NodeHandle nh;
 
   Hexapod hexapod = buildDefaultHexapod();
+
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};
-  hexapod.setStartingAngles(starting_angles);
+  for (uint8_t leg_idx = 0; leg_idx < 6; ++leg_idx) {
+    hexapod.setLegJoints(leg_idx, starting_angles);
+  }
+
   Vis visualiser(nh, &hexapod);
 
   size_t sim_step_no = 0;
@@ -568,3 +572,4 @@ void demo_all(Hexapod& hexapod) {
 
   sim_step_no++;
 }
+
