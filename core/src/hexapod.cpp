@@ -775,7 +775,8 @@ bool Hexapod::updateMoveLegs() {
  * One of several basic functions for getting the hexapod to move from a starting position to an
  * upright position supported by the legs from which it can start walking.
  * Basically facilitates the transition from STANDING state to WALKING state
- *
+ * TODO I'd like this to only need to be called once, but it's a rather unique movement compared to all others
+ *  and probably requires significant additions or changes to support that. Review later.
  * @return true
  * @return false
  */
