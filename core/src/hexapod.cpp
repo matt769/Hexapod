@@ -58,7 +58,6 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
 
   foot_air_time_default_ = (update_frequency_ / 4) * 2; // divide by 2 and round to even - 0.5s
   foot_air_time_min_ = (update_frequency_ / 10) * 2; // divide by 5 and round to even - 0.2s
-  std::cout << foot_air_time_default_ << '\t' << foot_air_time_min_ << '\n';
 
   // set various movement parameters based on body/leg dimensions
   walk_height_default_ = legs_[0].dims_.c / 2.0;
@@ -81,60 +80,6 @@ Hexapod::~Hexapod() {
   delete[] legs_;
   delete[] tf_body_to_leg_;
 }
-
-/**
- * @details Expected to be used only at start up when robot is in UNSUPPORTED state
- *
- * @param starting_angles array of all angles in standard library convention order
- * @return true if joint angles set successfully
- */
-bool Hexapod::setStartingAngles(const Leg::JointAngles starting_angles[]) {
-  if (state_ != State::UNSUPPORTED) {
-    return false;
-  }
-
-  bool result = true;
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    result &= legs_[leg_idx].jointsWithinLimits(starting_angles[leg_idx]);
-  }
-
-  if (result) {
-    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-      legs_[leg_idx].setStartingAngles(starting_angles[leg_idx]);
-    }
-  }
-
-  return result;
-}
-
-
-bool Hexapod::setStartingAngles(const Leg::JointAngles& starting_angles) {
-  if (state_ != State::UNSUPPORTED) {
-    return false;
-  }
-
-  Leg::JointAngles starting_angles_all[num_legs_];
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    starting_angles_all[leg_idx] = starting_angles;
-  }
-  return setStartingAngles(starting_angles_all);
-}
-
-bool Hexapod::setStartingAnglesPhysical(const Leg::JointAngles starting_angles_physical[]) {
-  Leg::JointAngles starting_angles_model[num_legs_];
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    starting_angles_model[leg_idx] = legs_[leg_idx].fromPhysicalAngles(starting_angles_physical[leg_idx]);
-  }
-  return setStartingAngles(starting_angles_model);
-}
-
-//bool Hexapod::setStartingAnglesPhysical(const Leg::JointAngles& starting_angles_physical) {
-//  Leg::JointAngles starting_angles_model[num_legs_];
-//  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-//    starting_angles_model[leg_idx] = legs_[leg_idx].fromPhysicalAngles(starting_angles_physical);
-//  }
-//  return setStartingAngles(starting_angles_model);
-//}
 
 bool Hexapod::setLegJoints(const uint8_t leg_idx, const Leg::JointAngles& joint_angles) {
   if (legs_[leg_idx].jointsWithinLimits(joint_angles)) {
