@@ -50,12 +50,6 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   legs_ = legs;
   tf_body_to_leg_ = tf_body_to_leg;
 
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    tf_body_to_leg_[leg_idx] = tf_body_to_leg[leg_idx];
-    legs_[leg_idx] = legs[leg_idx];
-  }
-
-
   foot_air_time_default_ = (update_frequency_ / 4) * 2; // divide by 2 and round to even - 0.5s
   foot_air_time_min_ = (update_frequency_ / 10) * 2; // divide by 5 and round to even - 0.2s
 
