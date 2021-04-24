@@ -71,7 +71,7 @@ void Controller::getInput() {
 
   puts("=: Increase leg height        Enter: Headless mode / reset headless mode");
   puts("-: Decrease leg height        Backspace: Standard mode");
-  puts("/: Reset leg height           `: (Press) Set legs to ground / (Hold) Raise body");
+  puts("0: Reset leg height           `: (Press) Set legs to ground / (Hold) Raise body");
   puts("-------------------------------------------------------------------------------");
   puts("Space bar: toggle manual mode. While in manual mode...");
   puts("L: Leg mode / Cycle through legs      J: Joint mode / Cycle through joints");
