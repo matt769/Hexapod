@@ -114,5 +114,7 @@ int main() {
             << hexapod.getLeg(1).getJointAnglesPhysical().theta_3 << '\n';
 
 
+  px.calculateMovementLimits(0);
+
 }
 

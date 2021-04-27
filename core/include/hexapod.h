@@ -240,6 +240,9 @@ class Hexapod {
   uint8_t gaitNextLeg();
   /** @brief Returns the maximum number of legs that can be raised during the current gait. */
   uint8_t gaitMaxRaised();
+
+ public:
+  bool calculateMovementLimits(uint8_t leg_idx);
 };
 
 } // namespace hexapod
