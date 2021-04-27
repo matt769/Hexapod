@@ -54,19 +54,37 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   foot_air_time_min_ = (update_frequency_ / 10) * 2; // divide by 5 and round to even - 0.2s
 
   // set various movement parameters based on body/leg dimensions
+  const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
   walk_height_default_ = legs_[0].dims_.c / 2.0;
-  stance_width_default_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) * 0.5f;
-  stance_width_min_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) * 0.25f;
-  stance_width_max_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) * 0.75f;
+  stance_width_default_ = leg_length_full_extension * 0.5f;
+  stance_width_min_ = leg_length_full_extension * 0.25f;
+  stance_width_max_ = leg_length_full_extension * 0.75f;
   leg_lift_height_min_ = walk_height_default_ * 0.1f;
   leg_lift_height_max_ = walk_height_default_;
   leg_lift_height_default_ = walk_height_default_ * 0.3f;
-  allowed_foot_position_diameter_ = (legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c) / 3.0;
+  allowed_foot_position_diameter_ = leg_length_full_extension / 3.0;
 
   stance_width_ = stance_width_default_;
   leg_lift_height_ = leg_lift_height_default_;
 
   rising_increment_ = (walk_height_default_ - height_) / static_cast<float>(update_frequency_);
+
+#ifndef __AVR__
+  std::cout << "body dimensions\t" << dims_.length << '\t' << dims_.width << '\t' << dims_.depth << '\n';
+  std::cout << "leg_length_full_extension\t" << leg_length_full_extension << '\n';
+  std::cout << "foot_air_time_default_\t" << foot_air_time_default_ << '\n';
+  std::cout << "foot_air_time_min_\t" << foot_air_time_min_ << '\n';
+  std::cout << "walk_height_default_\t" << walk_height_default_ << '\n';
+  std::cout << "stance_width_default_\t" << stance_width_default_ << '\n';
+  std::cout << "stance_width_min_\t" << stance_width_min_ << '\n';
+  std::cout << "stance_width_max_\t" << stance_width_max_ << '\n';
+  std::cout << "leg_lift_height_min_\t" << leg_lift_height_min_ << '\n';
+  std::cout << "leg_lift_height_max_\t" << leg_lift_height_max_ << '\n';
+  std::cout << "leg_lift_height_default_\t" << leg_lift_height_default_ << '\n';
+  std::cout << "allowed_foot_position_diameter_\t" << allowed_foot_position_diameter_ << '\n';
+  std::cout << "rising_increment_\t" << rising_increment_ << '\n';
+#endif
+
 
 }
 
