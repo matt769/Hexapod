@@ -214,8 +214,13 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - Is there a better way to manage multiple receiver types? And different settings for different models?
  - Review Hexapod and Leg interfaces - they're a bit messy, especially with physical and model version of various set/get angles type functions. Should Joint even support the mapping to 'physical', or should that be outside the hexapod model entirely?
 
+## Bugs
+ - Currently a leg may be changed to raised status, but then when the trjectory is calculated it is not achievable. But the grounded legs will still be updated and move the base.
+
+
 ### Package structure
  - Probably fully split the core and visualisation packages at some point
 
 ### Bits and pieces
  - Does base_to_body floating joint really belong in the urdf? Probably not 
+
