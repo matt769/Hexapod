@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 //   Hexapod hexapod = buildDefaultHexapod();
 //   Hexapod hexapod = buildDefaultHexapod2();
 //   Hexapod hexapod = buildDefaultOctapod();
-//   Hexapod hexapod = BuildFromURDF::buildFromURDF();
+//   Hexapod hexapod = buildFromURDF();
 //  Hexapod hexapod = buildPhantomX();
   Hexapod hexapod = buildPhantomXForVis();
   Vis visualiser(nh, &hexapod);
