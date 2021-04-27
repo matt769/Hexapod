@@ -242,7 +242,7 @@ class Hexapod {
   uint8_t gaitMaxRaised();
 
  public:
-  bool calculateMovementLimits(uint8_t leg_idx);
+  LegMovementLimits calculateMovementLimits(uint8_t leg_idx);
 };
 
 } // namespace hexapod

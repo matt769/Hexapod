@@ -1019,17 +1019,20 @@ uint8_t Hexapod::gaitMaxRaised() {
   return 1;  // currently fixed for all gaits
 }
 
-bool Hexapod::calculateMovementLimits(uint8_t leg_idx) {
+LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {
 
   // start off by finding the limits in x/y(in leg frame)
   // maybe could consider as diamond
   // later may want to to something more complex (approximate circle?)
   Vector3 neutral = legs_[leg_idx].getNeutralPosition(); // TODO this is actually callng the non-const version and returning a modifyable ref
   neutral.z() = -walk_height_default_;
+
+  LegMovementLimits leg_movement_limits{neutral.x(), neutral.x(), neutral.y(), neutral.y()};
+
   // Sense check that neutral position is achievable!
   if (!legs_[leg_idx].calculateJointAngles(neutral, Leg::IKMode::WALK)) {
     std::cout << "Neutral position not achievable - serious problem here!\n";
-    return false;
+    return leg_movement_limits;
   }
 
   const float max_extension = legs_[leg_idx].dims_.a + legs_[leg_idx].dims_.b + legs_[leg_idx].dims_.c;
@@ -1039,59 +1042,52 @@ bool Hexapod::calculateMovementLimits(uint8_t leg_idx) {
   // 100 steps for now
   // start at the absolute limit
   // MAX X
-  float max_x = 0.0f;
   test_value = max_extension;
   while (test_value > neutral.x()) {
     Vector3 test_position = neutral;
     test_position.x() = test_value;
     if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK)) {
-      max_x = test_value;
+      leg_movement_limits.x_max = test_value;
       break;
     }
     test_value -= max_extension/100.0f;
   }
 
-  float min_x = 0.0f;
   test_value = -max_extension;
   while (test_value < neutral.x()) {
     Vector3 test_position = neutral;
     test_position.x() = test_value;
     if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK)) {
-      min_x = test_value;
+      leg_movement_limits.x_min = test_value;
       break;
     }
     test_value += max_extension/100.0f;
   }
 
-  float max_y = 0.0f;
   const float max_y_extension = sqrt(max_extension * max_extension + neutral.x() * neutral.x());
   test_value = max_y_extension;
   while (test_value > neutral.y()) {
     Vector3 test_position = neutral;
     test_position.y() = test_value;
     if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK)) {
-      max_y = test_value;
+      leg_movement_limits.y_max = test_value;
       break;
     }
     test_value -= max_y_extension/100.0f;
   }
 
-  float min_y = 0.0f;
   test_value = -max_y_extension;
   while (test_value < neutral.y()) {
     Vector3 test_position = neutral;
     test_position.y() = test_value;
     if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK)) {
-      min_y = test_value;
+      leg_movement_limits.y_min = test_value;
       break;
     }
     test_value += max_y_extension/100.0f;
   }
 
-  std::cout << neutral.x() << '\t' << neutral.y() << '\t' << neutral.z() << '\n';
-  std::cout << max_x << '\t'  << min_x << '\t' << max_y << '\t' << min_y << '\n';
-
-  return true; // placeholder
+  return leg_movement_limits; // placeholder
 
 }
 

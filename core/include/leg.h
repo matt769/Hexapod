@@ -17,6 +17,17 @@
 
 namespace hexapod {
 
+/**
+ * @brief Describes a rough area where the leg can move.
+ * @details Likely calculated for a specific height (i.e. foot z value)
+ */
+struct LegMovementLimits {
+  float x_min;
+  float x_max;
+  float y_min;
+  float y_max;
+};
+
 /** @class Leg
     @brief A leg consists of a series of links and joints, from the leg base along to the foot.
 
