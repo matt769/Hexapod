@@ -217,7 +217,7 @@ Vector3 Hexapod::getNeutralPosition(const uint8_t leg_idx) const {
  * @return true if an IK solution was found for all grounded legs
  */
 bool Hexapod::handleGroundedLegs() {
-  // calculate the required angles for all legs on the ground to accomodate the desired walk/turn
+  // calculate the required angles for all legs on the ground to accommodate the desired walk/turn
   // movement plus any body offset/rotation
   bool ik_result = calculateGroundedLegs();
   if (ik_result) {
