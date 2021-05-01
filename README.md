@@ -214,6 +214,8 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - Is there a better way to manage multiple receiver types? And different settings for different models?
  - Review Hexapod and Leg interfaces - they're a bit messy, especially with physical and model version of various set/get angles type functions. Should Joint even support the mapping to 'physical', or should that be outside the hexapod model entirely?
  - If a leg target is outside the allowed range, just restrict to max range, don't prevent movement
+ - How to better define the allowed movement range. Currently it's quite restrictive.
+ - Shouldn't have to setWalk etc every period, let hexapod remember and coontroller/receiver can just change it
 
 
 ## Bugs
