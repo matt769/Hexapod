@@ -150,10 +150,6 @@ class Hexapod {
   Transform tf_base_to_new_base_;
   /** @brief Target base to body transform expressed in current base frame */
   Transform tf_base_to_body_target_;
-  /** @brief Hold calculated angles for all legs before applying them.
-   * TODO - probably move to leg class
-   */
-  Leg::JointAngles *staged_angles_;
   /** @brief Current walk vector. TODO review naming. */
   Vector3 walk_step_current_;
   /** @brief Requested walk vector. */
