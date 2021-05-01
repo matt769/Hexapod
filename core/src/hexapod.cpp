@@ -792,9 +792,10 @@ bool Hexapod::setLegTargetsToGround(const uint16_t duration) {
   }
   if (ik_result) {
     bool set_target_result = true; // unnecessary?
-    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-      set_target_result &= setLegTargets(legs_[leg_idx].getStagedAngles(), duration);
-    }
+//    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+      // TODO set legs separately (actually, perhaps just make function to set a single leg to the ground
+      set_target_result &= setLegTargets(legs_[0].getStagedAngles(), duration);
+//    }
     if (set_target_result) {
       requested_state_ = State::STANDING;
       return true;
