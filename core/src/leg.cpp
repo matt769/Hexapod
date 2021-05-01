@@ -295,11 +295,7 @@ bool Leg::setJointAngles(const JointAngles& angles) {
 }
 
 bool Leg::setJointAnglesFromPhysical(const JointAngles& angles) {
-  joints_[JOINT_1].setFromPhysicalAngle(angles.theta_1);
-  joints_[JOINT_2].setFromPhysicalAngle(angles.theta_2);
-  joints_[JOINT_3].setFromPhysicalAngle(angles.theta_3);
-  updateFootPosition();
-  return true;
+  return setJointAngles(fromPhysicalAngles(angles));
 }
 
 Leg::JointAngles Leg::getStagedAngles() const { return staged_angles_; }
