@@ -13,8 +13,8 @@ hexapod::Hexapod buildDefaultHexapod() {
 
   hexapod::Joint joints[num_joints];
   joints[0] = hexapod::Joint(-90.0f * M_PI / 180.0, 90.0f * M_PI / 180.0, 0.0);
-  joints[1] = hexapod::Joint(-150.0f * M_PI / 180.0, 150.0f * M_PI / 180.0, M_PI / 2.0);
-  joints[2] = hexapod::Joint(-150.0f * M_PI / 10.0, 150.0f * M_PI / 180.0, M_PI / 4.0);
+  joints[1] = hexapod::Joint(-180.0f * M_PI / 180.0, 180.0f * M_PI / 180.0, M_PI / 2.0);
+  joints[2] = hexapod::Joint(-180.0f * M_PI / 180.0, 180.0f * M_PI / 180.0, M_PI / 4.0);
 
   hexapod::Leg leg(leg_dims, joints);
 
@@ -71,8 +71,8 @@ hexapod::Hexapod buildDefaultHexapod2() {
 
   hexapod::Joint joints[num_joints];
   joints[0] = hexapod::Joint(-90.0f * M_PI / 180.0, 90.0f * M_PI / 180.0, 0.0);
-  joints[1] = hexapod::Joint(-150.0f * M_PI / 180.0, 150.0f * M_PI / 180.0, M_PI / 2.0);
-  joints[2] = hexapod::Joint(-150.0f * M_PI / 10.0, 150.0f * M_PI / 180.0, M_PI / 4.0);
+  joints[1] = hexapod::Joint(-180.0f * M_PI / 180.0, 180.0f * M_PI / 180.0, M_PI / 2.0);
+  joints[2] = hexapod::Joint(-180.0f * M_PI / 180.0, 180.0f * M_PI / 180.0, M_PI / 4.0);
 
   hexapod::Leg leg(leg_dims, joints);
 
@@ -266,8 +266,8 @@ hexapod::Hexapod buildDefaultOctapod() {
 
   hexapod::Joint joints[num_joints];
   joints[0] = hexapod::Joint(-90.0f * M_PI / 180.0, 90.0f * M_PI / 180.0, 0.0);
-  joints[1] = hexapod::Joint(-150.0f * M_PI / 180.0, 150.0f * M_PI / 180.0, M_PI / 2.0);
-  joints[2] = hexapod::Joint(-150.0f * M_PI / 10.0, 150.0f * M_PI / 180.0, M_PI / 4.0);
+  joints[1] = hexapod::Joint(-180.0f * M_PI / 180.0, 180.0f * M_PI / 180.0, M_PI / 2.0);
+  joints[2] = hexapod::Joint(-180.0f * M_PI / 180.0, 180.0f * M_PI / 180.0, M_PI / 4.0);
 
   hexapod::Leg leg(leg_dims, joints);
 
