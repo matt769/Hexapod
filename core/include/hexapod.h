@@ -147,17 +147,17 @@ class Hexapod {
   /** @brief For visualisation. New base expressed in old base frame. */
   Transform tf_base_movement_;
   /** @brief Target walk movement expressed in current base frame */
-  Transform tf_base_to_new_base_;
+  Transform tf_base_to_new_base_target_;
   /** @brief Target base to body transform expressed in current base frame */
   Transform tf_base_to_body_target_;
   /** @brief Current walk vector. TODO review naming. */
   Vector3 walk_step_current_;
   /** @brief Requested walk vector. */
-  Vector3 walk_step_new_;
+  Vector3 walk_step_target_;
   /** @brief Current walk vector. TODO review naming. */
   float turn_step_current_;
   /** @brief Requested turn angle. */
-  float turn_step_new_;
+  float turn_step_target_;
   /** @brief Flag to indicate there's been a change in base to body */
   bool body_change_ = false;
   /** @brief Flag to indicate there's been a change in base to 'new' base' */

@@ -44,7 +44,7 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   tf_base_to_body_ = Transform();
   tf_base_to_body_prev_ = Transform();
   tf_base_movement_ = Transform();
-  tf_base_to_new_base_ = Transform();
+  tf_base_to_new_base_target_ = Transform();
   tf_base_to_body_target_ = Transform();
 
   legs_ = legs;
@@ -124,7 +124,7 @@ uint16_t Hexapod::getUpdateFrequency() const {
  * @return true if an IK solution is found for all legs
  */
 bool Hexapod::calculateGroundedLegs() {
-  const Transform tf_base_to_new_body = tf_base_to_new_base_ * tf_base_to_body_target_;
+  const Transform tf_base_to_new_body = tf_base_to_new_base_target_ * tf_base_to_body_target_;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     if (legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
       // current foot position in base frame - this is not going to change
@@ -207,7 +207,7 @@ void Hexapod::updateLegsStatus() {
  */
 Vector3 Hexapod::calculateFootVector(const uint8_t leg_idx) const {
   const Vector3 base_to_neutral = tf_body_to_leg_[leg_idx] * getNeutralPosition(leg_idx);
-  const Vector3 base_to_neutral_new = tf_base_to_new_base_ * base_to_neutral;
+  const Vector3 base_to_neutral_new = tf_base_to_new_base_target_ * base_to_neutral;
   const Vector3 step = base_to_neutral_new - base_to_neutral;
   return step;
 }
@@ -248,14 +248,14 @@ bool Hexapod::handleGroundedLegs() {
   bool ik_result = calculateGroundedLegs();
   if (ik_result) {
     applyChangesGroundedLegs(); // (P)REFACTOR THIS CAN BE DONE LATER ALONG WITH ALL OTHER LEGS/JOINTS
-    walk_step_current_ = walk_step_new_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
-    turn_step_current_ = turn_step_new_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
+    walk_step_current_ = walk_step_target_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
+    turn_step_current_ = turn_step_target_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
     if (move_mode_ == MoveMode::HEADLESS) {
-      total_base_rotation_ += turn_step_new_; // (P)REFACTOR Only used in external control functions, can move to 'apply'
+      total_base_rotation_ += turn_step_target_; // (P)REFACTOR Only used in external control functions, can move to 'apply'
     }
     if (base_change_) {
-      tf_base_movement_ = tf_base_to_new_base_; // (P)REFACTOR Only used in external visualisation functions, can move to 'apply'
-      height_ += tf_base_to_new_base_.t_.z(); // (P)REFACTOR I think that only getNeutralPosition will be affected
+      tf_base_movement_ = tf_base_to_new_base_target_; // (P)REFACTOR Only used in external visualisation functions, can move to 'apply'
+      height_ += tf_base_to_new_base_target_.t_.z(); // (P)REFACTOR I think that only getNeutralPosition will be affected
     }
     if (body_change_) {
       tf_base_to_body_prev_ = tf_base_to_body_;
@@ -399,19 +399,19 @@ bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step) {
         cos(-total_base_rotation_) * walk_step.x() - sin(-total_base_rotation_) * walk_step.y();
     float y =
         sin(-total_base_rotation_) * walk_step.x() + cos(-total_base_rotation_) * walk_step.y();
-    walk_step_new_ = Vector3(x, y, 0);
+    walk_step_target_ = Vector3(x, y, 0);
   } else {
-    walk_step_new_ = walk_step;
+    walk_step_target_ = walk_step;
   }
-  turn_step_new_ = angle_step;
-  tf_base_to_new_base_.R_.setRPYExtr(0.0f, 0.0f, turn_step_new_);
-  tf_base_to_new_base_.t_ = walk_step_new_;
+  turn_step_target_ = angle_step;
+  tf_base_to_new_base_target_.R_.setRPYExtr(0.0f, 0.0f, turn_step_target_);
+  tf_base_to_new_base_target_.t_ = walk_step_target_;
   base_change_ = true;
   // If there's a change, need to update raised feet target, unless now stopped in which case update
   // all to allow feet to return to neutral position
   // Current Vector3 comparison allows some tolerance, here explicity test if zero
-  if (walk_step_current_ != walk_step_new_ || turn_step_current_ != turn_step_new_) {
-    if (walk_step_new_ == Vector3{0.0f, 0.0f, 0.0f} && turn_step_new_ == 0.0f) {
+  if (walk_step_current_ != walk_step_target_ || turn_step_current_ != turn_step_target_) {
+    if (walk_step_target_ == Vector3{0.0f, 0.0f, 0.0f} && turn_step_target_ == 0.0f) {
       recalculate_all_feet_targets_ = true;
     } else {
       recalculate_raised_feet_targets_ = true;
@@ -458,7 +458,7 @@ void Hexapod::clearTargets() {
   base_change_ = false;
   body_change_ = false;
   tf_base_to_body_target_ = tf_base_to_body_;
-  tf_base_to_new_base_ = Transform();
+  tf_base_to_new_base_target_ = Transform();
   recalculate_raised_feet_targets_ = false;
   recalculate_all_feet_targets_ = false;
 }
@@ -766,7 +766,7 @@ bool Hexapod::riseToWalk() {
  * @return true always
  */
 bool Hexapod::changeBase(const Vector3& move_base) {
-  tf_base_to_new_base_.t_ = move_base;
+  tf_base_to_new_base_target_.t_ = move_base;
   base_change_ = true;
   return true;
 }
