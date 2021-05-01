@@ -247,19 +247,19 @@ bool Hexapod::handleGroundedLegs() {
   // movement plus any body offset/rotation
   bool ik_result = calculateGroundedLegs();
   if (ik_result) {
-    applyChangesGroundedLegs();
-    walk_step_current_ = walk_step_new_;
-    turn_step_current_ = turn_step_new_;
+    applyChangesGroundedLegs(); // (P)REFACTOR THIS CAN BE DONE LATER ALONG WITH ALL OTHER LEGS/JOINTS
+    walk_step_current_ = walk_step_new_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
+    turn_step_current_ = turn_step_new_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
     if (move_mode_ == MoveMode::HEADLESS) {
-      total_base_rotation_ += turn_step_new_;
+      total_base_rotation_ += turn_step_new_; // (P)REFACTOR Only used in external control functions, can move to 'apply'
     }
     if (base_change_) {
-      tf_base_movement_ = tf_base_to_new_base_;
-      height_ += tf_base_to_new_base_.t_.z();
+      tf_base_movement_ = tf_base_to_new_base_; // (P)REFACTOR Only used in external visualisation functions, can move to 'apply'
+      height_ += tf_base_to_new_base_.t_.z(); // (P)REFACTOR I think that only getNeutralPosition will be affected
     }
     if (body_change_) {
       tf_base_to_body_prev_ = tf_base_to_body_;
-      tf_base_to_body_ = tf_base_to_body_target_;
+      tf_base_to_body_ = tf_base_to_body_target_; // (P)REFACTOR I can presumably just use tf_base_to_body_target_ instead of tf_base_to_body_ until I'm happy all is ok
     }
   } else {
     tf_base_to_body_target_ = tf_base_to_body_;  // use current body position in further
@@ -333,7 +333,7 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
     const Vector3 upd_current_pos = tf_update * legs_[leg_idx].getFootPosition();
     legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK);
     if (legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK)) {
-      legs_[leg_idx].applyStagedAngles();
+      legs_[leg_idx].applyStagedAngles(); // (P)REFACTOR should I really be doing this here?
     }
   }
   // if the leg is only just about to become raised then need to calculate targets for first time
