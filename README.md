@@ -216,7 +216,7 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - If a leg target is outside the allowed range, just restrict to max range, don't prevent movement
  - How to better define the allowed movement range. Currently it's quite restrictive.
  - Shouldn't have to setWalk etc every period, let hexapod remember and coontroller/receiver can just change it
-
+ - More visualisation! Movement parameters, trajectories etc
 
 ## Bugs
  - Currently a leg may be changed to raised status, but then when the trjectory is calculated it is not achievable. But the grounded legs will still be updated and move the base.
