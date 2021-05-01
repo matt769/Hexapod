@@ -55,14 +55,20 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
 
   // set various movement parameters based on body/leg dimensions
   const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
+  Vector3 neutral = legs_[0].getNeutralPosition();
   walk_height_default_ = legs_[0].dims_.c / 2.0;
-  stance_width_default_ = leg_length_full_extension * 0.5f;
-  stance_width_min_ = leg_length_full_extension * 0.25f;
-  stance_width_max_ = leg_length_full_extension * 0.75f;
+  LegMovementLimits lml = calculateMovementLimits(0);
+  stance_width_default_ = lml.x_min + ((lml.x_max - lml.x_min) * 0.33);
+  stance_width_min_ = lml.x_min;
+  stance_width_max_ = lml.x_max;
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    legs_[leg_idx].getNeutralPosition().x() = stance_width_default_;
+  }
+
   leg_lift_height_min_ = walk_height_default_ * 0.1f;
   leg_lift_height_max_ = walk_height_default_;
   leg_lift_height_default_ = walk_height_default_ * 0.3f;
-  allowed_foot_position_diameter_ = leg_length_full_extension / 3.0;
+  allowed_foot_position_diameter_ = fmin(lml.x_max-lml.x_min, lml.y_max - lml.y_min) * 0.8; // TODO review
 
   stance_width_ = stance_width_default_;
   leg_lift_height_ = leg_lift_height_default_;
@@ -71,7 +77,9 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
 
 #ifndef __AVR__
   std::cout << "body dimensions\t" << dims_.length << '\t' << dims_.width << '\t' << dims_.depth << '\n';
+  std::cout << "leg neutral\t" << neutral.x() << '\t' << neutral.y() << '\t' << neutral.z() << '\n';
   std::cout << "leg_length_full_extension\t" << leg_length_full_extension << '\n';
+  std::cout << "movement limits\t" << lml.x_max << '\t'  << lml.x_min << '\t' << lml.y_max << '\t' << lml.y_min << '\n';
   std::cout << "foot_air_time_default_\t" << foot_air_time_default_ << '\n';
   std::cout << "foot_air_time_min_\t" << foot_air_time_min_ << '\n';
   std::cout << "walk_height_default_\t" << walk_height_default_ << '\n';
@@ -1030,8 +1038,8 @@ LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {
   LegMovementLimits leg_movement_limits{neutral.x(), neutral.x(), neutral.y(), neutral.y()};
 
   // Sense check that neutral position is achievable!
+  std::cout << "leg neutral\t" << neutral.x() << '\t' << neutral.y() << '\t' << neutral.z() << '\n';
   if (!legs_[leg_idx].calculateJointAngles(neutral, Leg::IKMode::WALK)) {
-    std::cout << "Neutral position not achievable - serious problem here!\n";
     return leg_movement_limits;
   }
 
