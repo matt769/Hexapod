@@ -216,29 +216,33 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
  * Wrapper for IK which choses the appropriate IK function based on the selected IKMode.
  * May also apply selection logic if multiple angle options available.
  *
- * Resulting angles are stored in staged_angles_
- *
  * @param pos Required foot position
  * @param ik_mode
+ * @param [out] calculated_angles
  * @return true if valid angles were found
  */
-bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
+bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode, JointAngles& calculated_angles) {
   if (ik_mode == IKMode::FULL) {
     JointAngles anglesFull[2];
     const uint8_t num_results = calculateJointAnglesFull(pos, anglesFull);
     if (num_results > 0) {
       const uint8_t chosen_idx = chooseJointAnglesNearest(anglesFull, num_results, getJointAngles());
-      staged_angles_ = anglesFull[chosen_idx];
+      calculated_angles = anglesFull[chosen_idx];
       return true;
     } else {
       return false;
     }
   } else if (ik_mode == IKMode::WALK) {
-    return calculateJointAnglesWalk(pos, staged_angles_);
+    return calculateJointAnglesWalk(pos, calculated_angles);
   } else {
     return false;
   }
 }
+
+bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
+  return calculateJointAngles(pos, ik_mode, staged_angles_);
+}
+
 
 /**
  * @details
@@ -290,6 +294,7 @@ bool Leg::setJointAngles(const JointAngles& angles) {
   joints_[JOINT_1].angle_ = angles.theta_1;
   joints_[JOINT_2].angle_ = angles.theta_2;
   joints_[JOINT_3].angle_ = angles.theta_3;
+  staged_angles_ = angles; // keep in sync in case we've done a 'direct' update (or anything else that hasn't used IK to calculated first)
   updateFootPosition();
   return true;
 }

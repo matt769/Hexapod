@@ -91,6 +91,8 @@ class Leg {
    */
   Leg(Dims dims, Joint *joints);
   /** @brief Calculate joint angles for a given foot position */
+  bool calculateJointAngles(const Vector3& pos, const IKMode ik_mode, JointAngles& calculated_angles);
+  /** @brief Calculate joint angles for a given foot position and stage the result */
   bool calculateJointAngles(const Vector3& pos, const IKMode ik_mode);
   /** @brief Calculate foot position for given joint angles */
   bool calculateFootPosition(const JointAngles& angles, Vector3& pos);
