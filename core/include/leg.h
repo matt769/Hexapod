@@ -171,13 +171,13 @@ class Leg {
   JointAngles staged_angles_;
   /** @brief Track leg movement while raised */
   uint16_t step_idx_ = 0;
-  /** @brief The number of time steps that the leg will spend raised for the current step */
+  /** @brief The number of time steps that the leg will spend raised for the current step trajectory */
   uint16_t current_step_duration_;
   /** @brief The final position (in leg base frame) of the foot during a step */
   Vector3 target_pos_;
   /** @brief The apex position (in leg base frame) of the foot during a step */
   Vector3 raised_pos_;
-  /** @brief Holds the latest calculated time for the leg step */
+  /** @brief Holds the latest calculated time for the leg step trajectory */
   uint16_t new_step_duration_;
   /** @brief Indicates whether target_pos_ or raised_pos_ have been updated */
   bool target_updated_ = false;
