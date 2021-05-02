@@ -1079,10 +1079,11 @@ LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {
   neutral.z() = -walk_height_default_;
 
   LegMovementLimits leg_movement_limits{neutral.x(), neutral.x(), neutral.y(), neutral.y()};
+  Leg::JointAngles ik_result_angles;
 
   // Sense check that neutral position is achievable!
   std::cout << "leg neutral\t" << neutral.x() << '\t' << neutral.y() << '\t' << neutral.z() << '\n';
-  if (!legs_[leg_idx].calculateJointAngles(neutral, Leg::IKMode::WALK)) {
+  if (!legs_[leg_idx].calculateJointAngles(neutral, Leg::IKMode::WALK, ik_result_angles)) {
     return leg_movement_limits;
   }
 
@@ -1097,7 +1098,7 @@ LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {
   while (test_value > neutral.x()) {
     Vector3 test_position = neutral;
     test_position.x() = test_value;
-    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK)) {
+    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
       leg_movement_limits.x_max = test_value;
       break;
     }
@@ -1108,7 +1109,7 @@ LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {
   while (test_value < neutral.x()) {
     Vector3 test_position = neutral;
     test_position.x() = test_value;
-    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK)) {
+    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
       leg_movement_limits.x_min = test_value;
       break;
     }
@@ -1120,7 +1121,7 @@ LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {
   while (test_value > neutral.y()) {
     Vector3 test_position = neutral;
     test_position.y() = test_value;
-    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK)) {
+    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
       leg_movement_limits.y_max = test_value;
       break;
     }
@@ -1131,7 +1132,7 @@ LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {
   while (test_value < neutral.y()) {
     Vector3 test_position = neutral;
     test_position.y() = test_value;
-    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK)) {
+    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
       leg_movement_limits.y_min = test_value;
       break;
     }
