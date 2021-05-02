@@ -272,11 +272,6 @@ void Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
   pos.z() = dims_.b * sin(angles.theta_2) + dims_.c * sin(angles.theta_2 + angles.theta_3);
 }
 
-/**
- * @details
- *
- * @return true always
- */
 void Leg::updateFootPosition() { calculateFootPosition(getJointAngles(), current_pos_); }
 
 /**
