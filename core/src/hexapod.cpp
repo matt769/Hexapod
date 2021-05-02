@@ -163,7 +163,7 @@ void Hexapod::applyChangesGroundedLegs() {
   }
 }
 
-void Hexapod::commitChanges() {
+void Hexapod::commitLegJointChanges() {
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     legs_[leg_idx].applyStagedAngles();
   }
@@ -514,7 +514,15 @@ bool Hexapod::update() {
     // The legs have already been modified directly though the manualMoveFoot and manualChangeJoint functions
   }
 
-  commitChanges(); // TODO only if all calculations above were ok
+  if (grounded_legs_result && raised_legs_result) {
+    // commit hexapod targets
+  }
+  // only check the raise leg results because if the grounded legs couldn't be updated, they just won't change
+  //  and we can keep moving the raised legs even if we couldn't move the grounded ones
+  if (raised_legs_result) {
+    commitLegJointChanges();
+  }
+
   clearTargets();
   handleStateChange();
   return true;
