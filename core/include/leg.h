@@ -95,19 +95,19 @@ class Leg {
   /** @brief Calculate joint angles for a given foot position and stage the result */
   bool calculateJointAngles(const Vector3& pos, const IKMode ik_mode);
   /** @brief Calculate foot position for given joint angles */
-  bool calculateFootPosition(const JointAngles& angles, Vector3& pos);
+  void calculateFootPosition(const JointAngles& angles, Vector3& pos);
   /** @brief Check if a set of joint angles are allowed by the leg joint limits */
   bool jointsWithinLimits(const JointAngles& joint_angles) const;
   /** @brief Sets all leg joints */
-  bool setJointAngles(const JointAngles& angles);
+  void setJointAngles(const JointAngles& angles);
   /** @brief Sets all leg joints using the physical joint angle values */
-  bool setJointAnglesFromPhysical(const JointAngles& angles);
+  void setJointAnglesFromPhysical(const JointAngles& angles);
   /** @brief Return staged angles */
   JointAngles getStagedAngles() const;
   /** @brief Sets staged angles */
   void setStagedAngles(const JointAngles& angles);
   /** @brief Sets all leg joints' angles to previously staged values. */
-  bool applyStagedAngles();
+  void applyStagedAngles();
   /** @brief Returns the current foot position in the leg frame */
   Vector3 getFootPosition() const;
   /** @brief Returns the neutral foot position in the leg frame. Z unknown by the leg, and is always
@@ -138,7 +138,7 @@ class Leg {
   void updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
                      uint16_t foot_air_time);
   /** @brief Initialise leg angles, position and targets */
-  bool setStartingAngles(JointAngles starting_angles);
+  void setStartingAngles(JointAngles starting_angles);
   /** @brief Return step index (progress through a step). 0 if on the ground. */
   uint16_t getStepIdx() const;
   /** @brief Returns the duration of the currently set trajectory. */
@@ -189,7 +189,7 @@ class Leg {
   bool validateJointAngles(const JointAngles& angles, const Vector3& pos);
   /** @brief Updates the foot position member current_pos_ to be consistent with the current joint
    * angles */
-  bool updateFootPosition();
+  void updateFootPosition();
   /** @brief Returns the index of the angles closest to the reference angles */
   uint8_t chooseJointAnglesNearest(const JointAngles angle_options[2], uint8_t num_valid,
                                    const JointAngles& ref_angles) const;

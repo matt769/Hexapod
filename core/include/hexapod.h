@@ -207,7 +207,7 @@ class Hexapod {
   /** @brief Calculates vector induced at neutral position due to movement. */
   Vector3 calculateFootVector(uint8_t leg_idx) const;
   /** @brief Includes everything necessary to manage the raised legs. */
-  void handleRaisedLegs();
+  bool handleRaisedLegs();
   /** @brief Update status of each leg and request they raise if conditions met. */
   void updateLegsStatus();
   /** @brief Converts a vector in a leg frame to the correspondng vector in the base frame. */

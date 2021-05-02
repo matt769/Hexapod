@@ -260,19 +260,17 @@ bool Leg::jointsWithinLimits(const JointAngles& joint_angles) const {
 
 /**
  * @details
- * Forward kinematics on joint angles to find the associated foot position.
+ * Forward kinematics on joint angles to find the associated foot position. The provided joint angles MUST be valid!
  *
- * @param angles Joint angles to calculate position for
+ * @param angles Joint angles to calculate position for - ASSUME THEY ARE VALID
  * @param[out] pos Calculated foot position
- * @return true always TODO make void (assume only given valid joint angles) or add checks
  */
-bool Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
+void Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
   const float h =
       dims_.a + dims_.b * cos(angles.theta_2) + dims_.c * cos(angles.theta_2 + angles.theta_3);
   pos.x() = h * cos(angles.theta_1);
   pos.y() = h * sin(angles.theta_1);
   pos.z() = dims_.b * sin(angles.theta_2) + dims_.c * sin(angles.theta_2 + angles.theta_3);
-  return true;
 }
 
 /**
@@ -280,28 +278,25 @@ bool Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
  *
  * @return true always
  */
-bool Leg::updateFootPosition() { return calculateFootPosition(getJointAngles(), current_pos_); }
+void Leg::updateFootPosition() { calculateFootPosition(getJointAngles(), current_pos_); }
 
 /**
  * @details
  * Sets the leg joint angles and recalculates the current foot position.
- *
- * No checks on input.
+ * The provided joint angles MUST be valid - they are not checked.
  *
  * @param angles
- * @return true always
  */
-bool Leg::setJointAngles(const JointAngles& angles) {
+void Leg::setJointAngles(const JointAngles& angles) {
   joints_[JOINT_1].angle_ = angles.theta_1;
   joints_[JOINT_2].angle_ = angles.theta_2;
   joints_[JOINT_3].angle_ = angles.theta_3;
   staged_angles_ = angles; // keep in sync in case we've done a 'direct' update (or anything else that hasn't used IK to calculated first)
   updateFootPosition();
-  return true;
 }
 
-bool Leg::setJointAnglesFromPhysical(const JointAngles& angles) {
-  return setJointAngles(fromPhysicalAngles(angles));
+void Leg::setJointAnglesFromPhysical(const JointAngles& angles) {
+  setJointAngles(fromPhysicalAngles(angles));
 }
 
 Leg::JointAngles Leg::getStagedAngles() const { return staged_angles_; }
@@ -310,7 +305,7 @@ void Leg::setStagedAngles(const JointAngles& angles) {
   staged_angles_ = angles;
 }
 
-bool Leg::applyStagedAngles() { return setJointAngles(staged_angles_); }
+void Leg::applyStagedAngles() { setJointAngles(staged_angles_); }
 
 /**
  * @details
@@ -557,13 +552,9 @@ Leg::JointAngles Leg::toPhysicalAngles(const Leg::JointAngles& model_angles) con
 }
 
 
-bool Leg::setStartingAngles(Leg::JointAngles starting_angles) {
-  // TODO setJointAngles always returns true - review this
-  const bool result = setJointAngles(starting_angles);
-  if (result) {
-    target_pos_ = current_pos_;
-  }
-  return result;
+void Leg::setStartingAngles(Leg::JointAngles starting_angles) {
+  setJointAngles(starting_angles);
+  target_pos_ = current_pos_;
 }
 
 uint16_t Leg::getStepIdx() const { return step_idx_; }

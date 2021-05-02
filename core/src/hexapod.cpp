@@ -387,12 +387,14 @@ Vector3 Hexapod::getRaisedPosition(const uint8_t leg_idx) const {
   return legToBase(leg_idx, legs_[leg_idx].getRaisedPosition());
 }
 
-void Hexapod::handleRaisedLegs() {
+bool Hexapod::handleRaisedLegs() {
+  bool leg_movement_result = true;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     if (legs_[leg_idx].state_ == Leg::State::RAISED) {
-      legs_[leg_idx].stepUpdate(); // TODO check return value
+      leg_movement_result &= legs_[leg_idx].stepUpdate(); // TODO check return value
     }
   }
+  return leg_movement_result;
 }
 
 bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step) {
@@ -670,6 +672,7 @@ bool Hexapod::setLegTarget(const uint8_t leg_idx, const Leg::JointAngles& joint_
                                midpoint,
                                joint_increments,
                                duration);
+  return true; // TODO
 }
 
 
@@ -832,7 +835,7 @@ bool Hexapod::setLegTargetToGround(const uint8_t leg_idx, const uint16_t duratio
   }
 
   // some default position
-  Vector3 grounded_position = legs_[leg_idx].getNeutralPosition(); // TODO this is actually callng the non-const version and returning a modifyable ref
+  Vector3 grounded_position = legs_[leg_idx].getNeutralPosition(); // TODO this is actually calling the non-const version and returning a modifyable ref
   grounded_position.z() = -height_;
   Leg::JointAngles grounded_angles;
   bool ik_result = legs_[leg_idx].calculateJointAngles(grounded_position, Leg::IKMode::WALK, grounded_angles);
