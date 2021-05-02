@@ -346,7 +346,6 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
     // I think I need to re-think the whole leg raise movement approach really
     // because it could probably be a lot simpler
     const Vector3 upd_current_pos = tf_update * legs_[leg_idx].getFootPosition();
-    legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK);
     Leg::JointAngles angles;
     if (legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK, angles)) {
       legs_[leg_idx].setStagedAngles(angles); // (P)REFACTOR should I really be doing this here?
