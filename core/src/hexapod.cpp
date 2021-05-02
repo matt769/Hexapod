@@ -42,7 +42,6 @@ using namespace util;
 Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_leg, Leg* legs, const uint16_t update_frequency)
     : dims_(hex_dims), num_legs_(num_legs), update_frequency_(update_frequency), height_(hex_dims.depth / 2.0f) {
   tf_base_to_body_ = Transform();
-  tf_base_to_body_prev_ = Transform();
   tf_base_movement_ = Transform();
   tf_base_to_new_base_target_ = Transform();
   tf_base_to_body_target_ = Transform();
@@ -121,6 +120,8 @@ uint16_t Hexapod::getUpdateFrequency() const {
 
 /**
  * @details
+ * Calculate the required angles for all legs on the ground to accommodate the desired walk/turn
+ *  movement plus any body offset/rotation
  * @return true if an IK solution is found for all legs
  */
 bool Hexapod::calculateGroundedLegs() {
@@ -235,54 +236,30 @@ Vector3 Hexapod::legToBase(const uint8_t leg_idx, const Vector3& v) const {
 /**
  * @details
  * The leg itself doesn't know how high the robot is, so leg::getNeutralPosition just has z = 0
- * so we just add it
+ * so we just add it, but need to modify using tf_base_to_new_base_target_ in case there's a change pending.
  *
  * The neutral position does not change with the body, so we only need to apply the body_to_leg
- * transform
- * to get the neutral position in the base frame i.e. as if the base to body transform is identity
+ * transform to get the neutral position in the base frame i.e. as if the base to body transform is identity
  *
  * @param leg_idx
  * @return Vector3
  */
 Vector3 Hexapod::getNeutralPosition(const uint8_t leg_idx) const {
   Vector3 leg_neutral = legs_[leg_idx].getNeutralPosition(); // TODO this is actually callng the non-const version and returning a modifyable ref
-  leg_neutral.z() = -height_;
+  leg_neutral.z() = -height_ + tf_base_to_new_base_target_.t_.z();
   return tf_body_to_leg_[leg_idx] * leg_neutral;
 }
 
 /**
  * @details
- * Calculate the required angles for all legs on the ground to accomodate the desired walk/turn.\n
- * Apply them if possible, and if so then update the current state to incorporate the latest base
- * and body movements.
+ * Calculate the required angles for all legs on the ground to accommodate the desired walk/turn.\n
+ * If all successful then the required angles will be staged in the grounded legs.
  *
  * @return true if an IK solution was found for all grounded legs
  */
 bool Hexapod::handleGroundedLegs() {
-  // calculate the required angles for all legs on the ground to accommodate the desired walk/turn
-  // movement plus any body offset/rotation
+  // TODO this function has been mostly made redundant, probably remove later on in the refactor
   bool ik_result = calculateGroundedLegs();
-  if (ik_result) {
-    walk_step_current_ = walk_step_target_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
-    turn_step_current_ = turn_step_target_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
-    if (move_mode_ == MoveMode::HEADLESS) {
-      total_base_rotation_ += turn_step_target_; // (P)REFACTOR Only used in external control functions, can move to 'apply'
-    }
-    if (base_change_) {
-      tf_base_movement_ = tf_base_to_new_base_target_; // (P)REFACTOR Only used in external visualisation functions, can move to 'apply'
-      height_ += tf_base_to_new_base_target_.t_.z(); // (P)REFACTOR I think that only getNeutralPosition will be affected
-    }
-    if (body_change_) {
-      tf_base_to_body_prev_ = tf_base_to_body_;
-      tf_base_to_body_ = tf_base_to_body_target_; // (P)REFACTOR I can presumably just use tf_base_to_body_target_ instead of tf_base_to_body_ until I'm happy all is ok
-    }
-  } else {
-    tf_base_to_body_target_ = tf_base_to_body_;  // use current body position in further
-                                                 // calculations since we haven't moved it
-#ifndef __AVR__
-    std::cout << "Unable to find IK solution for all grounded legs.\n";
-#endif
-  }
   return ik_result;
 }
 
@@ -338,8 +315,8 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
   if (legs_[leg_idx].state_ == Leg::State::RAISED && legs_[leg_idx].getStepIdx() > 0) {
     // perhaps move this calculation 'higher' to avoid repeating (although will only repeat for
     // raised legs)
-    const Transform tf_update = (tf_base_to_body_ * tf_body_to_leg_[leg_idx]).inverse() *
-                          tf_base_to_body_prev_ * tf_body_to_leg_[leg_idx];
+    const Transform tf_update = (tf_base_to_body_target_ * tf_body_to_leg_[leg_idx]).inverse() *
+                          tf_base_to_body_ * tf_body_to_leg_[leg_idx];
     target_pos = tf_update * legs_[leg_idx].getTargetPosition();
     raised_pos = tf_update * legs_[leg_idx].getRaisedPosition();
     // also need to update the current position to account for the body change
@@ -504,9 +481,11 @@ bool Hexapod::update() {
     grounded_legs_result = handleGroundedLegs();
   } else if (state_ == State::WALKING) {
     grounded_legs_result = handleGroundedLegs();
-    updateFootTargets();  // Update foot targets if required for other non-raising legs
+    if (!grounded_legs_result) {
+      clearTargets(); // couldn't achieve the desired movement
+    }
+    updateFootTargets();  // Update foot targets if required
     raised_legs_result = handleRaisedLegs();
-                          // the ground
     updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
   } else {
     // state_ == State::FULL_MANUAL
@@ -514,7 +493,7 @@ bool Hexapod::update() {
   }
 
   if (grounded_legs_result && raised_legs_result) {
-    // commit hexapod targets
+    commitTargets();
   }
   // only check the raise leg results because if the grounded legs couldn't be updated, they just won't change
   //  and we can keep moving the raised legs even if we couldn't move the grounded ones
@@ -1088,6 +1067,21 @@ uint8_t Hexapod::gaitNextLeg() { return gait_current_pos_; }
 
 uint8_t Hexapod::gaitMaxRaised() {
   return 1;  // currently fixed for all gaits
+}
+
+void Hexapod::commitTargets() {
+    walk_step_current_ = walk_step_target_;
+    turn_step_current_ = turn_step_target_;
+    if (move_mode_ == MoveMode::HEADLESS) {
+      total_base_rotation_ += turn_step_target_;
+    }
+    if (base_change_) {
+      tf_base_movement_ = tf_base_to_new_base_target_;
+      height_ += tf_base_to_new_base_target_.t_.z(); // (P)REFACTOR I think that only getNeutralPosition will be affected
+    }
+    if (body_change_) {
+      tf_base_to_body_ = tf_base_to_body_target_;
+    }
 }
 
 LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {

@@ -140,7 +140,7 @@ class Hexapod {
   /** @brief Height of base frame above ground */
   float height_;
   /** @brief Relationship between base frame and body frame */
-  Transform tf_base_to_body_, tf_base_to_body_prev_;  //
+  Transform tf_base_to_body_;  //
   /** @brief Fixed relationship between body frame and leg frames */
   Transform *tf_body_to_leg_;
   MoveMode move_mode_ = MoveMode::STANDARD;
@@ -240,6 +240,7 @@ class Hexapod {
   uint8_t gaitNextLeg();
   /** @brief Returns the maximum number of legs that can be raised during the current gait. */
   uint8_t gaitMaxRaised();
+  void commitTargets();
 
  public:
   LegMovementLimits calculateMovementLimits(uint8_t leg_idx);
