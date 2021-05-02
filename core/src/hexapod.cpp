@@ -125,6 +125,7 @@ uint16_t Hexapod::getUpdateFrequency() const {
  */
 bool Hexapod::calculateGroundedLegs() {
   const Transform tf_base_to_new_body = tf_base_to_new_base_target_ * tf_base_to_body_target_;
+  bool ik_success_all = true;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     if (legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
       // current foot position in base frame - this is not going to change
@@ -133,16 +134,25 @@ bool Hexapod::calculateGroundedLegs() {
       // position of foot in the updated leg frame (base on walk and body movement)
       const Vector3 leg_to_foot_new =
           (tf_base_to_new_body * tf_body_to_leg_[leg_idx]).inverse() * foot_in_base;
-      const bool result = legs_[leg_idx].calculateJointAngles(leg_to_foot_new, Leg::IKMode::WALK);
-      if (!result) {
+      const bool ik_success = legs_[leg_idx].calculateJointAngles(leg_to_foot_new, Leg::IKMode::WALK);
+      ik_success_all &= ik_success;
+      if (!ik_success) {
 #ifndef __AVR__
-        std::cout << "Unable to find IK solution for all legs.\n";
+        std::cout << "Unable to find IK solution for grounded leg " << leg_idx << '\n';
 #endif
-        return false;
       }
     }
   }
-  return true;
+
+  if (!ik_success_all) {
+    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+      if (legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
+        legs_[leg_idx].resetStagedAngles();
+      }
+    }
+  }
+
+  return ik_success_all;
 }
 
 void Hexapod::applyChangesGroundedLegs() {
@@ -391,7 +401,7 @@ bool Hexapod::handleRaisedLegs() {
   bool leg_movement_result = true;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     if (legs_[leg_idx].state_ == Leg::State::RAISED) {
-      leg_movement_result &= legs_[leg_idx].stepUpdate(); // TODO check return value
+      leg_movement_result &= legs_[leg_idx].stepUpdate();
     }
   }
   return leg_movement_result;
@@ -486,14 +496,17 @@ void Hexapod::clearVisualisationChanges() { tf_base_movement_ = Transform(); }
 bool Hexapod::update() {
   clearVisualisationChanges();
 
+  bool grounded_legs_result = true;
+  bool raised_legs_result = true;
+
   if (state_ == State::UNSUPPORTED) {
     updateMoveLegs();
   } else if (state_ == State::STANDING) {
-    handleGroundedLegs();
+    grounded_legs_result = handleGroundedLegs();
   } else if (state_ == State::WALKING) {
-    handleGroundedLegs();
+    grounded_legs_result = handleGroundedLegs();
     updateFootTargets();  // Update foot targets if required for other non-raising legs
-    handleRaisedLegs();   // We can keep moving the raised legs even if we couldn't move the ones on
+    raised_legs_result = handleRaisedLegs();
                           // the ground
     updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
   } else {

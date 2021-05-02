@@ -25,7 +25,7 @@ int main() {
 //  Hexapod h5 = buildPhantomX();
   Hexapod h6 = buildPhantomXForVis();
 
-  Hexapod hexapod = buildDefaultHexapod();
+  Hexapod hexapod = buildPhantomXForVis();
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};
   for (uint8_t leg_idx = 0; leg_idx < 6; ++leg_idx) {
     hexapod.setLegJoints(leg_idx, starting_angles);

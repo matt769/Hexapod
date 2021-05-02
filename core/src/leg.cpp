@@ -301,6 +301,10 @@ void Leg::setStagedAngles(const JointAngles& angles) {
 
 void Leg::applyStagedAngles() { setJointAngles(staged_angles_); }
 
+void Leg::resetStagedAngles() {
+  staged_angles_ = getJointAngles();
+}
+
 /**
  * @details
  * Given an array of 2 joint angle options, return the index of the option closest to the reference

@@ -108,6 +108,8 @@ class Leg {
   void setStagedAngles(const JointAngles& angles);
   /** @brief Sets all leg joints' angles to previously staged values. */
   void applyStagedAngles();
+  /** @brief Sets staged angles to current joint angle values. */
+  void resetStagedAngles();
   /** @brief Returns the current foot position in the leg frame */
   Vector3 getFootPosition() const;
   /** @brief Returns the neutral foot position in the leg frame. Z unknown by the leg, and is always
