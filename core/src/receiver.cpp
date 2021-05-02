@@ -222,7 +222,7 @@ void Receiver::processCommand(const uint8_t cmd) {
 
     case 96:  // backtick
       if (hexapod_->getState() == Hexapod::State::UNSUPPORTED) {
-        hexapod_->setLegTargetsToGround(50);
+        hexapod_->setAllLegTargetsToGround(50);
       }
       if (hexapod_->getState() == Hexapod::State::STANDING) {
         hexapod_->riseToWalk();

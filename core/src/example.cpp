@@ -30,8 +30,7 @@ int main() {
     hexapod.setLegJoints(leg_idx, starting_angles);
   }
 
-
-  hexapod.setLegTargetsToGround(50);
+  hexapod.setAllLegTargetsToGround(50);
   while (hexapod.getState() != Hexapod::State::STANDING) {
     hexapod.update();
   }

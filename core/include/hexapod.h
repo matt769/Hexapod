@@ -76,8 +76,9 @@ class Hexapod {
 
 
   /** @brief From unsupported state set feet targets to the ground. */
-  bool setLegTargetsToGround(uint16_t duration);
-  bool setLegTargetsToGround();
+  bool setAllLegTargetsToGround(uint16_t duration);
+  bool setAllLegTargetsToGround();
+  bool setLegTargetToGround(uint8_t leg_idx, uint16_t duration);
   /** @brief Set the base to move upwards until walk_height_default_ reached */
   bool riseToWalk();
   State getState() const;
@@ -108,9 +109,10 @@ class Hexapod {
   uint8_t getManualControlJointIdx() const;
 
   /** @brief Set robot-wide targets to move all legs to specified joint positions when in unsupported state. */
-  bool setLegTargets(const Leg::JointAngles joint_targets[], uint16_t duration);
+  bool setAllLegTargets(const Leg::JointAngles *joint_targets, uint16_t duration);
   /** @brief Set robot-wide targets to move all legs to common joint position when in unsupported state. */
-  bool setLegTargets(const Leg::JointAngles& joint_targets, uint16_t duration);
+  bool setAllLegTargets(const Leg::JointAngles& joint_targets, uint16_t duration);
+  bool setLegTarget(uint8_t leg_idx, const Leg::JointAngles& joint_targets, uint16_t duration);
 
  private:
   /** @brief At what frequency (per second) will update() be called. Used to set speed of some movements. */
