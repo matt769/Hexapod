@@ -24,7 +24,6 @@ Leg::Leg(Dims dims, Joint *joints)
   joints_[JOINT_2] = joints[1];
   joints_[JOINT_3] = joints[2];
   setJointAngles({joints_[JOINT_1].angle_, joints_[JOINT_2].angle_, joints_[JOINT_3].angle_});
-  updateFootPosition();
 }
 
 /**
