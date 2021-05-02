@@ -23,6 +23,7 @@ int main() {
 //  Hexapod h3 = buildDefaultOctapod();
 //  Hexapod h4 = buildPhantomXForVis();
 //  Hexapod h5 = buildPhantomX();
+  Hexapod h6 = buildPhantomXForVis();
 
   Hexapod hexapod = buildDefaultHexapod();
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};

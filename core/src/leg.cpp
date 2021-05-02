@@ -404,9 +404,9 @@ void Leg::setTrajectory(const Leg::JointAngles& target,
 
 /**
  * @details
- * Apply the pre-calculated joint increments to the current joint angles.
+ * Apply the pre-calculated joint increments to the current STAGED joint angles.
  *
- * If the trajectory is at the midpoint or end, set the joint angles directly to those values
+ * If the trajectory is at the midpoint or end, set the STAGED joint angles directly to those values
  *  to avoid any rounding errors.
  */
 void Leg::incrementLeg() {
@@ -431,7 +431,6 @@ void Leg::incrementLeg() {
   } else {
     return; // trajectory has finished, incrementLeg() should have no effect
   }
-  applyStagedAngles(); // TODO remove from this function at some point
   step_idx_++;
 }
 
