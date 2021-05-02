@@ -18,11 +18,11 @@ std::ostream& operator<<(std::ostream& os, const Vector3& v) {
 
 
 int main() {
-  Hexapod h1 = buildDefaultHexapod();
-  Hexapod h2 = buildDefaultHexapod2();
-  Hexapod h3 = buildDefaultOctapod();
-  Hexapod h4 = buildPhantomXForVis();
-  Hexapod h5 = buildPhantomX();
+//  Hexapod h1 = buildDefaultHexapod();
+//  Hexapod h2 = buildDefaultHexapod2();
+//  Hexapod h3 = buildDefaultOctapod();
+//  Hexapod h4 = buildPhantomXForVis();
+//  Hexapod h5 = buildPhantomX();
 
   Hexapod hexapod = buildDefaultHexapod();
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};

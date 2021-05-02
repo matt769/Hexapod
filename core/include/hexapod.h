@@ -198,6 +198,8 @@ class Hexapod {
   bool calculateGroundedLegs();
   /** @brief Applies the pre-calculated joint angles for all grounded legs. */
   void applyChangesGroundedLegs();
+  /** @brief Apply all the staged leg angles and maybe update some current hexapod state variables */
+  void commitChanges();
   /** @brief Returns number of legs currently raised. */
   uint8_t getNumLegsRaised() const;
   /** @brief Includes everything necessary to manage the grounded legs. */

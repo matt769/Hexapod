@@ -153,6 +153,12 @@ void Hexapod::applyChangesGroundedLegs() {
   }
 }
 
+void Hexapod::commitChanges() {
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    legs_[leg_idx].applyStagedAngles();
+  }
+}
+
 uint8_t Hexapod::getNumLegsRaised() const {
   uint8_t num_legs_raised = 0;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
@@ -247,7 +253,6 @@ bool Hexapod::handleGroundedLegs() {
   // movement plus any body offset/rotation
   bool ik_result = calculateGroundedLegs();
   if (ik_result) {
-    applyChangesGroundedLegs(); // (P)REFACTOR THIS CAN BE DONE LATER ALONG WITH ALL OTHER LEGS/JOINTS
     walk_step_current_ = walk_step_target_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
     turn_step_current_ = turn_step_target_; // (P)REFACTOR Only used in setWalk, can move to 'apply'
     if (move_mode_ == MoveMode::HEADLESS) {
@@ -332,8 +337,9 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
     // because it could probably be a lot simpler
     const Vector3 upd_current_pos = tf_update * legs_[leg_idx].getFootPosition();
     legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK);
-    if (legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK)) {
-      legs_[leg_idx].applyStagedAngles(); // (P)REFACTOR should I really be doing this here?
+    Leg::JointAngles angles;
+    if (legs_[leg_idx].calculateJointAngles(upd_current_pos, Leg::IKMode::WALK, angles)) {
+      legs_[leg_idx].setStagedAngles(angles); // (P)REFACTOR should I really be doing this here?
     }
   }
   // if the leg is only just about to become raised then need to calculate targets for first time
@@ -384,7 +390,7 @@ Vector3 Hexapod::getRaisedPosition(const uint8_t leg_idx) const {
 void Hexapod::handleRaisedLegs() {
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     if (legs_[leg_idx].state_ == Leg::State::RAISED) {
-      legs_[leg_idx].stepUpdate();
+      legs_[leg_idx].stepUpdate(); // TODO check return value
     }
   }
 }
@@ -493,6 +499,7 @@ bool Hexapod::update() {
     // The legs have already been modified directly though the manualMoveFoot and manualChangeJoint functions
   }
 
+  commitChanges(); // TODO only if all calculations above were ok
   clearTargets();
   handleStateChange();
   return true;
@@ -942,9 +949,10 @@ void Hexapod::setManualJointControl(const uint8_t joint_idx) {
 void Hexapod::manualMoveFoot(const Vector3& movement) {
   if (state_ == State::FULL_MANUAL && manual_control_type_== ManualControlType::SINGLE_LEG) {
     const Vector3 new_pos = legs_[manual_leg_idx_].getFootPosition() + movement;
-    const bool ik_result = legs_[manual_leg_idx_].calculateJointAngles(new_pos, Leg::IKMode::FULL);
+    Leg::JointAngles angles;
+    const bool ik_result = legs_[manual_leg_idx_].calculateJointAngles(new_pos, Leg::IKMode::FULL, angles);
     if (ik_result) {
-      legs_[manual_leg_idx_].applyStagedAngles();
+      legs_[manual_leg_idx_].setStagedAngles(angles);
     }
   }
 }
@@ -967,7 +975,7 @@ void Hexapod::manualChangeJoint(const float angle_change) {
         current_joint_angles.theta_3 = new_angle;
         break;
     }
-    legs_[manual_leg_idx_].setJointAngles(current_joint_angles);
+    legs_[manual_leg_idx_].setStagedAngles(current_joint_angles);
   }
 }
 

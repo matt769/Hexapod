@@ -105,8 +105,8 @@ class Leg {
   /** @brief Return staged angles */
   JointAngles getStagedAngles() const;
   /** @brief Sets staged angles */
-  bool setStagedAngles(const JointAngles& angles); // TODO seems redundant, should remove
-  /** @brief Sets all leg joints */
+  void setStagedAngles(const JointAngles& angles);
+  /** @brief Sets all leg joints' angles to previously staged values. */
   bool applyStagedAngles();
   /** @brief Returns the current foot position in the leg frame */
   Vector3 getFootPosition() const;
