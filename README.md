@@ -217,6 +217,7 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - How to better define the allowed movement range. Currently it's quite restrictive.
  - Shouldn't have to setWalk etc every period, let hexapod remember and coontroller/receiver can just change it
  - More visualisation! Movement parameters, trajectories etc
+ - Gaits with multiple legs in air at once
 
 ## Bugs
  - Currently a leg may be changed to raised status, but then when the trjectory is calculated it is not achievable. But the grounded legs will still be updated and move the base.
