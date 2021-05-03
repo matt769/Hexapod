@@ -142,7 +142,7 @@ bool Hexapod::calculateGroundedLegs() {
       ik_success_all &= ik_success;
       if (!ik_success) {
 #ifndef __AVR__
-        std::cout << "Unable to find IK solution for grounded leg " << leg_idx << '\n';
+        std::cout << "Unable to find IK solution for grounded leg " << (int)leg_idx << '\n';
 #endif
       }
     }
