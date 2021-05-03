@@ -508,6 +508,79 @@ void Leg::updateMovementLimits(const float height) {
   movement_limits_ = calculateMovementLimits(height);
 }
 
+/**
+ * @details Clamp a position to within the currently set movement_limits area
+ * The movement_limits area describes a diamond which approximates the true area (probably ellipsoidal).
+ * The movement limits are calculated for a specific foot Z position. If this changes, the limits would need to be recalculated,
+ *  but for the moment this is just intended to be quite rough.
+ * If clamped, the modified position will be in the same direction from the neutral position as the original, but
+ *  on the border of the diamond.
+ * Only consider XY.
+ * @param the target position, which may be modified if outside allowed area
+ * @return true if modified
+ */
+bool Leg::clampTarget(Vector3& target_position) const {
+  // TODO include some simple checks to see if inside max circle within diamond, and then return unmodified?
+  Vector3& orig_target_position = target_position;
+  // where is target relative to neutral
+  Vector3 neutral = neutral_pos_;
+  neutral.z() = orig_target_position.z();
+  const Vector3 movement = orig_target_position - neutral;
+  if (util::comparePositions(movement, Vector3{0.0, 0.0, 0.0})) {
+    return false; // zero vector, nothing to clamp
+  }
+
+  // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection Given two points on each line
+  auto findIntersection = [&](const Vector3& ep1, const Vector3& ep2) -> Vector3 {
+    // 1 edge_point_1
+    // 2 edge_point_2
+    // 3 zero
+    // 4 movement
+    const float D = (ep1.x() - ep2.x()) * (-movement.y()) - (ep1.y() - ep2.y()) * (-movement.x());
+    const float k = (ep1.x()*ep2.y() - ep1.y()*ep2.x());
+    const float x = (k * (-movement.x())) / D;
+    const float y = (k * (-movement.y())) / D;
+    return Vector3{x, y , 0.0};
+  };
+
+  // which side of the diamond will the movement vector pass through (if it extends far enough)
+  // note movement limits are given in leg frame, not relative to neutral position
+  Vector3 intersection;
+  if (movement.x() >= 0.0f) {
+    const Vector3 xmax{movement_limits_.x_max - neutral.x(), 0.0, 0.0};
+    if (movement.y() >= 0.0f) {
+      // line between xmax and ymax
+      const Vector3 ymax{0.0, movement_limits_.y_max - neutral.y(), 0.0};
+      intersection = findIntersection(xmax, ymax);
+    } else {
+      // line between xmax and ymin
+      const Vector3 ymin{0.0, movement_limits_.y_min - neutral.y(), 0.0};
+      intersection = findIntersection(xmax, ymin);
+    }
+  } else {
+    const Vector3 xmin{movement_limits_.x_min - neutral.x(), 0.0, 0.0};
+    if (movement.y() >= 0.0f) {
+      // line between xmin and ymax
+      const Vector3 ymax{0.0, movement_limits_.y_max - neutral.y(), 0.0};
+      intersection = findIntersection(xmin, ymax);
+    } else {
+      // line between xmin and ymin
+      const Vector3 ymin{0.0, movement_limits_.y_min - neutral.y(), 0.0};
+      intersection = findIntersection(xmin, ymin);
+    }
+  }
+
+  auto twoDNormSquared = [](const Vector3& v){
+    return v.x()*v.x() + v.y()*v.y();
+  };
+
+  if (twoDNormSquared(movement) > twoDNormSquared(intersection)) {
+    target_position = neutral + intersection;
+    return true;
+  }
+
+  return false;
+}
 
 /**
  * @details

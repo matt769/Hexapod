@@ -155,6 +155,9 @@ class Leg {
   /** @brief Calculate the ROUGH movement limits for the leg when leg base is at a given height above the foot. */
   MovementLimits calculateMovementLimits(float height);
   void updateMovementLimits(float height);
+  /** @brief Modifies target position to be within roughly estimated movement limits */
+  bool clampTarget(Vector3& target_position) const;
+
 
  private:
   /** @brief Current foot position relative to the leg base frame */

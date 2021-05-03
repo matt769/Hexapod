@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <ostream>
+#include <vector>
 
 #include "hexapod.h"
 #include "transformations.h"
@@ -112,6 +113,69 @@ int main() {
   std::cout << hexapod.getLeg(1).getJointAnglesPhysical().theta_1 << '\t'
             << hexapod.getLeg(1).getJointAnglesPhysical().theta_2 << '\t'
             << hexapod.getLeg(1).getJointAnglesPhysical().theta_3 << '\n';
+
+
+
+  // test movement clamping
+  hexapod::Leg::Dims leg_dims{0.05f, 0.066f, 0.132f};
+  constexpr float kDegToRad = M_PI / 180.0;
+  constexpr float joint_2_offset = 14.0 * kDegToRad;
+  constexpr float joint_3_offset = 46.0 * kDegToRad;
+  constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
+  hexapod::Joint test_joints[3];
+  test_joints[0] = hexapod::Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
+  test_joints[1] = hexapod::Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
+  test_joints[2] = hexapod::Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
+
+  hexapod::Leg leg(leg_dims, test_joints);
+  leg.updateMovementLimits(leg_dims.c/2.0);
+  Vector3 neutral2 = leg.getNeutralPosition();
+  std::cout << neutral2.x() << '\t'
+            << neutral2.y() << '\t'
+            << neutral2.z() << '\n';
+  std::cout << leg.movement_limits_.x_min << '\t'
+            << leg.movement_limits_.x_max << '\t'
+            << leg.movement_limits_.y_min << '\t'
+            << leg.movement_limits_.y_max << '\n';
+  Vector3 neutral = leg.getNeutralPosition();
+
+  std::vector<Vector3> test_positions;
+  test_positions.push_back(neutral);
+  test_positions.push_back(neutral + Vector3{0.01, 0.0, 0.0});
+  test_positions.push_back(neutral + Vector3{0.0, 0.01, 0.0});
+  test_positions.push_back(neutral + Vector3{-0.01, 0.0, 0.0});
+  test_positions.push_back(neutral + Vector3{0.0, -0.01, 0.0});
+  test_positions.push_back(neutral + Vector3{0.01, 0.01, 0.0});
+  test_positions.push_back(neutral + Vector3{0.01, -0.01, 0.0});
+  test_positions.push_back(neutral + Vector3{-0.01, 0.01, 0.0});
+  test_positions.push_back(neutral + Vector3{-0.01, -0.01, 0.0});
+
+  test_positions.push_back(neutral + Vector3{0.2, 0.0, 0.0});
+  test_positions.push_back(neutral + Vector3{0.0, 0.2, 0.0});
+  test_positions.push_back(neutral + Vector3{-0.2, 0.0, 0.0});
+  test_positions.push_back(neutral + Vector3{0.0, -0.2, 0.0});
+  test_positions.push_back(neutral + Vector3{0.2, 0.2, 0.0});
+  test_positions.push_back(neutral + Vector3{0.2, -0.2, 0.0});
+  test_positions.push_back(neutral + Vector3{-0.2, 0.2, 0.0});
+  test_positions.push_back(neutral + Vector3{-0.2, -0.2, 0.0});
+
+  for (const auto& pos: test_positions) {
+    Vector3 clamped_result = pos;
+    bool res = leg.clampTarget(clamped_result);
+    std::cout << pos.x() << '\t'
+              << pos.y() << '\t'
+              << pos.z() << '\n';
+    std::cout << clamped_result.x() << '\t'
+              << clamped_result.y() << '\t'
+              << clamped_result.z() << '\n';
+    std::cout << res << '\n';
+  }
+
+  // check inside and out in all 4 quadrants, and on axes
+  // check zero
+  // check Z value makes no difference
+
+
 
 }
 
