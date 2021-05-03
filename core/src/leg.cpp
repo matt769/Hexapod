@@ -24,6 +24,7 @@ Leg::Leg(Dims dims, Joint *joints)
   joints_[JOINT_2] = joints[1];
   joints_[JOINT_3] = joints[2];
   setJointAngles({joints_[JOINT_1].angle_, joints_[JOINT_2].angle_, joints_[JOINT_3].angle_});
+  updateMovementLimits(dims_.c / 2.0); // just a guess at the actual height
 }
 
 /**
@@ -501,6 +502,10 @@ Leg::MovementLimits Leg::calculateMovementLimits(const float height) {
   }
 
   return leg_movement_limits;
+}
+
+void Leg::updateMovementLimits(const float height) {
+  movement_limits_ = calculateMovementLimits(height);
 }
 
 

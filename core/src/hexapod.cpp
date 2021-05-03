@@ -56,6 +56,9 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
   Vector3 neutral = legs_[0].getNeutralPosition();
   walk_height_default_ = legs_[0].dims_.c / 2.0;
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    legs_[leg_idx].updateMovementLimits(walk_height_default_);
+  }
   Leg::MovementLimits lml = legs_[0].calculateMovementLimits(walk_height_default_);
   stance_width_default_ = lml.x_min + ((lml.x_max - lml.x_min) * 0.33);
   stance_width_min_ = lml.x_min;

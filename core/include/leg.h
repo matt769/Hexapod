@@ -154,6 +154,7 @@ class Leg {
   void incrementLeg();
   /** @brief Calculate the ROUGH movement limits for the leg when leg base is at a given height above the foot. */
   MovementLimits calculateMovementLimits(float height);
+  void updateMovementLimits(float height);
 
  private:
   /** @brief Current foot position relative to the leg base frame */
