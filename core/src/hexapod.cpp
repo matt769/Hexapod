@@ -56,7 +56,7 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
   Vector3 neutral = legs_[0].getNeutralPosition();
   walk_height_default_ = legs_[0].dims_.c / 2.0;
-  LegMovementLimits lml = calculateMovementLimits(0);
+  Leg::MovementLimits lml = legs_[0].calculateMovementLimits(walk_height_default_);
   stance_width_default_ = lml.x_min + ((lml.x_max - lml.x_min) * 0.33);
   stance_width_min_ = lml.x_min;
   stance_width_max_ = lml.x_max;
@@ -1083,80 +1083,5 @@ void Hexapod::commitTargets() {
       tf_base_to_body_ = tf_base_to_body_target_;
     }
 }
-
-LegMovementLimits Hexapod::calculateMovementLimits(uint8_t leg_idx) {
-
-  // start off by finding the limits in x/y(in leg frame)
-  // maybe could consider as diamond
-  // later may want to to something more complex (approximate circle?)
-  Vector3 neutral = legs_[leg_idx].getNeutralPosition(); // TODO this is actually callng the non-const version and returning a modifyable ref
-  neutral.z() = -walk_height_default_;
-
-  LegMovementLimits leg_movement_limits{neutral.x(), neutral.x(), neutral.y(), neutral.y()};
-  Leg::JointAngles ik_result_angles;
-
-  // Sense check that neutral position is achievable!
-  std::cout << "leg neutral\t" << neutral.x() << '\t' << neutral.y() << '\t' << neutral.z() << '\n';
-  if (!legs_[leg_idx].calculateJointAngles(neutral, Leg::IKMode::WALK, ik_result_angles)) {
-    return leg_movement_limits;
-  }
-
-  const float max_extension = legs_[leg_idx].dims_.a + legs_[leg_idx].dims_.b + legs_[leg_idx].dims_.c;
-  float test_value;
-
-//  float test_value = max_extension;
-  // 100 steps for now
-  // start at the absolute limit
-  // MAX X
-  test_value = max_extension;
-  while (test_value > neutral.x()) {
-    Vector3 test_position = neutral;
-    test_position.x() = test_value;
-    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
-      leg_movement_limits.x_max = test_value;
-      break;
-    }
-    test_value -= max_extension/100.0f;
-  }
-
-  test_value = -max_extension;
-  while (test_value < neutral.x()) {
-    Vector3 test_position = neutral;
-    test_position.x() = test_value;
-    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
-      leg_movement_limits.x_min = test_value;
-      break;
-    }
-    test_value += max_extension/100.0f;
-  }
-
-  const float max_y_extension = sqrt(max_extension * max_extension + neutral.x() * neutral.x());
-  test_value = max_y_extension;
-  while (test_value > neutral.y()) {
-    Vector3 test_position = neutral;
-    test_position.y() = test_value;
-    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
-      leg_movement_limits.y_max = test_value;
-      break;
-    }
-    test_value -= max_y_extension/100.0f;
-  }
-
-  test_value = -max_y_extension;
-  while (test_value < neutral.y()) {
-    Vector3 test_position = neutral;
-    test_position.y() = test_value;
-    if (legs_[leg_idx].calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
-      leg_movement_limits.y_min = test_value;
-      break;
-    }
-    test_value += max_y_extension/100.0f;
-  }
-
-  return leg_movement_limits; // placeholder
-
-}
-
-
 
 } // namespace hexapod

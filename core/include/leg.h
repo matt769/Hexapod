@@ -17,17 +17,6 @@
 
 namespace hexapod {
 
-/**
- * @brief Describes a rough area where the leg can move.
- * @details Likely calculated for a specific height (i.e. foot z value)
- */
-struct LegMovementLimits {
-  float x_min;
-  float x_max;
-  float y_min;
-  float y_max;
-};
-
 /** @class Leg
     @brief A leg consists of a series of links and joints, from the leg base along to the foot.
 
@@ -52,7 +41,18 @@ class Leg {
     float b;
     float c;
   };
+  /**
+ * @brief Describes a rough area where the leg can move.
+ * @details Likely calculated for a specific height (i.e. foot z value)
+ */
+  struct MovementLimits {
+    float x_min;
+    float x_max;
+    float y_min;
+    float y_max;
+  };
   Dims dims_;
+  MovementLimits movement_limits_;
   /** @brief Tolerance when checking if the foot is at the target position */
   static constexpr float target_tolerance = 0.001;  // TODO review
   /** @brief Struct used to represent all joint angles of a leg */
@@ -152,6 +152,8 @@ class Leg {
   /** @brief Updates the current joint angles according to the current joint targets and increments
     */
   void incrementLeg();
+  /** @brief Calculate the ROUGH movement limits for the leg when leg base is at a given height above the foot. */
+  MovementLimits calculateMovementLimits(float height);
 
  private:
   /** @brief Current foot position relative to the leg base frame */

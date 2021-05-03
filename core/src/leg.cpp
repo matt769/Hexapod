@@ -432,6 +432,78 @@ void Leg::incrementLeg() {
   step_idx_++;
 }
 
+Leg::MovementLimits Leg::calculateMovementLimits(const float height) {
+
+  // start off by finding the limits in x/y(in leg frame)
+  // maybe could consider as diamond
+  // later may want to to something more complex (approximate circle?)
+  Vector3 neutral = getNeutralPosition(); // TODO this is actually callng the non-const version and returning a modifyable ref
+  neutral.z() = -height;
+
+  MovementLimits leg_movement_limits{neutral.x(), neutral.x(), neutral.y(), neutral.y()};
+  Leg::JointAngles ik_result_angles;
+
+  // Sense check that neutral position is achievable!
+  if (!calculateJointAngles(neutral, Leg::IKMode::WALK, ik_result_angles)) {
+    return leg_movement_limits;
+  }
+
+  const float max_extension = dims_.a + dims_.b + dims_.c;
+  float test_value;
+
+//  float test_value = max_extension;
+  // 100 steps for now
+  // start at the absolute limit
+  // MAX X
+  test_value = max_extension;
+  while (test_value > neutral.x()) {
+    Vector3 test_position = neutral;
+    test_position.x() = test_value;
+    if (calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
+      leg_movement_limits.x_max = test_value;
+      break;
+    }
+    test_value -= max_extension/100.0f;
+  }
+
+  test_value = -max_extension;
+  while (test_value < neutral.x()) {
+    Vector3 test_position = neutral;
+    test_position.x() = test_value;
+    if (calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
+      leg_movement_limits.x_min = test_value;
+      break;
+    }
+    test_value += max_extension/100.0f;
+  }
+
+  const float max_y_extension = sqrt(max_extension * max_extension + neutral.x() * neutral.x());
+  test_value = max_y_extension;
+  while (test_value > neutral.y()) {
+    Vector3 test_position = neutral;
+    test_position.y() = test_value;
+    if (calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
+      leg_movement_limits.y_max = test_value;
+      break;
+    }
+    test_value -= max_y_extension/100.0f;
+  }
+
+  test_value = -max_y_extension;
+  while (test_value < neutral.y()) {
+    Vector3 test_position = neutral;
+    test_position.y() = test_value;
+    if (calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
+      leg_movement_limits.y_min = test_value;
+      break;
+    }
+    test_value += max_y_extension/100.0f;
+  }
+
+  return leg_movement_limits;
+}
+
+
 /**
  * @details
  * To be run for every period the leg is raised. Can be called if not raised - will not do anything.

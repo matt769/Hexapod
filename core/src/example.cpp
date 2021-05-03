@@ -113,12 +113,5 @@ int main() {
             << hexapod.getLeg(1).getJointAnglesPhysical().theta_2 << '\t'
             << hexapod.getLeg(1).getJointAnglesPhysical().theta_3 << '\n';
 
-
-  LegMovementLimits lml = px.calculateMovementLimits(0);
-  Vector3 neutral = px.getLeg(0).getNeutralPosition();
-
-  std::cout << neutral.x() << '\t' << neutral.y() << '\t' << neutral.z() << '\n';
-  std::cout << lml.x_max << '\t'  << lml.x_min << '\t' << lml.y_max << '\t' << lml.y_min << '\n';
-
 }
 
