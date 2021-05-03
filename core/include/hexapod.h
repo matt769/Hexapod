@@ -152,11 +152,11 @@ class Hexapod {
   Transform tf_base_to_new_base_target_;
   /** @brief Target base to body transform expressed in current base frame */
   Transform tf_base_to_body_target_;
-  /** @brief Current walk vector. TODO review naming. */
+  /** @brief Current walk vector. */
   Vector3 walk_step_current_;
   /** @brief Requested walk vector. */
   Vector3 walk_step_target_;
-  /** @brief Current walk vector. TODO review naming. */
+  /** @brief Current walk vector. */
   float turn_step_current_;
   /** @brief Requested turn angle. */
   float turn_step_target_;

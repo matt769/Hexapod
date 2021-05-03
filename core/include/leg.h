@@ -33,14 +33,11 @@ struct LegMovementLimits {
 
     @details
     A leg can be attached to a robot at the leg base frame - this frame is centred on joint 1, with
-   its
-     Z axis aligned with joint 1 axis of rotation and X axis pointing in the joint 1 = 0 degrees
+   its Z axis aligned with joint 1 axis of rotation and X axis pointing in the joint 1 = 0 degrees
    direction.
 
     In general, if a leg is on the ground (State::ON_GROUND) it is the responsibility of the parent
-   robot
-    to update its joint angles if required i.e. if the leg base moves. TODO - might change this a
-   bit later.
+   robot to update its joint angles if required i.e. if the leg base moves.
 
     But when a leg is in the air, calling stepUpdate() will let it handle its own trajectory.
     The trajectory can be updated by calling updateTargets().
