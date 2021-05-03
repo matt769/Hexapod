@@ -352,7 +352,7 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
   legs_[leg_idx].updateTargets(target_pos, raised_pos, foot_air_time);
 }
 
-void Hexapod::updateFootTargets() {
+void Hexapod::updateRaisedFootTargets() {
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     if (recalculate_all_feet_targets_ ||
         (recalculate_raised_feet_targets_ && legs_[leg_idx].state_ == Leg::State::RAISED)) {
@@ -484,7 +484,7 @@ bool Hexapod::update() {
     if (!grounded_legs_result) {
       clearTargets(); // couldn't achieve the desired movement
     }
-    updateFootTargets();  // Update foot targets if required
+    updateRaisedFootTargets();  // Update foot targets if required
     raised_legs_result = handleRaisedLegs();
     updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
   } else {

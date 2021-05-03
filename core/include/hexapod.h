@@ -221,7 +221,7 @@ class Hexapod {
   /** @brief Update foot targets (if required) for single leg*/
   void updateFootTarget(uint8_t leg_idx);
   /** @brief Call updateFootTarget for all raised legs */
-  void updateFootTargets();
+  void updateRaisedFootTargets();
   /** @brief Return foot position in the base frame. */
   Vector3 getFootPosition(uint8_t leg_idx) const;
   /** @brief Clear all movement targets (walk, turn, body etc). */
