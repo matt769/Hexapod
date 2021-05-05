@@ -12,6 +12,11 @@
 
 namespace hexapod {
 
+struct GaitDefinition {
+  uint8_t* order;
+  float* offset;
+};
+
 /** @class Hexapod
  * @brief A hexapod contains a body and a number of legs (not actually limited to 6), and manages
  * the legs in order to move the body around.
@@ -136,6 +141,7 @@ class Hexapod {
   /** @brief For moving the body up from the ground to a walking position */
   float rising_increment_;
 
+  GaitDefinition gaits_[4];
   Leg* legs_;
   /** @brief Height of base frame above ground */
   float height_;

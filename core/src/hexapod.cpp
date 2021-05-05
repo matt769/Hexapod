@@ -95,6 +95,35 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   std::cout << "rising_increment_\t" << rising_increment_ << '\n';
 #endif
 
+ // generate ripple gait in new form
+  gaits_[Gait::RIPPLE] = GaitDefinition{new uint8_t[num_legs], new float[num_legs]};
+  uint8_t leg = 0;
+  for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
+    gaits_[Gait::RIPPLE].order[seq_no] = leg;
+    gaits_[Gait::RIPPLE].offset[seq_no] = 1.0;
+    // next leg is on the other side and 1 'row' further back
+    if (leg % 2 == 0) {
+      // on left
+      leg += 3;
+    } else {
+      leg += 1;
+    }
+    if (leg >= num_legs_) {
+      if (leg % 2 == 0) {
+        if (num_legs_ / 2 % 2 == 0) {
+          leg = 1;
+        } else {
+          leg = 0;
+        }
+      } else {
+        if (num_legs_ / 2 % 2 == 0) {
+          leg = 0;
+        } else {
+          leg = 1;
+        }
+      }
+    }
+  }
 
 }
 
