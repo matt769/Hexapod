@@ -177,14 +177,14 @@ class Hexapod {
 
   /**
    * @brief Describes a circle of allowed foot movement around the neutral point.
-   *
+   *gait_current_pos_
    * @details
    * TODO review this. Ideally have better solution to managing range of movement.
    */
   float allowed_foot_position_diameter_;
 
   uint8_t current_gait_seq_ = Gait::RIPPLE;
-  uint8_t gait_current_pos_ = 0;
+  uint8_t gait_current_leg_ = 0;
   float stance_width_ = stance_width_default_;
   float leg_lift_height_ = leg_lift_height_default_;
   float foot_ground_travel_ratio_ = fgtr_default_;
