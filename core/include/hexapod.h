@@ -184,7 +184,7 @@ class Hexapod {
   float allowed_foot_position_diameter_;
 
   uint8_t current_gait_seq_ = Gait::RIPPLE;
-  uint8_t gait_next_leg_ = 0;
+  uint8_t gait_next_leg_seq_no = 0;
   float stance_width_ = stance_width_default_;
   float leg_lift_height_ = leg_lift_height_default_;
   float foot_ground_travel_ratio_ = fgtr_default_;
@@ -240,8 +240,6 @@ class Hexapod {
   void handleStateChange();
   /** @brief Clear variables used by visualisation. */
   void clearVisualisationChanges();
-  /** @brief To be called after any leg raise event. */
-  void advanceGait();
   /** @brief Returns the index of the next leg to be raised. */
   uint8_t gaitNextLeg();
   /** @brief Returns the maximum number of legs that can be raised during the current gait. */

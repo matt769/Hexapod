@@ -240,7 +240,8 @@ void Hexapod::updateLegsStatus() {
   }
 
   if (raise_result) {
-    advanceGait();
+    ++gait_next_leg_seq_no;
+    gait_next_leg_seq_no %= num_legs_;
   }
 }
 
@@ -1025,77 +1026,13 @@ uint8_t Hexapod::getManualControlJointIdx() const {
   return manual_joint_idx_;
 }
 
-/**
- * @details
- * Advance gait_next_leg_ to the index of the next leg to be raised.
- *
- * Based on some basic rules for each gait.
- *
- */
-void Hexapod::advanceGait() {
-  switch (current_gait_seq_) {
-    case Gait::RIPPLE:
-      // next leg is on the other side and 1 'row' further back
-      if (gait_next_leg_ % 2 == 0) {
-        // on left
-        gait_next_leg_ += 3;
-      } else {
-        gait_next_leg_ += 1;
-      }
-      if (gait_next_leg_ >= num_legs_) {
-        if (gait_next_leg_ % 2 == 0) {
-          if (num_legs_ / 2 % 2 == 0) {
-            gait_next_leg_ = 1;
-          } else {
-            gait_next_leg_ = 0;
-          }
-        } else {
-          if (num_legs_ / 2 % 2 == 0) {
-            gait_next_leg_ = 0;
-          } else {
-            gait_next_leg_ = 1;
-          }
-        }
-      }
-      break;
+uint8_t Hexapod::gaitNextLeg() { return gaits_[current_gait_seq_].order[gait_next_leg_seq_no]; }
+// Check this still works for default gait
+// Add back the exist gaits
+// Add check on progress of previous leg, and implement use of offset
+// Add tripod gait
 
-    case Gait::LEFT_RIGHT_LEFT_RIGHT:
-      gait_next_leg_ += 1;
-      gait_next_leg_ = gait_next_leg_ % num_legs_;
-      break;
 
-    case Gait::LHS_THEN_RHS:
-      gait_next_leg_ += 2;
-      if (gait_next_leg_ >= num_legs_) {
-        if (gait_next_leg_ % 2 == 0) {
-          gait_next_leg_ = 1;
-        } else {
-          gait_next_leg_ = 0;
-        }
-      }
-      break;
-
-    case Gait::AROUND_THE_CLOCK:
-      if (gait_next_leg_ % 2 == 0) {
-        gait_next_leg_ += 2;
-        if (gait_next_leg_ == num_legs_) {
-          gait_next_leg_ = num_legs_ - 1;
-        }
-      } else {
-        if (gait_next_leg_ == 1) {
-          gait_next_leg_ = 0;
-        } else {
-          gait_next_leg_ -= 2;
-        }
-      }
-      break;
-
-    default:
-      break;
-  }
-}
-
-uint8_t Hexapod::gaitNextLeg() { return gait_next_leg_; }
 
 uint8_t Hexapod::gaitMaxRaised() {
   return 1;  // currently fixed for all gaits
