@@ -347,13 +347,7 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
     Vector3 raised_pos_in_base = neutral_pos;
     raised_pos_in_base.z() += leg_lift_height_;
 
-    // HACK add 2 (times num feet on ground) to account for a few steps overhead in changing state
-    // that means feet are actually on the ground longer than calculated
-    // TODO might be able to remove this now that I've changed how leg status is updated
-    //  (tested briefly, seems ok to remove)
-    const uint16_t foot_ground_time = 2 + foot_air_time_ * (num_legs_ - gaitMaxRaised()); // TODO remove need for this
-    const float half_distance_to_travel = (static_cast<float>(foot_ground_time) * speed) / 2.0f;
-    const Vector3 target_pos_in_base = neutral_pos + half_distance_to_travel * step_unit;
+    const Vector3 target_pos_in_base = neutral_pos + (allowed_foot_position_diameter_/2.0f) * step_unit;
     // transform the step vector from base frame to leg base
     // can ignore the new base to base stuff since we only care about the relative position to the
     // base, wherever it is
