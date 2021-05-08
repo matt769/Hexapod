@@ -210,26 +210,31 @@ void Hexapod::updateLegsStatus() {
   }
 
   // now see if we want to request a raise
-  // TODO might be able to remove the 2 time periods added to foot_ground_time in updateFootTarget
-  //  (tested briefly, seems ok to remove)
+  // TODO could this be simplified a little?
+  // Go through in the order of the gait, not the leg indices
+  //  and start with next in gait sequence
+  uint8_t seq_no = gait_next_leg_seq_no;
+  for (uint8_t i = 0; i < num_legs_; ++i, seq_no = (seq_no+1) % num_legs_) {
+    uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[(seq_no + num_legs_ - 1) % num_legs_];
+    uint8_t leg_idx= gaits_[current_gait_seq_].order[seq_no];
 
-  uint8_t num_legs_raised = getNumLegsRaised();
-  bool raise_result = false;
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    // check if this leg is next to be lifted, and if we want to allow it
-    if (base_change_ && legs_[leg_idx].state_ == Leg::State::ON_GROUND &&
-        gaitNextLeg() == leg_idx && num_legs_raised < gaitMaxRaised()) {
+    // if the previous leg has finished i.e. is grounded, then can raise the new one
+    if (base_change_ && legs_[prev_leg_idx].state_ == Leg::State::ON_GROUND && legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
       updateFootTarget(leg_idx); // TODO I think this can (and should) be removed because it's already called for
-                                  // all legs in updateFootTargets called in update() (unless there's anything
-                                  // significant happening inbetween but I don't think so
-      raise_result = legs_[leg_idx].updateStatus(true);
+                                 //  all legs in updateFootTargets called in update() (unless there's anything
+                                 //  significant happening inbetween but I don't think so
+      bool raise_result = legs_[leg_idx].updateStatus(true);
+      if (raise_result) {
+        ++gait_next_leg_seq_no;
+        gait_next_leg_seq_no %= num_legs_;
+      }
+      // TODO for multi-leg gaits, what happens if some but not all legs can't raise
+      //  I expect things will get weird
+    } else {
+      break; // stop at the first non-raise result, there can't be any more
     }
   }
 
-  if (raise_result) {
-    ++gait_next_leg_seq_no;
-    gait_next_leg_seq_no %= num_legs_;
-  }
 }
 
 /**
@@ -358,6 +363,8 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
 
     // HACK add 2 (times num feet on ground) to account for a few steps overhead in changing state
     // that means feet are actually on the ground longer than calculated
+    // TODO might be able to remove this now that I've changed how leg status is updated
+    //  (tested briefly, seems ok to remove)
     const uint16_t foot_ground_time = 2 + foot_air_time * (num_legs_ - gaitMaxRaised());
     const float half_distance_to_travel = (static_cast<float>(foot_ground_time) * speed) / 2.0f;
     const Vector3 target_pos_in_base = neutral_pos + half_distance_to_travel * step_unit;
