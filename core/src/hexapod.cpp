@@ -565,10 +565,24 @@ bool Hexapod::resetStanceWidth() { return setStanceWidth(stance_width_default_);
  * @param gait
  * @return true if the gait was changed
  */
-bool Hexapod::changeGait(const Gait gait) {
-  if (gait < Gait::NUM_GAITS) {
-    current_gait_seq_ = gait;
+bool Hexapod::changeGait(const Gait new_gait) {
+  if (new_gait == current_gait_seq_ || new_gait >= Gait::NUM_GAITS) return false;
+
+  // if there's currently a leg raised, we should set the next leg to the one after that in the new gait order
+  // can do if nothing raised either, doesn't really matter
+  uint8_t current_gait_current_leg_seq_no = (gait_next_leg_seq_no + num_legs_ -1) % num_legs_; // decrement with wrap
+  uint8_t current_leg_idx = gaits_[current_gait_seq_].order[current_gait_current_leg_seq_no];
+  // find this leg in the new gait
+  for (uint8_t seq_no = 0; seq_no < num_legs_; ++seq_no) {
+    if (gaits_[new_gait].order[seq_no] == current_leg_idx) {
+      gait_next_leg_seq_no = seq_no; // current leg
+    }
   }
+  // and increment to point at the next leg again
+  ++gait_next_leg_seq_no;
+  gait_next_leg_seq_no % num_legs_;
+  // and finally change the gait type
+  current_gait_seq_ = new_gait;
   return true;
 }
 
