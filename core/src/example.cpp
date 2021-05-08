@@ -42,6 +42,20 @@ int main() {
     hexapod.update();
   }
 
+  hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
+  for (int i =0; i < 1; ++i) {
+    hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
+    hexapod.update();
+  }
+
+
+  for (int i =0; i < 250; ++i) {
+    hexapod.setWalk(Vector3(0.0f, 0.0f, 0.0f), 0.0);
+    hexapod.update();
+  }
+  while(1);
+
+
   Vector3 small_step = Vector3(-0.001f, -0.001f, 0.0f);
   float angle_step = (-5.0 * M_PI / 180.0) / 50.0;
   hexapod.setWalk(small_step, angle_step);

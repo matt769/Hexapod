@@ -218,7 +218,7 @@ void Hexapod::updateLegsStatus() {
   // TODO could this be simplified a little?
   // Go through in the order of the gait, not the leg indices
   //  and start with next in gait sequence
-  uint8_t seq_no = gait_next_leg_seq_no;
+  uint8_t seq_no = gait_next_leg_seq_no_;
   for (uint8_t i = 0; i < num_legs_; ++i, seq_no = (seq_no+1) % num_legs_) {
     uint8_t prev_seq_no = (seq_no + num_legs_ - 1) % num_legs_;
     uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no];
@@ -235,8 +235,8 @@ void Hexapod::updateLegsStatus() {
                                  //  significant happening inbetween but I don't think so
       bool raise_result = legs_[leg_idx].updateStatus(true);
       if (raise_result) {
-        ++gait_next_leg_seq_no;
-        gait_next_leg_seq_no %= num_legs_;
+        ++gait_next_leg_seq_no_;
+        gait_next_leg_seq_no_ %= num_legs_;
       }
       // TODO for multi-leg gaits, what happens if some but not all legs can't raise
       //  I expect things will get weird
@@ -523,7 +523,7 @@ bool Hexapod::update() {
     }
     updateRaisedFootTargets();  // Update foot targets if required
     raised_legs_result = handleRaisedLegs();
-    updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
+
   } else {
     // state_ == State::FULL_MANUAL
     // The legs have already been modified directly though the manualMoveFoot and manualChangeJoint functions
@@ -536,7 +536,10 @@ bool Hexapod::update() {
   //  and we can keep moving the raised legs even if we couldn't move the grounded ones
   if (raised_legs_result) {
     commitLegJointChanges();
+    updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
   }
+
+
 
   clearTargets();
   handleStateChange();
@@ -599,17 +602,17 @@ bool Hexapod::changeGait(const Gait new_gait) {
 
   // if there's currently a leg raised, we should set the next leg to the one after that in the new gait order
   // can do if nothing raised either, doesn't really matter
-  uint8_t current_gait_current_leg_seq_no = (gait_next_leg_seq_no + num_legs_ -1) % num_legs_; // decrement with wrap
+  uint8_t current_gait_current_leg_seq_no = (gait_next_leg_seq_no_ + num_legs_ -1) % num_legs_; // decrement with wrap
   uint8_t current_leg_idx = gaits_[current_gait_seq_].order[current_gait_current_leg_seq_no];
   // find this leg in the new gait
   for (uint8_t seq_no = 0; seq_no < num_legs_; ++seq_no) {
     if (gaits_[new_gait].order[seq_no] == current_leg_idx) {
-      gait_next_leg_seq_no = seq_no; // current leg
+      gait_next_leg_seq_no_ = seq_no; // current leg
     }
   }
   // and increment to point at the next leg again
-  ++gait_next_leg_seq_no;
-  gait_next_leg_seq_no % num_legs_;
+  ++gait_next_leg_seq_no_;
+  gait_next_leg_seq_no_ % num_legs_;
   // and finally change the gait type
   current_gait_seq_ = new_gait;
   return true;
@@ -1044,7 +1047,7 @@ uint8_t Hexapod::getManualControlJointIdx() const {
   return manual_joint_idx_;
 }
 
-uint8_t Hexapod::gaitNextLeg() { return gaits_[current_gait_seq_].order[gait_next_leg_seq_no]; }
+uint8_t Hexapod::gaitNextLeg() { return gaits_[current_gait_seq_].order[gait_next_leg_seq_no_]; }
 // Check this still works for default gait
 // Add back the exist gaits
 // Add check on progress of previous leg, and implement use of offset

@@ -184,7 +184,7 @@ class Hexapod {
   float allowed_foot_position_diameter_;
 
   uint8_t current_gait_seq_ = Gait::RIPPLE;
-  uint8_t gait_next_leg_seq_no = 0; // Note that this is NOT a leg index
+  uint8_t gait_next_leg_seq_no_ = 0; // Note that this is NOT a leg index
   float stance_width_ = stance_width_default_;
   float leg_lift_height_ = leg_lift_height_default_;
   float foot_ground_travel_ratio_ = fgtr_default_;
