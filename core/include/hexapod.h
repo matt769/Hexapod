@@ -74,6 +74,9 @@ class Hexapod {
   bool setLegRaiseHeight(float height);
   bool changeLegRaiseHeight(float change);
   bool resetLegRaiseHeight();
+  bool setLegRaiseTime(uint16_t time);
+  bool changeLegRaiseTime(uint16_t change);
+  bool resetLegRaiseTime();
   void setMoveMode(MoveMode move_mode);
   bool setLegJoints(uint8_t leg_idx, const Leg::JointAngles& joint_angles);
   bool setLegJointsPhysical(uint8_t leg_idx, const Leg::JointAngles& physical_joint_angles);
@@ -128,6 +131,8 @@ class Hexapod {
   uint16_t foot_air_time_default_;
   /** @brief Minimum time foot can be in air during a raise i.e. fastest raise movement */
   uint16_t foot_air_time_min_;
+  uint16_t foot_air_time_max_;
+  uint16_t foot_air_time_;
   float stance_width_min_;
   float stance_width_max_;
   float stance_width_default_;

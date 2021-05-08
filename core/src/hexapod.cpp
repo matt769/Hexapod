@@ -49,8 +49,10 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   legs_ = legs;
   tf_body_to_leg_ = tf_body_to_leg;
 
-  foot_air_time_default_ = (update_frequency_ / 4) * 2; // divide by 2 and round to even - 0.5s
-  foot_air_time_min_ = (update_frequency_ / 10) * 2; // divide by 5 and round to even - 0.2s
+  foot_air_time_default_ = (update_frequency_ / 2) * 2; // 1.0s
+  foot_air_time_min_ = (foot_air_time_default_ / 8) * 2; // Quarter of default - 0.25s
+  foot_air_time_max_ = foot_air_time_default_ * 2; // Double default - 2.0s
+  foot_air_time_ = foot_air_time_default_;
 
   // set various movement parameters based on body/leg dimensions
   const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
@@ -691,6 +693,27 @@ bool Hexapod::changeLegRaiseHeight(const float change) {
  * @return true if the value was changed
  */
 bool Hexapod::resetLegRaiseHeight() { return setLegRaiseHeight(leg_lift_height_default_); }
+
+bool Hexapod::setLegRaiseTime(uint16_t time) {
+  if (time < foot_air_time_min_)
+    time = foot_air_time_min_;
+  else if (time > leg_lift_height_max_)
+    time = foot_air_time_max_;
+  if (foot_air_time_ == time) {
+    return false;
+  } else {
+    foot_air_time_ = time;
+    return true;
+  }
+}
+
+bool Hexapod::changeLegRaiseTime(const uint16_t change) {
+  const uint16_t new_time = foot_air_time_ + change;
+  return setLegRaiseHeight(new_time);
+}
+
+bool Hexapod::resetLegRaiseTime() { return setLegRaiseHeight(foot_air_time_default_); }
+
 
 /**
  * @details
