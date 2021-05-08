@@ -38,7 +38,7 @@ class Hexapod {
    * not any resetriction on foot position. */
   enum class State { UNSUPPORTED, STANDING, WALKING, FULL_MANUAL };
   /** @brief Gait identifier. Also used as index into gait_seq_ */
-  enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, NUM_GAITS };
+  enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, TRIPOD, NUM_GAITS };
 
   /** @brief Construct a new Hexapod object */
   Hexapod(uint8_t num_legs, Dims hex_dims, Transform *tf_body_to_leg, Leg *legs, uint16_t update_frequency = 50);
@@ -141,7 +141,7 @@ class Hexapod {
   /** @brief For moving the body up from the ground to a walking position */
   float rising_increment_;
 
-  GaitDefinition gaits_[4];
+  GaitDefinition gaits_[5];
   Leg* legs_;
   /** @brief Height of base frame above ground */
   float height_;

@@ -101,9 +101,14 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
 Hexapod::~Hexapod() {
   delete[] legs_;
   delete[] tf_body_to_leg_;
-  for (Gait g = static_cast<Gait>(0); g < Gait::NUM_GAITS; g = static_cast<Gait>(static_cast<int>(g) + 1)) {
+  for (uint8_t g = 0; g < 4; ++g) {
     delete[] gaits_[g].order;
     delete[] gaits_[g].offset;
+  }
+  // extra gait for 6 legged version
+  if (num_legs_ == 6) {
+    delete[] gaits_[4].order;
+    delete[] gaits_[4].offset;
   }
 }
 
@@ -1143,6 +1148,25 @@ void Hexapod::populateGaitInfo() {
       }
     }
   }
+
+  if (num_legs_ == 6) {
+    gait_type = Gait::TRIPOD;
+    gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+    gaits_[gait_type].order[0] = 0;
+    gaits_[gait_type].order[1] = 3;
+    gaits_[gait_type].order[2] = 4;
+    gaits_[gait_type].order[3] = 1;
+    gaits_[gait_type].order[4] = 2;
+    gaits_[gait_type].order[5] = 5;
+    gaits_[gait_type].offset[0] = 0.0;
+    gaits_[gait_type].offset[1] = 0.0;
+    gaits_[gait_type].offset[2] = 1.0;
+    gaits_[gait_type].offset[3] = 0.0;
+    gaits_[gait_type].offset[4] = 0.0;
+    gaits_[gait_type].offset[5] = 1.0;
+  }
+
+
 
 }
 
