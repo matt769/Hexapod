@@ -188,6 +188,11 @@ void Receiver::processCommand(const uint8_t cmd) {
       break;
     case 52:hexapod_->changeGait(Hexapod::Gait::AROUND_THE_CLOCK);
       break;
+    case 53:
+      if (hexapod_->num_legs_ == 6) {
+        hexapod_->changeGait(Hexapod::Gait::TRIPOD);
+      }
+      break;
 
     case 93:hexapod_->changeStanceWidth(stance_width_increment);
       break;

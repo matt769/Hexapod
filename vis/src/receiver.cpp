@@ -150,6 +150,11 @@ void Receiver::callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg) {
       break;
     case 52:hexapod_->changeGait(Hexapod::Gait::AROUND_THE_CLOCK);
       break;
+    case 53:
+      if (hexapod_->num_legs_ == 6) {
+        hexapod_->changeGait(Hexapod::Gait::TRIPOD);
+      }
+      break;
 
     case 93:hexapod_->changeStanceWidth(stance_width_increment);
       break;
