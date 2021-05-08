@@ -311,38 +311,12 @@ bool Hexapod::handleGroundedLegs() {
  */
 void Hexapod::updateFootTarget(const uint8_t leg_idx) {
   const Vector3 combined_step = calculateFootVector(leg_idx);
-  uint16_t foot_air_time;  // how long we want the foot in the air for
-
   float speed = combined_step.norm();
   Vector3 step_unit;
   if (compareFloat(speed, 0.0f, 0.0001f)) {
     step_unit = Vector3(0.0f, 0.0f, 0.0f);  // not actually a unit vector obviously
-    speed = 0.0f;
-    foot_air_time = foot_air_time_default_;
   } else {
     step_unit = combined_step.unit();
-
-    // Check desired speed within limits and cap it if not
-    uint16_t min_foot_ground_time = foot_air_time_min_ * (num_legs_ - gaitMaxRaised());
-    // max speed if travel full allowed distance in the minimum allowed time
-    const float max_v = allowed_foot_position_diameter_ / static_cast<float>(min_foot_ground_time);
-    if (speed > max_v) {
-#ifndef __AVR__
-      std::cout << "Speed over limit. Capped to " << max_v << '\n';
-#endif
-      speed = max_v;
-    }
-
-    // Convert speed to number of time steps that foot will be on the ground
-    const float foot_ground_distance =
-        allowed_foot_position_diameter_ * foot_ground_travel_ratio_;  // stride length
-    const float foot_ground_time_fl = foot_ground_distance / speed;
-    // and in the air - make sure it's even (round up if not)
-    const float foot_air_time_fl = foot_ground_time_fl / static_cast<float>(num_legs_ - gaitMaxRaised());
-    foot_air_time = (uint16_t)ceilf(foot_air_time_fl);
-    if (foot_air_time % 2 == 1) {
-      foot_air_time += 1;
-    }
   }
 
   Vector3 raised_pos;
@@ -377,7 +351,7 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
     // that means feet are actually on the ground longer than calculated
     // TODO might be able to remove this now that I've changed how leg status is updated
     //  (tested briefly, seems ok to remove)
-    const uint16_t foot_ground_time = 2 + foot_air_time * (num_legs_ - gaitMaxRaised());
+    const uint16_t foot_ground_time = 2 + foot_air_time_ * (num_legs_ - gaitMaxRaised()); // TODO remove need for this
     const float half_distance_to_travel = (static_cast<float>(foot_ground_time) * speed) / 2.0f;
     const Vector3 target_pos_in_base = neutral_pos + half_distance_to_travel * step_unit;
     // transform the step vector from base frame to leg base
@@ -388,7 +362,7 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
     target_pos = tf_leg_to_base * target_pos_in_base;
   }
 
-  legs_[leg_idx].updateTargets(target_pos, raised_pos, foot_air_time);
+  legs_[leg_idx].updateTargets(target_pos, raised_pos, foot_air_time_);
 }
 
 void Hexapod::updateRaisedFootTargets() {
