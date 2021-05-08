@@ -614,7 +614,7 @@ bool Hexapod::changeGait(const Gait new_gait) {
   }
   // and increment to point at the next leg again
   ++gait_next_leg_seq_no_;
-  gait_next_leg_seq_no_ % num_legs_;
+  gait_next_leg_seq_no_ %= num_legs_;
   // and finally change the gait type
   current_gait_seq_ = new_gait;
   return true;
