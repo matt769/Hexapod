@@ -199,6 +199,20 @@ uint8_t Hexapod::getNumLegsRaised() const {
  *
  */
 void Hexapod::updateLegsStatus() {
+  // change approach a bit, so instead of checked the number raised vs max
+  //  we check that the previous leg has finished
+  // So we actually need to do this first make sure all raised legs that have finished have their status update before
+  //  we try and raise anything else
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    if (legs_[leg_idx].state_ == Leg::State::RAISED) {
+      legs_[leg_idx].updateStatus(false);
+    }
+  }
+
+  // now see if we want to request a raise
+  // TODO might be able to remove the 2 time periods added to foot_ground_time in updateFootTarget
+  //  (tested briefly, seems ok to remove)
+
   uint8_t num_legs_raised = getNumLegsRaised();
   bool raise_result = false;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
@@ -209,8 +223,6 @@ void Hexapod::updateLegsStatus() {
                                   // all legs in updateFootTargets called in update() (unless there's anything
                                   // significant happening inbetween but I don't think so
       raise_result = legs_[leg_idx].updateStatus(true);
-    } else {
-      legs_[leg_idx].updateStatus(false);  // ignore return result (will be false)
     }
   }
 
