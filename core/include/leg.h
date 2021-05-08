@@ -142,6 +142,8 @@ class Leg {
   uint16_t getStepIdx() const;
   /** @brief Returns the duration of the currently set trajectory. */
   uint16_t getCurrentStepDuration() const;
+  /** @brief Returns percentage progress through trajectory */
+  float getCurrentStepProgress() const;
 
   /** @brief Sets a manually calculated trajectory */
   void setTrajectory(const JointAngles& target,

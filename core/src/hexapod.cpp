@@ -215,11 +215,16 @@ void Hexapod::updateLegsStatus() {
   //  and start with next in gait sequence
   uint8_t seq_no = gait_next_leg_seq_no;
   for (uint8_t i = 0; i < num_legs_; ++i, seq_no = (seq_no+1) % num_legs_) {
-    uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[(seq_no + num_legs_ - 1) % num_legs_];
+    uint8_t prev_seq_no = (seq_no + num_legs_ - 1) % num_legs_;
+    uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no];
     uint8_t leg_idx= gaits_[current_gait_seq_].order[seq_no];
 
     // if the previous leg has finished i.e. is grounded, then can raise the new one
-    if (base_change_ && legs_[prev_leg_idx].state_ == Leg::State::ON_GROUND && legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
+    // Use the offset value to determine when during the the previous leg's trajectory the next one can start lifting
+    // (offset = 0 -> straight away, offset 1 -> only when back on ground)
+    bool prev_leg_complete = legs_[prev_leg_idx].getCurrentStepProgress() >= gaits_[current_gait_seq_].offset[prev_seq_no];
+
+    if (base_change_ && prev_leg_complete && legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
       updateFootTarget(leg_idx); // TODO I think this can (and should) be removed because it's already called for
                                  //  all legs in updateFootTargets called in update() (unless there's anything
                                  //  significant happening inbetween but I don't think so

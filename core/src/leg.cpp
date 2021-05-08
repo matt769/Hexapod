@@ -634,7 +634,7 @@ bool Leg::stepUpdate() {
  * @details
  * Will change status from raised to on ground if it has reached the end of its raised trajectory.
  *
- * Will change status from on groun to raised if a raise is requested by input param, and it's not
+ * Will change status from on ground to raised if a raise is requested by input param, and it's not
  * already at its target position.
  *  If it is already at its target it will not raise even if requested.
  *
@@ -653,6 +653,7 @@ bool Leg::updateStatus(const bool raise) {
     const float d = (current_pos_ - target_pos_).norm();
     if (!compareFloat(d, 0.0f, target_tolerance)) {
       state_ = State::RAISED;
+      step_idx_ = 0; // TODO review where this is set throughout
     }
     result = true;
   }
@@ -707,5 +708,16 @@ void Leg::setStartingAngles(Leg::JointAngles starting_angles) {
 uint16_t Leg::getStepIdx() const { return step_idx_; }
 
 uint16_t Leg::getCurrentStepDuration() const { return current_step_duration_; }
+
+/**
+ * @details If the leg is currently raised, return the percentage through the current trajectory.
+ *  Otherwise return 1 (i.e. trajectory complete).
+ * @return percentage progress through trajectory (0 to 1)
+ */
+float Leg::getCurrentStepProgress() const{
+  if (state_ == State::ON_GROUND) { return 1.0f; }
+  else if (step_idx_ == 0) { return 0.0; }
+  else { return static_cast<float>(step_idx_) / static_cast<float>(current_step_duration_); }
+}
 
 } // namespace hexapod
