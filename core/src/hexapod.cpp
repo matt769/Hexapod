@@ -1053,7 +1053,7 @@ uint8_t Hexapod::gaitNextLeg() { return gaits_[current_gait_seq_].order[gait_nex
 
 
 uint8_t Hexapod::gaitMaxRaised() {
-  return 1;  // currently fixed for all gaits
+  return gaits_[current_gait_seq_].max_raised;
 }
 
 void Hexapod::commitTargets() {
@@ -1074,7 +1074,7 @@ void Hexapod::commitTargets() {
 void Hexapod::populateGaitInfo() {
   Gait gait_type;
   gait_type = Gait::RIPPLE;
-  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_], 1};
   uint8_t leg = 0;
   for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
     gaits_[gait_type].order[seq_no] = leg;
@@ -1104,7 +1104,7 @@ void Hexapod::populateGaitInfo() {
   }
 
   gait_type = Gait::LEFT_RIGHT_LEFT_RIGHT;
-  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_], 1};
   leg = 0;
   for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
     gaits_[gait_type].order[seq_no] = leg;
@@ -1114,7 +1114,7 @@ void Hexapod::populateGaitInfo() {
   }
 
   gait_type = Gait::LHS_THEN_RHS;
-  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_], 1};
   leg = 0;
   for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
     gaits_[gait_type].order[seq_no] = leg;
@@ -1130,7 +1130,7 @@ void Hexapod::populateGaitInfo() {
   }
 
   gait_type = Gait::AROUND_THE_CLOCK;
-  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_], 1};
   leg = 0;
   for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
     gaits_[gait_type].order[seq_no] = leg;
@@ -1151,7 +1151,7 @@ void Hexapod::populateGaitInfo() {
 
   if (num_legs_ == 6) {
     gait_type = Gait::TRIPOD;
-    gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+    gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_], 3};
     gaits_[gait_type].order[0] = 0;
     gaits_[gait_type].order[1] = 3;
     gaits_[gait_type].order[2] = 4;

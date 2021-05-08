@@ -15,6 +15,7 @@ namespace hexapod {
 struct GaitDefinition {
   uint8_t* order;
   float* offset;
+  uint8_t max_raised;
 };
 
 /** @class Hexapod
