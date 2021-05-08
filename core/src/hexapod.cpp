@@ -536,10 +536,10 @@ bool Hexapod::update() {
   //  and we can keep moving the raised legs even if we couldn't move the grounded ones
   if (raised_legs_result) {
     commitLegJointChanges();
-    updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
+    if (state_ == State::WALKING) {
+      updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and RAISED
+    }
   }
-
-
 
   clearTargets();
   handleStateChange();
