@@ -95,41 +95,16 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   std::cout << "rising_increment_\t" << rising_increment_ << '\n';
 #endif
 
- // generate ripple gait in new form
-  gaits_[Gait::RIPPLE] = GaitDefinition{new uint8_t[num_legs], new float[num_legs]};
-  uint8_t leg = 0;
-  for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
-    gaits_[Gait::RIPPLE].order[seq_no] = leg;
-    gaits_[Gait::RIPPLE].offset[seq_no] = 1.0;
-    // next leg is on the other side and 1 'row' further back
-    if (leg % 2 == 0) {
-      // on left
-      leg += 3;
-    } else {
-      leg += 1;
-    }
-    if (leg >= num_legs_) {
-      if (leg % 2 == 0) {
-        if (num_legs_ / 2 % 2 == 0) {
-          leg = 1;
-        } else {
-          leg = 0;
-        }
-      } else {
-        if (num_legs_ / 2 % 2 == 0) {
-          leg = 0;
-        } else {
-          leg = 1;
-        }
-      }
-    }
-  }
-
+  populateGaitInfo();
 }
 
 Hexapod::~Hexapod() {
   delete[] legs_;
   delete[] tf_body_to_leg_;
+  for (Gait g = static_cast<Gait>(0); g < Gait::NUM_GAITS; g = static_cast<Gait>(static_cast<int>(g) + 1)) {
+    delete[] gaits_[g].order;
+    delete[] gaits_[g].offset;
+  }
 }
 
 bool Hexapod::setLegJoints(const uint8_t leg_idx, const Leg::JointAngles& joint_angles) {
@@ -1051,6 +1026,86 @@ void Hexapod::commitTargets() {
     if (body_change_) {
       tf_base_to_body_ = tf_base_to_body_target_;
     }
+}
+
+void Hexapod::populateGaitInfo() {
+  Gait gait_type;
+  gait_type = Gait::RIPPLE;
+  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+  uint8_t leg = 0;
+  for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
+    gaits_[gait_type].order[seq_no] = leg;
+    gaits_[gait_type].offset[seq_no] = 1.0;
+    // next leg is on the other side and 1 'row' further back
+    if (leg % 2 == 0) {
+      // on left
+      leg += 3;
+    } else {
+      leg += 1;
+    }
+    if (leg >= num_legs_) {
+      if (leg % 2 == 0) {
+        if (num_legs_ / 2 % 2 == 0) {
+          leg = 1;
+        } else {
+          leg = 0;
+        }
+      } else {
+        if (num_legs_ / 2 % 2 == 0) {
+          leg = 0;
+        } else {
+          leg = 1;
+        }
+      }
+    }
+  }
+
+  gait_type = Gait::LEFT_RIGHT_LEFT_RIGHT;
+  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+  leg = 0;
+  for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
+    gaits_[gait_type].order[seq_no] = leg;
+    gaits_[gait_type].offset[seq_no] = 1.0;
+    ++leg;
+    leg = leg % num_legs_; // redundant
+  }
+
+  gait_type = Gait::LHS_THEN_RHS;
+  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+  leg = 0;
+  for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
+    gaits_[gait_type].order[seq_no] = leg;
+    gaits_[gait_type].offset[seq_no] = 1.0;
+    leg += 2;
+    if (leg >= num_legs_) {
+      if (leg % 2 == 0) {
+        leg = 1;
+      } else {
+        leg = 0;
+      }
+    }
+  }
+
+  gait_type = Gait::AROUND_THE_CLOCK;
+  gaits_[gait_type] = GaitDefinition{new uint8_t[num_legs_], new float[num_legs_]};
+  leg = 0;
+  for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
+    gaits_[gait_type].order[seq_no] = leg;
+    gaits_[gait_type].offset[seq_no] = 1.0;
+    if (leg % 2 == 0) {
+      leg += 2;
+      if (leg == num_legs_) {
+        leg = num_legs_ - 1;
+      }
+    } else {
+      if (leg == 1) {
+        leg = 0;
+      } else {
+        leg -= 2;
+      }
+    }
+  }
+
 }
 
 } // namespace hexapod

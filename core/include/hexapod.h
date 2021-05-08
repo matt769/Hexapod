@@ -184,7 +184,7 @@ class Hexapod {
   float allowed_foot_position_diameter_;
 
   uint8_t current_gait_seq_ = Gait::RIPPLE;
-  uint8_t gait_next_leg_seq_no = 0;
+  uint8_t gait_next_leg_seq_no = 0; // Note that this is NOT a leg index
   float stance_width_ = stance_width_default_;
   float leg_lift_height_ = leg_lift_height_default_;
   float foot_ground_travel_ratio_ = fgtr_default_;
@@ -195,10 +195,6 @@ class Hexapod {
   uint8_t manual_leg_idx_;
   /** @brief The currently selected leg if under Manual SINGLE_JOINT control */
   uint8_t manual_joint_idx_; // index into Leg::JointAngles
-
-
-
-
 
   /** @brief Calculate the required joint angles for all grounded legs */
   bool calculateGroundedLegs();
@@ -245,6 +241,7 @@ class Hexapod {
   /** @brief Returns the maximum number of legs that can be raised during the current gait. */
   uint8_t gaitMaxRaised();
   void commitTargets();
+  void populateGaitInfo();
 
 };
 
