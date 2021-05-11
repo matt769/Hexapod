@@ -3,9 +3,9 @@
 
 #include "hexapod.h"
 
-namespace hexapod {
+namespace hexapod_vis {
 
-Hexapod buildFromURDF();
+hexapod::Hexapod buildFromURDF();
 }
 
 #endif

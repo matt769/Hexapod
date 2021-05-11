@@ -8,7 +8,8 @@
 
 // I could have just got these transforms from tf, right?...
 
-namespace hexapod {
+namespace hexapod_vis {
+using namespace hexapod;
 
 Hexapod buildFromURDF() {
   urdf::Model urdf_model;

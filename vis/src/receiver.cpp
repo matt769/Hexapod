@@ -5,7 +5,8 @@
 
 #include <std_msgs/Int32.h>
 
-namespace hexapod {
+namespace hexapod_vis {
+using namespace hexapod;
 
 Receiver::Receiver(const ros::NodeHandle& nh, Hexapod *hexapod) : nh_(nh), hexapod_(hexapod) {
   input_sub_ = nh_.subscribe("hexapod/command_key", 10, &Receiver::callbackProcessKeyPress, this);

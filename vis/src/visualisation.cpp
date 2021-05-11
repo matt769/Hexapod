@@ -16,7 +16,8 @@
 
 #include <string>
 
-namespace hexapod {
+namespace hexapod_vis {
+using namespace hexapod;
 
 Vis::Vis(const ros::NodeHandle& nh, Hexapod *hexapod)
     : nh_(nh),

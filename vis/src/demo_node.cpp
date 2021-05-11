@@ -14,6 +14,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
+using namespace hexapod_vis;
 using namespace hexapod;
 
 void demo_walk(Hexapod& hexapod);
