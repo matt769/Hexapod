@@ -562,7 +562,9 @@ bool Hexapod::resetStanceWidth() { return setStanceWidth(stance_width_default_);
 
 /**
  * @details
- * TODO need to add quite a few checks here to make sure this is possible without exceeding limits
+ * This does not do anything special when changing between single and multileg gaits. For mulit -> single
+ *  it works naturally anyway. For single -> multi it looks very slightly odd but won't lift more than the
+ *  defined in the multi-leg gait anyway.
  *
  * @param gait
  * @return true if the gait was changed
