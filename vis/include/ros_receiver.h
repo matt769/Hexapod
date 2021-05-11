@@ -4,7 +4,8 @@
 #include "hexapod.h"
 #include "transformations.h"
 
-#include <ros/ros.h>
+#include <ros/node_handle.h>
+#include <ros/subscriber.h>
 #include <std_msgs/Int32.h>
 
 namespace hexapod_vis {
