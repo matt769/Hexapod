@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 //  Hexapod hexapod = buildPhantomX();
   Hexapod hexapod = buildPhantomXForVis();
   Vis visualiser(nh, &hexapod);
-  Receiver receiver(nh, &hexapod);
+  RosReceiver receiver(nh, &hexapod);
 
   ros::Rate loop_rate(50);
   while (ros::ok()) {
