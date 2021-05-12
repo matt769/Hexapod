@@ -6,8 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /RobotModel1
-        - /TF1
       Splitter Ratio: 0.5
     Tree Height: 728
   - Class: rviz/Selection
@@ -293,6 +291,14 @@ Visualization Manager:
                       {}
       Update Interval: 0
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /foot_trajectories
+      Name: MarkerArray
+      Namespaces:
+        foot_traj_raised: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -321,7 +327,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.3831408023834229
+      Distance: 1.8604696989059448
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -336,10 +342,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.960396409034729
+      Pitch: 0.6203967332839966
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 6.148580074310303
+      Yaw: 6.143580436706543
     Saved: ~
 Window Geometry:
   Displays:

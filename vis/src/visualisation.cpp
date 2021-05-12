@@ -7,6 +7,7 @@
 #include <geometry_msgs/TransformStamped.h>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
@@ -29,6 +30,8 @@ Vis::Vis(const ros::NodeHandle& nh, Hexapod *hexapod)
   generateJointNames();
 
   joints_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
+  foot_traj_marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("foot_trajectories", 1);
+
   tf_listener_ = std::make_unique<tf2_ros::TransformListener>(tf_buffer_);
   initialiseTransforms();
   ros::Duration(1).sleep();  // make sure tf is ready when we query it shortly
@@ -171,6 +174,68 @@ void Vis::update() {
   updateJoints();
   updateWorld();
   updateBody();
+  publishFootTrajectories();
+}
+
+void Vis::publishFootTrajectories() {
+  // git raised and target pos for all raised legs
+  // transform into base_link
+  // create markers and publish
+
+  visualization_msgs::MarkerArray marker_array;
+  int id = 0;
+  visualization_msgs::Marker marker_base;
+  marker_base.header.frame_id = "base_link";
+  marker_base.header.stamp = ros::Time();
+  marker_base.pose.orientation.x = 0.0;
+  marker_base.pose.orientation.y = 0.0;
+  marker_base.pose.orientation.z = 0.0;
+  marker_base.pose.orientation.w = 1.0;
+  float marker_size = (float)hexapod_->dims_.depth / 4.0;
+  marker_base.scale.x = marker_size;
+  marker_base.scale.y = marker_size;
+  marker_base.scale.z = marker_size;
+
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; ++leg_idx) {
+    const Leg& leg = hexapod_->getLeg(leg_idx);
+    if (leg.state_ == Leg::State::RAISED) {
+      const Transform T_base_leg = hexapod_->getBaseToLeg(leg_idx);
+      Vector3 raised = T_base_leg * leg.getRaisedPosition();
+      Vector3 target = T_base_leg * leg.getTargetPosition();
+      visualization_msgs::Marker marker_raised = marker_base;
+      marker_raised.ns = "foot_traj_raised";
+      marker_raised.id = id++;
+      marker_raised.type = visualization_msgs::Marker::SPHERE;
+      marker_raised.action = visualization_msgs::Marker::ADD;
+      marker_raised.pose.position.x = raised.x();
+      marker_raised.pose.position.y = raised.y();
+      marker_raised.pose.position.z = raised.z();
+      marker_raised.color.a = 1.0;
+      marker_raised.color.r = 0.0;
+      marker_raised.color.g = 1.0;
+      marker_raised.color.b = 0.0;
+      marker_array.markers.push_back(marker_raised);
+
+      visualization_msgs::Marker marker_target = marker_base;
+      marker_target.ns = "foot_traj_target";
+      marker_target.id = id++;
+      marker_target.type = visualization_msgs::Marker::SPHERE;
+      marker_target.action = visualization_msgs::Marker::ADD;
+      marker_target.pose.position.x = target.x();
+      marker_target.pose.position.y = target.y();
+      marker_target.pose.position.z = target.z();
+      marker_target.color.a = 1.0;
+      marker_target.color.r = 1.0;
+      marker_target.color.g = 0.0;
+      marker_target.color.b = 0.0;
+      marker_array.markers.push_back(marker_target);
+    }
+  }
+
+  if (!marker_array.markers.empty()) {
+      foot_traj_marker_pub_.publish(marker_array);
+  }
+
 }
 
 } // namespace hexapod

@@ -91,6 +91,7 @@ class Hexapod {
   /** @brief Set the base to move upwards until walk_height_default_ reached */
   bool riseToWalk();
   State getState() const;
+
   /** @brief For visualisation */
   const Leg& getLeg(uint8_t leg_idx) const;
   /** @brief For visualisation */
@@ -99,6 +100,9 @@ class Hexapod {
   const Transform& getBaseMovement() const;
   /** @brief For visualisation */
   float getHeight() const;
+    /** @brief For visualisation */
+  const Transform getBaseToLeg(uint8_t leg_idx);
+
   /** @brief Toggle full manual control mode (allowing various manual movements) */
   void setFullManualControl(bool control_on);
   /** @brief Manual control sub type determines what movements are allowed */
