@@ -971,6 +971,10 @@ const Transform Hexapod::getBaseToLeg(const uint8_t leg_idx) {
   return tf_base_to_body_ * tf_body_to_leg_[leg_idx];
 }
 
+const Leg::MovementLimits& Hexapod::getMovementLimits(uint8_t leg_idx) {
+  return legs_[leg_idx].movement_limits_;
+}
+
 void Hexapod::setFullManualControl(const bool control_on) {
   if (state_ != State::FULL_MANUAL && control_on) {
     requested_state_ = State::FULL_MANUAL;

@@ -19,6 +19,7 @@ class Vis {
   std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
   ros::Publisher joints_pub_;
   ros::Publisher foot_traj_marker_pub_;
+  ros::Publisher movement_limits_marker_pub_;
   size_t num_legs_;
   std::vector<std::string> joint_names_;
   std::vector<double> joint_angles_;
@@ -31,6 +32,7 @@ class Vis {
   void updateBody();
   void update();
   void publishFootTrajectories();
+  void publishMovementLimits();
 };
 
 } // namespace hexapod

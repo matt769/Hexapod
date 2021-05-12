@@ -31,6 +31,7 @@ Vis::Vis(const ros::NodeHandle& nh, Hexapod *hexapod)
 
   joints_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
   foot_traj_marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("foot_trajectories", 1);
+  movement_limits_marker_pub_ = nh_.advertise<visualization_msgs::Marker>("allowed_movement", 1);
 
   tf_listener_ = std::make_unique<tf2_ros::TransformListener>(tf_buffer_);
   initialiseTransforms();
@@ -175,6 +176,7 @@ void Vis::update() {
   updateWorld();
   updateBody();
   publishFootTrajectories();
+  publishMovementLimits();
 }
 
 void Vis::publishFootTrajectories() {
@@ -236,6 +238,63 @@ void Vis::publishFootTrajectories() {
       foot_traj_marker_pub_.publish(marker_array);
   }
 
+}
+
+void Vis::publishMovementLimits() {
+  std::vector<Vector3> triangles;
+
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; ++leg_idx) {
+    const Leg& leg = hexapod_->getLeg(leg_idx);
+    if (leg.state_ == Leg::State::ON_GROUND) {
+      const Transform T_base_leg = hexapod_->getBaseToLeg(leg_idx);
+      const Leg::MovementLimits ml = hexapod_->getMovementLimits(leg_idx);
+      const float height = hexapod_->getHeight();
+      // convert each point to 3d vector
+      // TODO this won't work if neutral changes since the movement limits are not recalculated
+      const Vector3 neutral = leg.getNeutralPosition();
+      // note order of points to have coloured face upwards
+      triangles.push_back(T_base_leg * Vector3{ml.x_max, neutral.y(), -height});
+      triangles.push_back(T_base_leg * Vector3{ml.x_min, neutral.y(), -height});
+      triangles.push_back(T_base_leg * Vector3{neutral.x(), ml.y_min, -height});
+      triangles.push_back(T_base_leg * Vector3{ml.x_min, neutral.y(), -height});
+      triangles.push_back(T_base_leg * Vector3{ml.x_max, neutral.y(), -height});
+      triangles.push_back(T_base_leg * Vector3{neutral.x(), ml.y_max, -height});
+    }
+  }
+
+
+  if (!triangles.empty()) {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "base_link";
+    marker.header.stamp = ros::Time();
+    marker.pose.position.x = 0;
+    marker.pose.position.y = 0;
+    marker.pose.position.z = 0;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+    marker.scale.x = 1;
+    marker.scale.y = 1;
+    marker.scale.z = 1;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.ns = "movement_limits";
+    marker.id = 0;
+
+    for (const auto& p: triangles) {
+      geometry_msgs::Point pmsg;
+      pmsg.x = p.x();
+      pmsg.y = p.y();
+      pmsg.z = p.z();
+      marker.points.push_back(pmsg);
+    }
+    movement_limits_marker_pub_.publish(marker);
+  }
 }
 
 } // namespace hexapod

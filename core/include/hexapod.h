@@ -100,8 +100,10 @@ class Hexapod {
   const Transform& getBaseMovement() const;
   /** @brief For visualisation */
   float getHeight() const;
-    /** @brief For visualisation */
+  /** @brief For visualisation */
   const Transform getBaseToLeg(uint8_t leg_idx);
+  /** @brief For visualisation */
+  const Leg::MovementLimits& getMovementLimits(uint8_t leg_idx);
 
   /** @brief Toggle full manual control mode (allowing various manual movements) */
   void setFullManualControl(bool control_on);
