@@ -519,23 +519,23 @@ void Leg::updateMovementLimits(const float height) {
  * @param the target position, which may be modified if outside allowed area
  * @return true if modified
  */
-bool Leg::clampTarget(Vector3& target_position) const {
+Vector3 Leg::clampTarget(const Vector3& target_position) const {
   // TODO include some simple checks to see if inside max circle within diamond, and then return unmodified?
-  Vector3& orig_target_position = target_position;
+  Vector3 clamped_target = target_position;
   // where is target relative to neutral
   Vector3 neutral = neutral_pos_;
-  neutral.z() = orig_target_position.z();
-  const Vector3 movement = orig_target_position - neutral;
+  neutral.z() = target_position.z();
+  const Vector3 movement = target_position - neutral;
   if (util::comparePositions(movement, Vector3{0.0, 0.0, 0.0})) {
-    return false; // zero vector, nothing to clamp
+    return clamped_target; // zero vector, nothing to clamp
   }
 
   // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection Given two points on each line
+  // 1 edge_point_1
+  // 2 edge_point_2
+  // 3 zero
+  // 4 movement
   auto findIntersection = [&](const Vector3& ep1, const Vector3& ep2) -> Vector3 {
-    // 1 edge_point_1
-    // 2 edge_point_2
-    // 3 zero
-    // 4 movement
     const float D = (ep1.x() - ep2.x()) * (-movement.y()) - (ep1.y() - ep2.y()) * (-movement.x());
     const float k = (ep1.x()*ep2.y() - ep1.y()*ep2.x());
     const float x = (k * (-movement.x())) / D;
@@ -570,16 +570,15 @@ bool Leg::clampTarget(Vector3& target_position) const {
     }
   }
 
-  auto twoDNormSquared = [](const Vector3& v){
+  auto twoDNormSquared = [](const Vector3& v) -> float {
     return v.x()*v.x() + v.y()*v.y();
   };
 
   if (twoDNormSquared(movement) > twoDNormSquared(intersection)) {
-    target_position = neutral + intersection;
-    return true;
+    clamped_target = neutral + intersection;
   }
 
-  return false;
+  return clamped_target;
 }
 
 /**
@@ -610,14 +609,16 @@ bool Leg::stepUpdate() {
     // update target angles
     if (!calculateJointAngles(target_pos_, IKMode::WALK, target_angles_)) {
 #ifndef __AVR__
-      std::cout << "Could not calculate joint angles at requested foot target position\n";
+      std::cout << "Could not calculate joint angles at requested foot target position "
+                << target_pos_.x() <<'\t' << target_pos_.y() <<'\t'<< target_pos_.z() << '\n';
 #endif
       return false;
     }
     // update trajectory apex_angles_
     if (!calculateJointAngles(raised_pos_, IKMode::WALK, step_apex_angles_)) {
 #ifndef __AVR__
-      std::cout << "Could not calculate joint angles at requested raise limit position\n";
+      std::cout << "Could not calculate joint angles at requested raise limit position "
+                << raised_pos_.x() <<'\t' << raised_pos_.y() <<'\t'<< raised_pos_.z() << '\n';
 #endif
       return false;
     }
@@ -670,8 +671,8 @@ bool Leg::updateStatus(const bool raise) {
  */
 void Leg::updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
                         uint16_t foot_air_time) {
-  target_pos_ = target_pos;
-  raised_pos_ = raised_pos;
+  target_pos_ = clampTarget(target_pos);
+  raised_pos_ = clampTarget(raised_pos); // TODO not entirely appropriate but may help in some cases
   new_step_duration_ = foot_air_time;
   target_updated_ = true;
 }

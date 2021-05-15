@@ -174,15 +174,13 @@ int main() {
   test_positions.push_back(neutral + Vector3{-0.2, -0.2, 0.0});
 
   for (const auto& pos: test_positions) {
-    Vector3 clamped_result = pos;
-    bool res = leg.clampTarget(clamped_result);
+    Vector3 clamped_result = leg.clampTarget(pos);
     std::cout << pos.x() << '\t'
               << pos.y() << '\t'
               << pos.z() << '\n';
     std::cout << clamped_result.x() << '\t'
               << clamped_result.y() << '\t'
               << clamped_result.z() << '\n';
-    std::cout << res << '\n';
   }
 
   // check inside and out in all 4 quadrants, and on axes
