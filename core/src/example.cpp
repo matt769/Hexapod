@@ -27,6 +27,16 @@ int main() {
   Hexapod h6 = buildPhantomXForVis();
 
   Hexapod hexapod = buildPhantomXForVis();
+
+  const Leg& test_leg = hexapod.getLeg(0);
+  const float walk_height_default = test_leg.dims_.c / 2.0;
+  const float leg_lift_height_default = walk_height_default * 0.3f;
+  Leg::MovementLimits ml_ground = test_leg.calculateMovementLimits(walk_height_default);
+  Leg::MovementLimits ml_raised = test_leg.calculateMovementLimits(walk_height_default - leg_lift_height_default);
+  std::cout << "grounded movement limits\t" << ml_ground.x_max << '\t'  << ml_ground.x_min << '\t' << ml_ground.y_max << '\t' << ml_ground.y_min << '\n';
+  std::cout << "raised movement limits\t" << ml_raised.x_max << '\t'  << ml_raised.x_min << '\t' << ml_raised.y_max << '\t' << ml_raised.y_min << '\n';
+
+
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};
   for (uint8_t leg_idx = 0; leg_idx < 6; ++leg_idx) {
     hexapod.setLegJoints(leg_idx, starting_angles);
@@ -53,7 +63,7 @@ int main() {
     hexapod.setWalk(Vector3(0.001f, -0.0f, 0.0f), 0.0);
     hexapod.update();
   }
-  while(1);
+  exit(0);
 
 
   Vector3 small_step = Vector3(-0.001f, -0.001f, 0.0f);
@@ -142,15 +152,15 @@ int main() {
   test_joints[2] = hexapod::Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
 
   hexapod::Leg leg(leg_dims, test_joints);
-  leg.updateMovementLimits(leg_dims.c/2.0);
+  leg.updateMovementLimits(leg_dims.c/2.0, 0.7 * (leg_dims.c/2.0));
   Vector3 neutral2 = leg.getNeutralPosition();
   std::cout << neutral2.x() << '\t'
             << neutral2.y() << '\t'
             << neutral2.z() << '\n';
-  std::cout << leg.movement_limits_.x_min << '\t'
-            << leg.movement_limits_.x_max << '\t'
-            << leg.movement_limits_.y_min << '\t'
-            << leg.movement_limits_.y_max << '\n';
+  std::cout << leg.movement_limits_grounded_.x_min << '\t'
+            << leg.movement_limits_grounded_.x_max << '\t'
+            << leg.movement_limits_grounded_.y_min << '\t'
+            << leg.movement_limits_grounded_.y_max << '\n';
   Vector3 neutral = leg.getNeutralPosition();
 
   std::vector<Vector3> test_positions;

@@ -52,7 +52,7 @@ class Leg {
     float y_max;
   };
   Dims dims_;
-  MovementLimits movement_limits_;
+  MovementLimits movement_limits_grounded_, movement_limits_raised_;
   /** @brief Tolerance when checking if the foot is at the target position */
   static constexpr float target_tolerance = 0.001;  // TODO review
   /** @brief Struct used to represent all joint angles of a leg */
@@ -156,7 +156,7 @@ class Leg {
   void incrementLeg();
   /** @brief Calculate the ROUGH movement limits for the leg when leg base is at a given height above the foot. */
   MovementLimits calculateMovementLimits(float height) const;
-  void updateMovementLimits(float height);
+  void updateMovementLimits(float walk_height, float raised_height);
   /** @brief Modifies target position to be within roughly estimated movement limits */
   Vector3 clampTarget(const Vector3& target_position) const;
 

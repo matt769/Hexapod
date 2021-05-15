@@ -24,7 +24,9 @@ Leg::Leg(Dims dims, Joint *joints)
   joints_[JOINT_2] = joints[1];
   joints_[JOINT_3] = joints[2];
   setJointAngles({joints_[JOINT_1].angle_, joints_[JOINT_2].angle_, joints_[JOINT_3].angle_});
-  updateMovementLimits(dims_.c / 2.0); // just a guess at the actual height
+  const float est_walk_height = dims_.c / 2.0; // just a guess at the actual height
+  const float est_raised_height = (dims_.c / 2.0) * 0.7;
+  updateMovementLimits(est_walk_height, est_raised_height);
 }
 
 /**
@@ -504,8 +506,9 @@ Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
   return leg_movement_limits;
 }
 
-void Leg::updateMovementLimits(const float height) {
-  movement_limits_ = calculateMovementLimits(height);
+void Leg::updateMovementLimits(const float walk_height, const float raised_height) {
+  movement_limits_grounded_ = calculateMovementLimits(walk_height);
+  movement_limits_raised_ = calculateMovementLimits(raised_height);
 }
 
 /**
@@ -547,25 +550,25 @@ Vector3 Leg::clampTarget(const Vector3& target_position) const {
   // note movement limits are given in leg frame, not relative to neutral position
   Vector3 intersection;
   if (movement.x() >= 0.0f) {
-    const Vector3 xmax{movement_limits_.x_max - neutral.x(), 0.0, 0.0};
+    const Vector3 xmax{movement_limits_grounded_.x_max - neutral.x(), 0.0, 0.0};
     if (movement.y() >= 0.0f) {
       // line between xmax and ymax
-      const Vector3 ymax{0.0, movement_limits_.y_max - neutral.y(), 0.0};
+      const Vector3 ymax{0.0, movement_limits_grounded_.y_max - neutral.y(), 0.0};
       intersection = findIntersection(xmax, ymax);
     } else {
       // line between xmax and ymin
-      const Vector3 ymin{0.0, movement_limits_.y_min - neutral.y(), 0.0};
+      const Vector3 ymin{0.0, movement_limits_grounded_.y_min - neutral.y(), 0.0};
       intersection = findIntersection(xmax, ymin);
     }
   } else {
-    const Vector3 xmin{movement_limits_.x_min - neutral.x(), 0.0, 0.0};
+    const Vector3 xmin{movement_limits_grounded_.x_min - neutral.x(), 0.0, 0.0};
     if (movement.y() >= 0.0f) {
       // line between xmin and ymax
-      const Vector3 ymax{0.0, movement_limits_.y_max - neutral.y(), 0.0};
+      const Vector3 ymax{0.0, movement_limits_grounded_.y_max - neutral.y(), 0.0};
       intersection = findIntersection(xmin, ymax);
     } else {
       // line between xmin and ymin
-      const Vector3 ymin{0.0, movement_limits_.y_min - neutral.y(), 0.0};
+      const Vector3 ymin{0.0, movement_limits_grounded_.y_min - neutral.y(), 0.0};
       intersection = findIntersection(xmin, ymin);
     }
   }

@@ -58,8 +58,11 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
   Vector3 neutral = legs_[0].getNeutralPosition();
   walk_height_default_ = legs_[0].dims_.c / 2.0;
+  leg_lift_height_min_ = walk_height_default_ * 0.1f;
+  leg_lift_height_max_ = walk_height_default_;
+  leg_lift_height_default_ = walk_height_default_ * 0.3f;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    legs_[leg_idx].updateMovementLimits(walk_height_default_);
+    legs_[leg_idx].updateMovementLimits(walk_height_default_, walk_height_default_ - leg_lift_height_default_);
   }
   Leg::MovementLimits lml = legs_[0].calculateMovementLimits(walk_height_default_);
   stance_width_default_ = lml.x_min + ((lml.x_max - lml.x_min) * 0.45);
@@ -69,9 +72,6 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
     legs_[leg_idx].getNeutralPosition().x() = stance_width_default_;
   }
 
-  leg_lift_height_min_ = walk_height_default_ * 0.1f;
-  leg_lift_height_max_ = walk_height_default_;
-  leg_lift_height_default_ = walk_height_default_ * 0.3f;
   allowed_foot_position_diameter_ = fmin(lml.x_max-lml.x_min, lml.y_max - lml.y_min) * 0.8; // TODO review
 
   stance_width_ = stance_width_default_;
@@ -977,7 +977,7 @@ const Transform Hexapod::getBaseToLeg(const uint8_t leg_idx) {
 }
 
 const Leg::MovementLimits& Hexapod::getMovementLimits(uint8_t leg_idx) {
-  return legs_[leg_idx].movement_limits_;
+  return legs_[leg_idx].movement_limits_grounded_;
 }
 
 void Hexapod::setFullManualControl(const bool control_on) {
