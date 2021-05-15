@@ -206,23 +206,20 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
 
 ## Todo / Future (in no particular order)
  - Review the way in which legs move while raised. It's got overly complicated. Could probably be simplified.
+  - I've improved it but it could probably still benefit from overhaul.
  - Better definition of allowed foot movement range.
  - Foot sensors to determine when a foot has actually touched the ground. This would help to allow handling of non-flat terrain.
  - IMU to determine actual body pose.
  - Get the PhantomX urdf representing the full physical model (including axis flips and maybe adding the meshes), and buildFromUrdf() can produce a correct model from it
- - Set more movement parameters and receiver parameters based on the hexapod dimensions
  - Is there a better way to manage multiple receiver types? And different settings for different models?
  - Review Hexapod and Leg interfaces - they're a bit messy, especially with physical and model version of various set/get angles type functions. Should Joint even support the mapping to 'physical', or should that be outside the hexapod model entirely?
- - If a leg target is outside the allowed range, just restrict to max range, don't prevent movement
  - How to better define the allowed movement range. Currently it's quite restrictive.
  - Shouldn't have to setWalk etc every period, let hexapod remember and coontroller/receiver can just change it
- - More visualisation! Movement parameters, trajectories etc
- - Gaits with multiple legs in air at once
  - Gait handling not that flexible currently
+ - Make gait offset parameter controllable?
 
 ## Bugs
  - When turning, legs on one side are very extended, doesn't seem to correspond with their neutral position
- - Getting 'cant calc raised' errors (esp turning), but if go into manual mode, can easily achieve (is the visualised raised pos definitely the most up to date?)
 
 
 ### Package structure
