@@ -522,7 +522,7 @@ void Leg::updateMovementLimits(const float walk_height, const float raised_heigh
  * @param the target position, which may be modified if outside allowed area
  * @return true if modified
  */
-Vector3 Leg::clampTarget(const Vector3& target_position) const {
+Vector3 Leg::clampTarget(const Vector3& target_position, const MovementLimits& limits) const {
   // TODO include some simple checks to see if inside max circle within diamond, and then return unmodified?
   Vector3 clamped_target = target_position;
   // where is target relative to neutral
@@ -550,25 +550,25 @@ Vector3 Leg::clampTarget(const Vector3& target_position) const {
   // note movement limits are given in leg frame, not relative to neutral position
   Vector3 intersection;
   if (movement.x() >= 0.0f) {
-    const Vector3 xmax{movement_limits_grounded_.x_max - neutral.x(), 0.0, 0.0};
+    const Vector3 xmax{limits.x_max - neutral.x(), 0.0, 0.0};
     if (movement.y() >= 0.0f) {
       // line between xmax and ymax
-      const Vector3 ymax{0.0, movement_limits_grounded_.y_max - neutral.y(), 0.0};
+      const Vector3 ymax{0.0, limits.y_max - neutral.y(), 0.0};
       intersection = findIntersection(xmax, ymax);
     } else {
       // line between xmax and ymin
-      const Vector3 ymin{0.0, movement_limits_grounded_.y_min - neutral.y(), 0.0};
+      const Vector3 ymin{0.0, limits.y_min - neutral.y(), 0.0};
       intersection = findIntersection(xmax, ymin);
     }
   } else {
-    const Vector3 xmin{movement_limits_grounded_.x_min - neutral.x(), 0.0, 0.0};
+    const Vector3 xmin{limits.x_min - neutral.x(), 0.0, 0.0};
     if (movement.y() >= 0.0f) {
       // line between xmin and ymax
-      const Vector3 ymax{0.0, movement_limits_grounded_.y_max - neutral.y(), 0.0};
+      const Vector3 ymax{0.0, limits.y_max - neutral.y(), 0.0};
       intersection = findIntersection(xmin, ymax);
     } else {
       // line between xmin and ymin
-      const Vector3 ymin{0.0, movement_limits_grounded_.y_min - neutral.y(), 0.0};
+      const Vector3 ymin{0.0, limits.y_min - neutral.y(), 0.0};
       intersection = findIntersection(xmin, ymin);
     }
   }
@@ -674,8 +674,8 @@ bool Leg::updateStatus(const bool raise) {
  */
 void Leg::updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
                         uint16_t foot_air_time) {
-  target_pos_ = clampTarget(target_pos);
-  raised_pos_ = clampTarget(raised_pos); // TODO not entirely appropriate but may help in some cases
+  target_pos_ = clampTarget(target_pos, movement_limits_grounded_);
+  raised_pos_ = clampTarget(raised_pos, movement_limits_raised_);
   new_step_duration_ = foot_air_time;
   target_updated_ = true;
 }

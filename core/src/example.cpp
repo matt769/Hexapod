@@ -184,7 +184,7 @@ int main() {
   test_positions.push_back(neutral + Vector3{-0.2, -0.2, 0.0});
 
   for (const auto& pos: test_positions) {
-    Vector3 clamped_result = leg.clampTarget(pos);
+    Vector3 clamped_result = leg.clampTarget(pos, leg.movement_limits_grounded_);
     std::cout << pos.x() << '\t'
               << pos.y() << '\t'
               << pos.z() << '\n';

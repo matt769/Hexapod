@@ -158,7 +158,7 @@ class Leg {
   MovementLimits calculateMovementLimits(float height) const;
   void updateMovementLimits(float walk_height, float raised_height);
   /** @brief Modifies target position to be within roughly estimated movement limits */
-  Vector3 clampTarget(const Vector3& target_position) const;
+  Vector3 clampTarget(const Vector3& target_position, const MovementLimits& limits) const;
 
 
  private:
