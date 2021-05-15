@@ -201,6 +201,13 @@ void Receiver::processCommand(const uint8_t cmd) {
     case 59:hexapod_->resetStanceWidth();
       break;
 
+    case 125:hexapod_->changeLegRaiseTime(leg_raise_time_increment);
+      break;
+    case 123:hexapod_->changeLegRaiseTime(-leg_raise_time_increment);
+      break;
+    case 58:hexapod_->resetLegRaiseTime();
+      break;
+
       // Change foot ground travel ratio
     case 35:hexapod_->changeFootGroundTravelRatio(ftgr_increment);
       break;

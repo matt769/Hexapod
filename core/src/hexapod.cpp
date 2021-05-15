@@ -667,10 +667,8 @@ bool Hexapod::changeLegRaiseHeight(const float change) {
 bool Hexapod::resetLegRaiseHeight() { return setLegRaiseHeight(leg_lift_height_default_); }
 
 bool Hexapod::setLegRaiseTime(uint16_t time) {
-  if (time < foot_air_time_min_)
-    time = foot_air_time_min_;
-  else if (time > leg_lift_height_max_)
-    time = foot_air_time_max_;
+  if (time < foot_air_time_min_) time = foot_air_time_min_;
+  else if (time > foot_air_time_max_) time = foot_air_time_max_;
   if (foot_air_time_ == time) {
     return false;
   } else {
@@ -679,12 +677,17 @@ bool Hexapod::setLegRaiseTime(uint16_t time) {
   }
 }
 
-bool Hexapod::changeLegRaiseTime(const uint16_t change) {
-  const uint16_t new_time = foot_air_time_ + change;
-  return setLegRaiseHeight(new_time);
+bool Hexapod::changeLegRaiseTime(const int16_t change) {
+  const int16_t new_time = (int16_t)foot_air_time_ + change;
+  if (new_time > 0) {
+    return setLegRaiseTime((uint16_t)new_time);
+  }
+  else {
+    return false;
+  }
 }
 
-bool Hexapod::resetLegRaiseTime() { return setLegRaiseHeight(foot_air_time_default_); }
+bool Hexapod::resetLegRaiseTime() { return setLegRaiseTime(foot_air_time_default_); }
 
 
 /**

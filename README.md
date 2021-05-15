@@ -217,6 +217,7 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - Shouldn't have to setWalk etc every period, let hexapod remember and coontroller/receiver can just change it
  - Gait handling not that flexible currently
  - Make gait offset parameter controllable?
+ - Better way of handling or preventing situations where positions are not achievable
 
 ## Bugs
  - When turning, legs on one side are very extended, doesn't seem to correspond with their neutral position

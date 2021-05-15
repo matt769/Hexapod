@@ -61,14 +61,16 @@ void Controller::getInput() {
   puts("");
   puts("----------- OTHER -----------------");
   puts("1, 2, 3, 4: Change gait           |  I: Increase body pitch");
-  puts("}: Increase stance width          |  K: Decrease body pitch");
-  puts("{: Decrease stance width          |  J: Increase body roll");
+  puts("]: Increase stance width          |  K: Decrease body pitch");
+  puts("[: Decrease stance width          |  J: Increase body roll");
   puts(";: Reset stance width             |  L: Decrease body roll");
   puts("                                  |  U: Increase body yaw");
   puts("#: Increase stride length         |  O: Decrease body yaw");
-  puts("': Decrease stride length         |  <: Reset body rotation");
+  puts("': Decrease stride length         |  ,: Reset body rotation");
   puts("/: Reset stride length            |--------------------------------------------");
-
+  puts("}: Increase step time");
+  puts("{: Decrease step time");
+  puts(":: Reset step time");
   puts("=: Increase leg height        Enter: Headless mode / reset headless mode");
   puts("-: Decrease leg height        Backspace: Standard mode");
   puts("0: Reset leg height           `: (Press) Set legs to ground / (Hold) Raise body");

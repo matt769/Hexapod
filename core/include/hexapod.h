@@ -76,7 +76,7 @@ class Hexapod {
   bool changeLegRaiseHeight(float change);
   bool resetLegRaiseHeight();
   bool setLegRaiseTime(uint16_t time);
-  bool changeLegRaiseTime(uint16_t change);
+  bool changeLegRaiseTime(int16_t change);
   bool resetLegRaiseTime();
   void setMoveMode(MoveMode move_mode);
   bool setLegJoints(uint8_t leg_idx, const Leg::JointAngles& joint_angles);

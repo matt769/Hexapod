@@ -38,6 +38,7 @@ class Receiver {
   const float stance_width_increment = 0.005f;
   const float ftgr_increment = 0.01f;
   const float leg_raise_increment = 0.001f;
+  const int16_t leg_raise_time_increment = 2;
 };
 
 } // namespace hexapod
