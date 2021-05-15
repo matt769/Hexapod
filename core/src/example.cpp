@@ -42,15 +42,15 @@ int main() {
     hexapod.update();
   }
 
-  hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
-  for (int i =0; i < 1; ++i) {
-    hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
-    hexapod.update();
-  }
+//  hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
+//  for (int i =0; i < 1; ++i) {
+//    hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
+//    hexapod.update();
+//  }
 
 
-  for (int i =0; i < 250; ++i) {
-    hexapod.setWalk(Vector3(0.0f, 0.0f, 0.0f), 0.0);
+  for (int i =0; i < 50; ++i) {
+    hexapod.setWalk(Vector3(0.001f, -0.0f, 0.0f), 0.0);
     hexapod.update();
   }
   while(1);

@@ -303,9 +303,8 @@ bool Hexapod::handleGroundedLegs() {
 /**
  * @details
  * Update the leg raise time, apex position and target position of a step.\n
- * The time is based upon the magnitude of the step vector.\n
  * The target is based upon the direction of the step vector.\n
- * The apex is a point above the neutral position.
+ * The apex is a point half way between (in xy) the current and target position.
  *
  * @param leg_idx - calculate for which leg
  */
@@ -344,10 +343,13 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
   //  (this allows the leg to respond to changes in e.g. stance width)
   else {
     const Vector3 neutral_pos = getNeutralPosition(leg_idx);
-    Vector3 raised_pos_in_base = neutral_pos;
-    raised_pos_in_base.z() += leg_lift_height_;
-
+    // Target is ahead of neutral along step unit direction
     const Vector3 target_pos_in_base = neutral_pos + (allowed_foot_position_diameter_/2.0f) * step_unit;
+    // Raised point half way between current position and target
+    const Vector3 current_pos_in_base = getFootPosition(leg_idx);
+    Vector3 raised_pos_in_base = current_pos_in_base + 0.5f * (target_pos_in_base - current_pos_in_base);
+    raised_pos_in_base.z() = neutral_pos.z() + leg_lift_height_;
+
     // transform the step vector from base frame to leg base
     // can ignore the new base to base stuff since we only care about the relative position to the
     // base, wherever it is
