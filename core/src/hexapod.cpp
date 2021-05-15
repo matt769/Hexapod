@@ -1084,7 +1084,7 @@ void Hexapod::populateGaitInfo() {
   uint8_t leg = 0;
   for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
     gaits_[gait_type].order[seq_no] = leg;
-    gaits_[gait_type].offset[seq_no] = 1.0;
+    gaits_[gait_type].offset[seq_no] = 0.34;
     // next leg is on the other side and 1 'row' further back
     if (leg % 2 == 0) {
       // on left
