@@ -62,7 +62,7 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
     legs_[leg_idx].updateMovementLimits(walk_height_default_);
   }
   Leg::MovementLimits lml = legs_[0].calculateMovementLimits(walk_height_default_);
-  stance_width_default_ = lml.x_min + ((lml.x_max - lml.x_min) * 0.33);
+  stance_width_default_ = lml.x_min + ((lml.x_max - lml.x_min) * 0.45);
   stance_width_min_ = lml.x_min;
   stance_width_max_ = lml.x_max;
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
