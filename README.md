@@ -218,9 +218,11 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - Shouldn't have to setWalk etc every period, let hexapod remember and coontroller/receiver can just change it
  - More visualisation! Movement parameters, trajectories etc
  - Gaits with multiple legs in air at once
+ - Gait handling not that flexible currently
 
 ## Bugs
- - Currently a leg may be changed to raised status, but then when the trjectory is calculated it is not achievable. But the grounded legs will still be updated and move the base.
+ - When turning, legs on one side are very extended, doesn't seem to correspond with their neutral position
+ - Getting 'cant calc raised' errors (esp turning), but if go into manual mode, can easily achieve (is the visualised raised pos definitely the most up to date?)
 
 
 ### Package structure
