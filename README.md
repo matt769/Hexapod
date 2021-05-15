@@ -227,5 +227,7 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - Probably fully split the core and visualisation packages at some point
 
 ### Bits and pieces
- - Does base_to_body floating joint really belong in the urdf? Probably not 
+ - Does base_to_body floating joint really belong in the urdf? Probably not
+ - There have been quite a few changes recently, review and update documentation.
+
 
