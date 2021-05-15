@@ -88,11 +88,11 @@ class Leg {
    */
   Leg(Dims dims, Joint *joints);
   /** @brief Calculate joint angles for a given foot position */
-  bool calculateJointAngles(const Vector3& pos, const IKMode ik_mode, JointAngles& calculated_angles);
+  bool calculateJointAngles(const Vector3& pos, const IKMode ik_mode, JointAngles& calculated_angles) const;
   /** @brief Calculate joint angles for a given foot position and stage the result */
   bool calculateJointAngles(const Vector3& pos, const IKMode ik_mode);
   /** @brief Calculate foot position for given joint angles */
-  void calculateFootPosition(const JointAngles& angles, Vector3& pos);
+  void calculateFootPosition(const JointAngles& angles, Vector3& pos) const;
   /** @brief Check if a set of joint angles are allowed by the leg joint limits */
   bool jointsWithinLimits(const JointAngles& joint_angles) const;
   /** @brief Sets all leg joints */
@@ -155,7 +155,7 @@ class Leg {
     */
   void incrementLeg();
   /** @brief Calculate the ROUGH movement limits for the leg when leg base is at a given height above the foot. */
-  MovementLimits calculateMovementLimits(float height);
+  MovementLimits calculateMovementLimits(float height) const;
   void updateMovementLimits(float height);
   /** @brief Modifies target position to be within roughly estimated movement limits */
   Vector3 clampTarget(const Vector3& target_position) const;
@@ -189,11 +189,11 @@ class Leg {
   /** @brief Indicates whether target_pos_ or raised_pos_ have been updated */
   bool target_updated_ = false;
   /** @brief Calculate joint angles for a given position (up to 2 solutions) */
-  uint8_t calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]);
+  uint8_t calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) const;
   /** @brief Calculate joint angles for a given position while walking (joint 2 restricted) */
-  uint8_t calculateJointAnglesWalk(const Vector3& pos, JointAngles& angles);
+  uint8_t calculateJointAnglesWalk(const Vector3& pos, JointAngles& angles) const;
   /** @brief Checks whether a given set of joint angles give a specificied foot position */
-  bool validateJointAngles(const JointAngles& angles, const Vector3& pos);
+  bool validateJointAngles(const JointAngles& angles, const Vector3& pos) const;
   /** @brief Updates the foot position member current_pos_ to be consistent with the current joint
    * angles */
   void updateFootPosition();

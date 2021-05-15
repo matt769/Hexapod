@@ -34,7 +34,7 @@ Leg::Leg(Dims dims, Joint *joints)
  * @param pos The foot position to check against
  * @return true ff matching
  */
-bool Leg::validateJointAngles(const JointAngles& angles, const Vector3& pos) {
+bool Leg::validateJointAngles(const JointAngles& angles, const Vector3& pos) const {
   Vector3 pos_from_ik;
   calculateFootPosition(angles, pos_from_ik);
   return comparePositions(pos, pos_from_ik);
@@ -47,7 +47,7 @@ bool Leg::validateJointAngles(const JointAngles& angles, const Vector3& pos) {
  * @param[out] angles Array of joint angles to store the results
  * @return uint8_t Number of valid results
  */
-uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) {
+uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2]) const {
   bool angles_valid[2] = {false, false};  // only used after joint 3 calculated
 
   // ******* JOINT 1 *******
@@ -159,7 +159,7 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
  * @param[out] result_angles Joint angles to store the results
  * @return uint8_t Number of valid results (0 or 1)
  */
-uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_angles) {
+uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_angles) const {
   // ******* JOINT 1 *******
   // Does not handle beyond (-90,90) (including boundary)
   float th1, th2, th3;
@@ -222,7 +222,7 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
  * @param [out] calculated_angles
  * @return true if valid angles were found
  */
-bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode, JointAngles& calculated_angles) {
+bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode, JointAngles& calculated_angles) const {
   if (ik_mode == IKMode::FULL) {
     JointAngles anglesFull[2];
     const uint8_t num_results = calculateJointAnglesFull(pos, anglesFull);
@@ -265,7 +265,7 @@ bool Leg::jointsWithinLimits(const JointAngles& joint_angles) const {
  * @param angles Joint angles to calculate position for - ASSUME THEY ARE VALID
  * @param[out] pos Calculated foot position
  */
-void Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) {
+void Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) const {
   const float h =
       dims_.a + dims_.b * cos(angles.theta_2) + dims_.c * cos(angles.theta_2 + angles.theta_3);
   pos.x() = h * cos(angles.theta_1);
@@ -433,7 +433,7 @@ void Leg::incrementLeg() {
   step_idx_++;
 }
 
-Leg::MovementLimits Leg::calculateMovementLimits(const float height) {
+Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
 
   // start off by finding the limits in x/y(in leg frame)
   // maybe could consider as diamond
