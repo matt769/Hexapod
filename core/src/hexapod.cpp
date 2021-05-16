@@ -49,14 +49,43 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   legs_ = legs;
   tf_body_to_leg_ = tf_body_to_leg;
 
+  updateMovementParameters();
+  setUpdateFrequency(update_frequency_);
+
+  populateGaitInfo();
+
+  printMovementParameters();
+}
+
+Hexapod::~Hexapod() {
+  delete[] legs_;
+  delete[] tf_body_to_leg_;
+  for (uint8_t g = 0; g < 4; ++g) {
+    delete[] gaits_[g].order;
+    delete[] gaits_[g].offset;
+  }
+  // extra gait for 6 legged version
+  if (num_legs_ == 6) {
+    delete[] gaits_[4].order;
+    delete[] gaits_[4].offset;
+  }
+}
+
+/**
+ * @details Expects to be called immediately after creating the hexapod object
+ * @param update_frequency
+ */
+void Hexapod::setUpdateFrequency(const uint16_t update_frequency) {
+  update_frequency_ = update_frequency;
   foot_air_time_default_ = (update_frequency_ / 2) * 2; // 1.0s
   foot_air_time_min_ = (foot_air_time_default_ / 8) * 2; // Quarter of default - 0.25s
   foot_air_time_max_ = foot_air_time_default_ * 2; // Double default - 2.0s
   foot_air_time_ = foot_air_time_default_;
+  rising_increment_ = (walk_height_default_ - height_) / static_cast<float>(update_frequency_);
+}
 
+void Hexapod::updateMovementParameters() {
   // set various movement parameters based on body/leg dimensions
-  const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
-  Vector3 neutral = legs_[0].getNeutralPosition();
   walk_height_default_ = legs_[0].dims_.c / 2.0;
   leg_lift_height_min_ = walk_height_default_ * 0.1f;
   leg_lift_height_max_ = walk_height_default_;
@@ -64,7 +93,7 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     legs_[leg_idx].updateMovementLimits(walk_height_default_, walk_height_default_ - leg_lift_height_default_);
   }
-  Leg::MovementLimits lml = legs_[0].calculateMovementLimits(walk_height_default_);
+  const Leg::MovementLimits lml = legs_[0].calculateMovementLimits(walk_height_default_); // just for print out
   stance_width_default_ = lml.x_min + ((lml.x_max - lml.x_min) * 0.45);
   stance_width_min_ = lml.x_min;
   stance_width_max_ = lml.x_max;
@@ -77,8 +106,12 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   stance_width_ = stance_width_default_;
   leg_lift_height_ = leg_lift_height_default_;
 
-  rising_increment_ = (walk_height_default_ - height_) / static_cast<float>(update_frequency_);
+}
 
+void Hexapod::printMovementParameters() {
+  const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
+  Vector3 neutral = legs_[0].getNeutralPosition();
+  const Leg::MovementLimits lml = legs_[0].calculateMovementLimits(walk_height_default_);
 #ifndef __AVR__
   std::cout << "body dimensions\t" << dims_.length << '\t' << dims_.width << '\t' << dims_.depth << '\n';
   std::cout << "leg neutral\t" << neutral.x() << '\t' << neutral.y() << '\t' << neutral.z() << '\n';
@@ -96,23 +129,8 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   std::cout << "allowed_foot_position_diameter_\t" << allowed_foot_position_diameter_ << '\n';
   std::cout << "rising_increment_\t" << rising_increment_ << '\n';
 #endif
-
-  populateGaitInfo();
 }
 
-Hexapod::~Hexapod() {
-  delete[] legs_;
-  delete[] tf_body_to_leg_;
-  for (uint8_t g = 0; g < 4; ++g) {
-    delete[] gaits_[g].order;
-    delete[] gaits_[g].offset;
-  }
-  // extra gait for 6 legged version
-  if (num_legs_ == 6) {
-    delete[] gaits_[4].order;
-    delete[] gaits_[4].offset;
-  }
-}
 
 bool Hexapod::setLegJoints(const uint8_t leg_idx, const Leg::JointAngles& joint_angles) {
   if (legs_[leg_idx].jointsWithinLimits(joint_angles)) {

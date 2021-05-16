@@ -48,6 +48,8 @@ class Hexapod {
   Hexapod(Hexapod&&) = default;
   Hexapod& operator=(const Hexapod&) = delete;
   Hexapod& operator=(Hexapod&&) = default;
+  void setUpdateFrequency(const uint16_t update_frequency);
+  void printMovementParameters();
   /** @brief Set walk or turn movement for the next period */
   bool setWalk(const Vector3& walk_step, float angle_step);
   /** @brief Set walk or turn movement for the next period */
@@ -130,6 +132,8 @@ class Hexapod {
   bool setLegTarget(uint8_t leg_idx, const Leg::JointAngles& joint_targets, uint16_t duration);
 
  private:
+  /** @brief Update movement parameters based on dimensions and update frequency */
+  void updateMovementParameters();
   /** @brief At what frequency (per second) will update() be called. Used to set speed of some movements. */
   uint16_t update_frequency_;
   /** @brief During start up, hexapod will rise to this height before entering walking state */
