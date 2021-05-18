@@ -77,16 +77,17 @@ Hexapod::~Hexapod() {
  */
 void Hexapod::setUpdateFrequency(const uint16_t update_frequency) {
   update_frequency_ = update_frequency;
-  foot_air_time_default_ = (update_frequency_ / 2) * 2; // 1.0s
-  foot_air_time_min_ = (foot_air_time_default_ / 8) * 2; // Quarter of default - 0.25s
-  foot_air_time_max_ = foot_air_time_default_ * 2; // Double default - 2.0s
+  foot_air_time_default_ = (update_frequency_ / 4) * 2; // 0.5s
+  foot_air_time_min_ = 2;
+  foot_air_time_max_ = update_frequency_ * 2; // Double default - 2.0s
   foot_air_time_ = foot_air_time_default_;
   rising_increment_ = (walk_height_default_ - height_) / static_cast<float>(update_frequency_);
 }
 
 void Hexapod::updateMovementParameters() {
   // set various movement parameters based on body/leg dimensions
-  walk_height_default_ = legs_[0].dims_.c / 2.0;
+  const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
+  walk_height_default_ = leg_length_full_extension * 0.33f;
   leg_lift_height_min_ = walk_height_default_ * 0.1f;
   leg_lift_height_max_ = walk_height_default_;
   leg_lift_height_default_ = walk_height_default_ * 0.3f;
