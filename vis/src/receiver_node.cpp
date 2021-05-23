@@ -35,7 +35,6 @@ int main(int argc, char **argv) {
 
   ros::Rate loop_rate(50);
   while (ros::ok()) {
-    receiver.update();
     hexapod.update();
     visualiser.update();
 

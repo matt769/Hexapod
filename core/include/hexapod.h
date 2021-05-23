@@ -50,12 +50,20 @@ class Hexapod {
   Hexapod& operator=(Hexapod&&) = default;
   void setUpdateFrequency(const uint16_t update_frequency);
   void printMovementParameters();
-  /** @brief Set walk or turn movement for the next period */
+  /** @brief Set translation and turning movement for the next period */
   bool setWalk(const Vector3& walk_step, float angle_step);
-  /** @brief Set walk or turn movement for the next period */
+  /** @brief Set translation movement for the next period */
   bool setWalk(const Vector3& walk_step);
-  /** @brief Set walk or turn movement for the next period */
+  /** @brief Set turning movement for the next period */
   bool setWalk(float angle_step);
+  /** @brief Change translation and turning movement for the next period */
+  bool changeWalk(const Vector3& walk_step, float angle_step);
+  /** @brief Change translation movement for the next period */
+  bool changeWalk(const Vector3& walk_step);
+  /** @brief Change turning movement for the next period */
+  bool changeWalk(float angle_step);
+
+
   /** @brief Set absolute body rotation and translation relative to the base */
   bool setBody(const Transform& tf_base_to_body_target);
   /** @brief Apply incremental rotation and translation to the body, relative to the base */
@@ -156,6 +164,9 @@ class Hexapod {
   static constexpr float fgtr_default_ = 0.5f;
   /** @brief For moving the body up from the ground to a walking position */
   float rising_increment_;
+
+  Vector3 current_walk_translation_{0.0f, 0.0f, 0.0f};
+  float current_walk_turn_{0.0f};
 
   GaitDefinition gaits_[5];
   Leg* legs_;
@@ -258,6 +269,7 @@ class Hexapod {
   uint8_t gaitMaxRaised();
   void commitTargets();
   void populateGaitInfo();
+  bool setWalkingTargets();
 
 };
 

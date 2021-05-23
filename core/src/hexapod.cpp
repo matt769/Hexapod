@@ -412,20 +412,40 @@ bool Hexapod::handleRaisedLegs() {
 }
 
 bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step) {
+  current_walk_translation_ = walk_step;
+  current_walk_turn_ = angle_step;
+  return true; // TODO add checks on input(?)
+}
+
+bool Hexapod::setWalk(const Vector3& walk_step) { return setWalk(walk_step, 0.0f); }
+
+bool Hexapod::setWalk(const float angle_step) { return setWalk(Vector3(0.0f, 0.0f, 0.0f), angle_step); }
+
+bool Hexapod::changeWalk(const Vector3& walk_step, float angle_step) {
+  current_walk_translation_ = current_walk_translation_ + walk_step;
+  current_walk_turn_ = current_walk_turn_ + angle_step;
+  return true; // TODO add checks on input(?)
+}
+
+bool Hexapod::changeWalk(const Vector3& walk_step) { return changeWalk(walk_step, 0.0f); }
+
+bool Hexapod::changeWalk(float angle_step)  { return changeWalk(Vector3(0.0f, 0.0f, 0.0f), angle_step); }
+
+bool Hexapod::setWalkingTargets() {
   if (!(state_ == State::WALKING)) {
     return false;
   }
 
   if (move_mode_ == MoveMode::HEADLESS) {
     float x =
-        cos(-total_base_rotation_) * walk_step.x() - sin(-total_base_rotation_) * walk_step.y();
+        cos(-total_base_rotation_) * current_walk_translation_.x() - sin(-total_base_rotation_) * current_walk_translation_.y();
     float y =
-        sin(-total_base_rotation_) * walk_step.x() + cos(-total_base_rotation_) * walk_step.y();
+        sin(-total_base_rotation_) * current_walk_translation_.x() + cos(-total_base_rotation_) * current_walk_translation_.y();
     walk_step_target_ = Vector3(x, y, 0);
   } else {
-    walk_step_target_ = walk_step;
+    walk_step_target_ = current_walk_translation_;
   }
-  turn_step_target_ = angle_step;
+  turn_step_target_ = current_walk_turn_;
   tf_base_to_new_base_target_.R_.setRPYExtr(0.0f, 0.0f, turn_step_target_);
   tf_base_to_new_base_target_.t_ = walk_step_target_;
   base_change_ = true;
@@ -441,10 +461,6 @@ bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step) {
   }
   return true;
 }
-
-bool Hexapod::setWalk(const Vector3& walk_step) { return setWalk(walk_step, 0.0f); }
-
-bool Hexapod::setWalk(const float angle_step) { return setWalk(Vector3(0.0f, 0.0f, 0.0f), angle_step); }
 
 bool Hexapod::setBody(const Transform& tf_base_to_body_target) {
   if (!(state_ == State::WALKING)) {
@@ -499,6 +515,7 @@ void Hexapod::clearVisualisationChanges() { tf_base_movement_ = Transform(); }
  */
 bool Hexapod::update() {
   clearVisualisationChanges();
+  setWalkingTargets();
 
   bool grounded_legs_result = true;
   bool raised_legs_result = true;

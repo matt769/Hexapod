@@ -18,14 +18,6 @@ void Receiver::setRobot(Hexapod *hexapod) {
   hexapod_ = hexapod;
 }
 
-void Receiver::update() {
-  if (!hexapod_) return;
-  if (hexapod_->getState() != Hexapod::State::FULL_MANUAL) {
-    hexapod_->setWalk(current_walk, current_turn);
-  }
-  // everything else is set within processCommand
-}
-
 void Receiver::processCommand(const uint8_t cmd) {
   if (!hexapod_) return;
 
@@ -107,26 +99,25 @@ void Receiver::processCommand(const uint8_t cmd) {
 
   switch (cmd) {
     case 119: // w  Increase forward velocity
-      current_walk = current_walk + walk_increment_fb;
+      hexapod_->changeWalk(walk_increment_fb);
       break;
     case 115: // s Decrease forward velocity
-      current_walk = current_walk - walk_increment_fb;
+      hexapod_->changeWalk(-walk_increment_fb);
       break;
     case 97: // a Increase leftward velocity
-      current_walk = current_walk + walk_increment_lr;
+      hexapod_->changeWalk(walk_increment_lr);
       break;
     case 100: // d Decrease leftward velocity
-      current_walk = current_walk - walk_increment_lr;
+      hexapod_->changeWalk(-walk_increment_lr);
       break;
     case 113: // q Increase CCW angular velocity
-      current_turn += turn_increment;
+      hexapod_->changeWalk(turn_increment);
       break;
     case 101: // e Decrease CCW angular velocity
-      current_turn -= turn_increment;
+      hexapod_->changeWalk(-turn_increment);
       break;
     case 120: // x  Stop
-      current_walk = Vector3(0.0f, 0.0f, 0.0f);
-      current_turn = 0.0f;
+      hexapod_->setWalk(Vector3{0.0f, 0.0f, 0.0f}, 0.0f);
       break;
 
     case 116: // t  Move body forward

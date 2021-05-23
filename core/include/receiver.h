@@ -30,9 +30,7 @@ class Receiver {
   const Vector3 manual_lr{0.0f, 0.001, 0.0f};
   const Vector3 manual_ud{0.0f, 0.0f, 0.001};
   const float manual_joint{0.025f};
-  Vector3 current_walk{0.0f, 0.0f, 0.0f};
   const float turn_increment{0.15f * M_PI / 180.0f};
-  float current_turn{0.0f};
   const float body_rotation_increment{1.0f * M_PI / 180.0};
   const float body_translation_increment{0.0005f};
   const float stance_width_increment = 0.005f;
