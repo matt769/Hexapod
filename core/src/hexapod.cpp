@@ -51,6 +51,7 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
 
   updateMovementParameters();
   setUpdateFrequency(update_frequency_);
+  setMovementIncrements();
 
   populateGaitInfo();
 
@@ -81,7 +82,6 @@ void Hexapod::setUpdateFrequency(const uint16_t update_frequency) {
   foot_air_time_min_ = 2;
   foot_air_time_max_ = update_frequency_ * 2; // Double default - 2.0s
   foot_air_time_ = foot_air_time_default_;
-  rising_increment_ = (walk_height_default_ - height_) / static_cast<float>(update_frequency_);
 }
 
 void Hexapod::updateMovementParameters() {
@@ -106,7 +106,21 @@ void Hexapod::updateMovementParameters() {
 
   stance_width_ = stance_width_default_;
   leg_lift_height_ = leg_lift_height_default_;
+}
 
+/**
+ * @brief Derived from physical dimensions and (expected) update frequency
+ */
+void Hexapod::setMovementIncrements() {
+  rising_increment_ = (walk_height_default_ - height_) / static_cast<float>(update_frequency_);
+
+  // Movements applied every time step
+  walk_translation_increment_ = (dims_.length / 4.0f) / static_cast<float>(update_frequency_);
+  walk_turn_increment_ = (3.0f * M_PI / 180.0) / static_cast<float>(update_frequency_);
+  // Movements applied each button press
+  body_translation_increment_ = (dims_.width / 20.0f);
+  stance_width_increment_ = (dims_.width / 20.0f);
+  leg_raise_increment_ = leg_lift_height_default_ / 10.0f;
 }
 
 void Hexapod::printMovementParameters() {

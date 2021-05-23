@@ -12,10 +12,18 @@
 namespace hexapod {
 
 Receiver::Receiver() : Receiver(nullptr) {}
-Receiver::Receiver(Hexapod *hexapod) : hexapod_(hexapod) {}
+Receiver::Receiver(Hexapod* hexapod) {
+  setRobot(hexapod);
+}
 
 void Receiver::setRobot(Hexapod *hexapod) {
   hexapod_ = hexapod;
+  float walk_increment = hexapod_->walk_translation_increment_;
+  walk_increment_fb = Vector3{walk_increment, 0.0f, 0.0f};
+  walk_increment_lr = Vector3{0.0f, walk_increment, 0.0f};
+  manual_fb = Vector3{0.001, 0.0f, 0.0f};
+  manual_lr = Vector3{0.0f, 0.001, 0.0f};
+  manual_ud = Vector3{0.0f, 0.0f, 0.001};
 }
 
 void Receiver::processCommand(const uint8_t cmd) {
@@ -43,7 +51,7 @@ void Receiver::processCommand(const uint8_t cmd) {
         if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
           hexapod_->manualMoveFoot(manual_fb);
         } else if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
-          hexapod_->manualChangeJoint(manual_joint);
+          hexapod_->manualChangeJoint(hexapod_->manual_joint_increment_);
         }
         break;
       case 97: // a
@@ -55,7 +63,7 @@ void Receiver::processCommand(const uint8_t cmd) {
         if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
           hexapod_->manualMoveFoot(-manual_fb);
         } else if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
-          hexapod_->manualChangeJoint(-manual_joint);
+          hexapod_->manualChangeJoint(-hexapod_->manual_joint_increment_);
         }
         break;
       case 100: // d
@@ -111,37 +119,37 @@ void Receiver::processCommand(const uint8_t cmd) {
       hexapod_->changeWalk(-walk_increment_lr);
       break;
     case 113: // q Increase CCW angular velocity
-      hexapod_->changeWalk(turn_increment);
+      hexapod_->changeWalk(hexapod_->walk_turn_increment_);
       break;
     case 101: // e Decrease CCW angular velocity
-      hexapod_->changeWalk(-turn_increment);
+      hexapod_->changeWalk(-hexapod_->walk_turn_increment_);
       break;
     case 120: // x  Stop
       hexapod_->setWalk(Vector3{0.0f, 0.0f, 0.0f}, 0.0f);
       break;
 
     case 116: // t  Move body forward
-      body_change.t_(0) += body_translation_increment;
+      body_change.t_(0) += hexapod_->body_translation_increment_;
       hexapod_->changeBody(body_change);
       break;
     case 103: // g  Move body backward
-      body_change.t_(0) -= body_translation_increment;
+      body_change.t_(0) -= hexapod_->body_translation_increment_;
       hexapod_->changeBody(body_change);
       break;
     case 102: // f  Move body left
-      body_change.t_(1) += body_translation_increment;
+      body_change.t_(1) += hexapod_->body_translation_increment_;
       hexapod_->changeBody(body_change);
       break;
     case 104: // h  Move body right
-      body_change.t_(1) -= body_translation_increment;
+      body_change.t_(1) -= hexapod_->body_translation_increment_;
       hexapod_->changeBody(body_change);
       break;
     case 114: // r  Move body up
-      body_change.t_(2) += body_translation_increment;
+      body_change.t_(2) += hexapod_->body_translation_increment_;
       hexapod_->changeBody(body_change);
       break;
     case 121: // y  Move body down
-      body_change.t_(2) -= body_translation_increment;
+      body_change.t_(2) -= hexapod_->body_translation_increment_;
       hexapod_->changeBody(body_change);
       break;
     case 98: // b Reset body translation
@@ -149,23 +157,23 @@ void Receiver::processCommand(const uint8_t cmd) {
       break;
 
     case 105:
-      // TODO precalculate these rotations
-      body_change.R_.setRPYExtr(0.0f, body_rotation_increment, 0.0f);
+      // TODO precalculate these rotations?
+      body_change.R_.setRPYExtr(0.0f, hexapod_->body_rotation_increment_,0.0f);
       hexapod_->changeBody(body_change);
       break;
-    case 107:body_change.R_.setRPYExtr(0.0f, -body_rotation_increment, 0.0f);
+    case 107:body_change.R_.setRPYExtr(0.0f, -hexapod_->body_rotation_increment_, 0.0f);
       hexapod_->changeBody(body_change);
       break;
-    case 106:body_change.R_.setRPYExtr(body_rotation_increment, 0.0f, 0.0f);
+    case 106:body_change.R_.setRPYExtr(hexapod_->body_rotation_increment_, 0.0f, 0.0f);
       hexapod_->changeBody(body_change);
       break;
-    case 108:body_change.R_.setRPYExtr(-body_rotation_increment, 0.0f, 0.0f);
+    case 108:body_change.R_.setRPYExtr(-hexapod_->body_rotation_increment_, 0.0f, 0.0f);
       hexapod_->changeBody(body_change);
       break;
-    case 117:body_change.R_.setRPYExtr(0.0f, 0.0f, body_rotation_increment);
+    case 117:body_change.R_.setRPYExtr(0.0f, 0.0f, hexapod_->body_rotation_increment_);
       hexapod_->changeBody(body_change);
       break;
-    case 111:body_change.R_.setRPYExtr(0.0f, 0.0f, -body_rotation_increment);
+    case 111:body_change.R_.setRPYExtr(0.0f, 0.0f, -hexapod_->body_rotation_increment_);
       hexapod_->changeBody(body_change);
       break;
     case 44:hexapod_->setBody(body_change);  // TODO implement resetBody()
@@ -185,32 +193,32 @@ void Receiver::processCommand(const uint8_t cmd) {
       }
       break;
 
-    case 93:hexapod_->changeStanceWidth(stance_width_increment);
+    case 93:hexapod_->changeStanceWidth(hexapod_->stance_width_increment_  );
       break;
-    case 91:hexapod_->changeStanceWidth(-stance_width_increment);
+    case 91:hexapod_->changeStanceWidth(-hexapod_->stance_width_increment_);
       break;
     case 59:hexapod_->resetStanceWidth();
       break;
 
-    case 125:hexapod_->changeLegRaiseTime(leg_raise_time_increment);
+    case 125:hexapod_->changeLegRaiseTime(hexapod_->leg_raise_time_increment_);
       break;
-    case 123:hexapod_->changeLegRaiseTime(-leg_raise_time_increment);
+    case 123:hexapod_->changeLegRaiseTime(-hexapod_->leg_raise_time_increment_);
       break;
     case 58:hexapod_->resetLegRaiseTime();
       break;
 
       // Change foot ground travel ratio
-    case 35:hexapod_->changeFootGroundTravelRatio(ftgr_increment);
+    case 35:hexapod_->changeFootGroundTravelRatio(hexapod_->ftgr_increment_);
       break;
-    case 39:hexapod_->changeFootGroundTravelRatio(-ftgr_increment);
+    case 39:hexapod_->changeFootGroundTravelRatio(-hexapod_->ftgr_increment_);
       break;
     case 47:hexapod_->resetFootGroundTravelRatio();
       break;
 
       // Change leg raise height
-    case 61:hexapod_->changeLegRaiseHeight(leg_raise_increment);
+    case 61:hexapod_->changeLegRaiseHeight(hexapod_->leg_raise_increment_);
       break;
-    case 45:hexapod_->changeLegRaiseHeight(-leg_raise_increment);
+    case 45:hexapod_->changeLegRaiseHeight(-hexapod_->leg_raise_increment_);
       break;
     case 48:hexapod_->resetLegRaiseHeight();
       break;

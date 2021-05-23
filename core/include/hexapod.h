@@ -133,6 +133,16 @@ class Hexapod {
   uint8_t getManualControlLegIdx() const;
   uint8_t getManualControlJointIdx() const;
 
+  float walk_translation_increment_{0.0f};
+  float walk_turn_increment_{0.0f};
+  const float body_rotation_increment_{1.0f * M_PI / 180.0};
+  float body_translation_increment_{0.0f};
+  const float manual_joint_increment_{2.0f * M_PI / 180.0};
+  float stance_width_increment_{0.0f};
+  const float ftgr_increment_ = 0.05f;
+  float leg_raise_increment_{0.0f};
+  const int16_t leg_raise_time_increment_ = 2;
+
   /** @brief Set robot-wide targets to move all legs to specified joint positions when in unsupported state. */
   bool setAllLegTargets(const Leg::JointAngles *joint_targets, uint16_t duration);
   /** @brief Set robot-wide targets to move all legs to common joint position when in unsupported state. */
@@ -270,6 +280,7 @@ class Hexapod {
   void commitTargets();
   void populateGaitInfo();
   bool setWalkingTargets();
+  void setMovementIncrements();
 
 };
 
