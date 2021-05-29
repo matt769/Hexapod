@@ -1,4 +1,5 @@
 #include "hexapod.h"
+#include "build_hexapod.h"
 #include "kinematics_support.h"
 #include "transformations.h"
 #include "visualisation.h"
@@ -13,7 +14,8 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
-using namespace Transformations;
+using namespace hexapod_vis;
+using namespace hexapod;
 
 void demo_walk(Hexapod& hexapod);
 void demo_turn(Hexapod& hexapod);
@@ -31,8 +33,12 @@ int main(int argc, char** argv) {
   ros::NodeHandle nh;
 
   Hexapod hexapod = buildDefaultHexapod();
+
   Leg::JointAngles starting_angles{0.0, M_PI / 2.0, M_PI / 4.0};
-  hexapod.setStartingPosition(starting_angles);
+  for (uint8_t leg_idx = 0; leg_idx < 6; ++leg_idx) {
+    hexapod.setLegJoints(leg_idx, starting_angles);
+  }
+
   Vis visualiser(nh, &hexapod);
 
   size_t sim_step_no = 0;
@@ -56,7 +62,7 @@ void demo_stand(Hexapod& hexapod) {
   static size_t sim_step = 0;
 
   if (sim_step == 100) {
-    hexapod.setLegsToGround();
+    hexapod.setAllLegTargetsToGround(50);
   }
 
   if (hexapod.getState() == Hexapod::State::STANDING) {
@@ -303,7 +309,7 @@ void demo_all(Hexapod& hexapod) {
   static Transform tf_base_to_body_new;
 
   if (stage == 0 && sim_step_no == 100) {
-    hexapod.setLegsToGround();
+    hexapod.setAllLegTargetsToGround(50);
   }
   if (stage == 0 && hexapod.getState() == Hexapod::State::STANDING) {
     hexapod.riseToWalk();
@@ -567,3 +573,4 @@ void demo_all(Hexapod& hexapod) {
 
   sim_step_no++;
 }
+

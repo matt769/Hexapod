@@ -47,7 +47,7 @@ target_link_libraries(controller_node
 
 add_executable(receiver_node
         src/receiver_node.cpp
-        src/receiver.cpp
+        src/ros_receiver.cpp
         src/visualisation.cpp
         src/build_from_urdf.cpp
         )

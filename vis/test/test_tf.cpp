@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 
-using namespace Transformations;
+using namespace hexapod;
 
 void printMatrix(std::string name, const Transform& M);
 void printMatrix(std::string name, const tf2::Transform& tf);

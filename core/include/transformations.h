@@ -1,9 +1,13 @@
-#ifndef TRANSFORMATION_MATRIX_H
-#define TRANSFORMATION_MATRIX_H
+#ifndef HEXAPOD_TRANSFORMATIONS_H
+#define HEXAPOD_TRANSFORMATIONS_H
 
+#ifdef __AVR__
+#include <Arduino.h>
+#else
 #include <stdint.h>
+#endif
 
-namespace Transformations {
+namespace hexapod {
 
 class Vector3 {
  private:
@@ -79,6 +83,7 @@ Vector3 operator*(float scalar, const Vector3& v);
 bool operator==(const Vector3& v1, const Vector3& v2);
 bool operator!=(const Vector3& v1, const Vector3& v2);
 RotationMatrix QuaternionToRotationMatrix(const Quaternion& q);
-}
 
-#endif
+} // namespace hexapod
+
+#endif // HEXAPOD_TRANSFORMATIONS_H

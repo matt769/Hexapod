@@ -1,9 +1,13 @@
 #include "transformations.h"
 
+#ifdef __AVR__
+#include <Arduino.h>
+#else
 #include <stdint.h>
 #include <cmath>
+#endif
 
-namespace Transformations {
+namespace hexapod {
 
 static constexpr float tolerance = 0.000001f;
 
@@ -287,4 +291,4 @@ RotationMatrix QuaternionToRotationMatrix(const Quaternion& q) {
   return R;
 }
 
-}  // namespace Transformations
+}  // namespace hexapod

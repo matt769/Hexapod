@@ -1,6 +1,7 @@
-#include "receiver.h"
+#include "ros_receiver.h"
 #include "build_from_urdf.h"
 #include "hexapod.h"
+#include "build_hexapod.h"
 #include "kinematics_support.h"
 #include "transformations.h"
 #include "visualisation.h"
@@ -16,22 +17,24 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
-using namespace Transformations;
+using namespace hexapod_vis;
+using namespace hexapod;
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "demo_walk");
+  ros::init(argc, argv, "receiver_node");
   ros::NodeHandle nh;
 
-  // Hexapod hexapod = buildDefaultHexapod();
-  // Hexapod hexapod = buildDefaultHexapod2();
-  // Hexapod hexapod = buildDefaultOctapod();
-  Hexapod hexapod = BuildFromURDF::buildFromURDF();
+//   Hexapod hexapod = buildDefaultHexapod();
+//   Hexapod hexapod = buildDefaultHexapod2();
+//   Hexapod hexapod = buildDefaultOctapod();
+//   Hexapod hexapod = buildFromURDF();
+//  Hexapod hexapod = buildPhantomX();
+  Hexapod hexapod = buildPhantomXForVis();
   Vis visualiser(nh, &hexapod);
-  Receiver receiver(nh, &hexapod);
+  RosReceiver receiver(nh, &hexapod);
 
   ros::Rate loop_rate(50);
   while (ros::ok()) {
-    receiver.update();
     hexapod.update();
     visualiser.update();
 

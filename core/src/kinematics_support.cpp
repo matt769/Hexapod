@@ -2,11 +2,16 @@
 
 #include "transformations.h"
 
+#ifdef __AVR__
+#include <Arduino.h>
+#else
 #include <cmath>
+#endif
 
-using namespace Transformations;
 
-namespace KinematicsSupport {
+
+namespace hexapod {
+namespace util {
 
 float wrapAngle(float angle) {
   while (angle > M_PI) {
@@ -36,4 +41,6 @@ bool clamp(float& val, const float lower, const float upper) {
     return true;
   }
 }
-}
+
+} // namespace util
+} // namespace hexapod

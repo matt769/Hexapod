@@ -61,19 +61,31 @@ void Controller::getInput() {
   puts("");
   puts("----------- OTHER -----------------");
   puts("1, 2, 3, 4: Change gait           |  I: Increase body pitch");
-  puts("}: Increase stance width          |  K: Decrease body pitch");
-  puts("{: Decrease stance width          |  J: Increase body roll");
+  puts("]: Increase stance width          |  K: Decrease body pitch");
+  puts("[: Decrease stance width          |  J: Increase body roll");
   puts(";: Reset stance width             |  L: Decrease body roll");
   puts("                                  |  U: Increase body yaw");
   puts("#: Increase stride length         |  O: Decrease body yaw");
-  puts("': Decrease stride length         |  <: Reset body rotation");
+  puts("': Decrease stride length         |  ,: Reset body rotation");
   puts("/: Reset stride length            |--------------------------------------------");
-
+  puts("}: Increase step time");
+  puts("{: Decrease step time");
+  puts(":: Reset step time");
   puts("=: Increase leg height        Enter: Headless mode / reset headless mode");
   puts("-: Decrease leg height        Backspace: Standard mode");
-  puts("/: Reset leg height           `: (Press) Set legs to ground / (Hold) Raise body");
+  puts("0: Reset leg height           `: (Press) Set legs to ground / (Hold) Raise body");
+  puts("-------------------------------------------------------------------------------");
+  puts("Space bar: toggle manual mode. While in manual mode...");
+  puts("L: Leg mode / Cycle through legs      J: Joint mode / Cycle through joints");
+  puts("While in Leg mode");
+  puts("W: Increase foot in X    S: Decrease foot in X");
+  puts("A: Increase foot in Y    D: Decrease foot in Y");
+  puts("Q: Increase foot in Z    E: Decrease foot in Z");
+  puts("While in Joint mode");
+  puts("W: Increase joint    S: Decrease joint");
   puts("-------------------------------------------------------------------------------");
   puts("                        Now reading from keyboard...");
+
 
   for (;;) {
     // get the next event from the keyboard
