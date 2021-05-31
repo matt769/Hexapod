@@ -241,7 +241,11 @@ void Receiver::processCommand(const uint8_t cmd) {
         hexapod_->riseToWalk();
       }
       break;
-      // Manual control
+    // Shutdown
+    case 27:  // Esc
+      hexapod_->lowerToGround();
+      break;
+    // Manual control
     case 32:  // Space bar
       if (hexapod_->getState() != Hexapod::State::FULL_MANUAL) {
         hexapod_->setFullManualControl(true); // TODO allow turning off in future

@@ -51,7 +51,7 @@ class Hexapod {
   void setUpdateFrequency(const uint16_t update_frequency);
   void printMovementParameters();
   /** @brief Set translation and turning movement for the next period */
-  bool setWalk(const Vector3& walk_step, float angle_step);
+  bool setWalk(const Vector3& walk_step, float angle_step, bool force = false);
   /** @brief Set translation movement for the next period */
   bool setWalk(const Vector3& walk_step);
   /** @brief Set turning movement for the next period */
@@ -62,14 +62,14 @@ class Hexapod {
   bool changeWalk(const Vector3& walk_step);
   /** @brief Change turning movement for the next period */
   bool changeWalk(float angle_step);
-
+  /** @brief Resets any walk or turn commands. Does not affect body rotation or translation. */
+  bool clearWalk();
 
   /** @brief Set absolute body rotation and translation relative to the base */
-  bool setBody(const Transform& tf_base_to_body_target);
+  bool setBody(const Transform& tf_base_to_body_target, bool force = false);
   /** @brief Apply incremental rotation and translation to the body, relative to the base */
   bool changeBody(const Transform& tf_base_to_body_change);
-  /** @brief Resets any walk or turn commands. Does not affect body rotation or translation. */
-  bool clearMovement();
+
   /** @brief Resets any body tilt or translation. Does not affect walk or turn. */
   bool resetBody();
   /** @brief main update function to be called every period. Will apply any movement currently set.
@@ -100,6 +100,8 @@ class Hexapod {
   bool setLegTargetToGround(uint8_t leg_idx, uint16_t duration);
   /** @brief Request the body to rise from the ground to a walking position */
   bool riseToWalk();
+  /** @brief Request the body to lower from a walking position to the ground */
+  bool lowerToGround();
   State getState() const;
 
   /** @brief For visualisation */

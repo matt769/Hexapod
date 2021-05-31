@@ -425,12 +425,15 @@ bool Hexapod::handleRaisedLegs() {
   return leg_movement_result;
 }
 
-bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step) {
-  if (state_ != State::WALKING) return false;
 
-  current_walk_translation_ = walk_step;
-  current_walk_turn_ = angle_step;
-  return true; // TODO add checks on input(?)
+bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step, const bool force) {
+  // don't set if not in walking state, or if trying to leave walking state
+  if (force || (state_ == State::WALKING && requested_state_ == State::WALKING)) {
+    current_walk_translation_ = walk_step;
+    current_walk_turn_ = angle_step;
+    return true; // TODO add checks on input(?)
+  }
+  return false;
 }
 
 bool Hexapod::setWalk(const Vector3& walk_step) { return setWalk(walk_step, 0.0f); }
@@ -446,7 +449,7 @@ bool Hexapod::changeWalk(const Vector3& walk_step) { return changeWalk(walk_step
 bool Hexapod::changeWalk(float angle_step)  { return changeWalk(Vector3(0.0f, 0.0f, 0.0f), angle_step); }
 
 bool Hexapod::setWalkingTargets() {
-  if (!(state_ == State::WALKING)) {
+  if (state_ != State::WALKING) {
     return false;
   }
 
@@ -476,14 +479,14 @@ bool Hexapod::setWalkingTargets() {
   return true;
 }
 
-bool Hexapod::setBody(const Transform& tf_base_to_body_target) {
-  if (!(state_ == State::WALKING)) {
-    return false;
+bool Hexapod::setBody(const Transform& tf_base_to_body_target, const bool force) {
+  if (force || (state_ == State::WALKING && requested_state_ == State::WALKING)) {
+    tf_base_to_body_target_ = tf_base_to_body_target;
+    body_change_ = true;
+    recalculate_raised_feet_targets_ = true;
+    return true;
   }
-  tf_base_to_body_target_ = tf_base_to_body_target;
-  body_change_ = true;
-  recalculate_raised_feet_targets_ = true;
-  return true;
+  return false;
 }
 
 bool Hexapod::changeBody(const Transform& tf_base_to_body_change) {
@@ -499,7 +502,7 @@ bool Hexapod::changeBody(const Transform& tf_base_to_body_change) {
   return setBody(tf_base_to_body_target);
 }
 
-bool Hexapod::clearMovement() { return setWalk(Vector3(0.0f, 0.0f, 0.0f), 0.0f); }
+bool Hexapod::clearWalk() { return setWalk(Vector3(0.0f, 0.0f, 0.0f), 0.0f); }
 
 /**
  * @details
@@ -540,6 +543,9 @@ bool Hexapod::update() {
     // nothing to do here at the moment
   } else if (state_ == State::RISING) {
     changeBase(Vector3(0, 0, rising_increment_));
+    grounded_legs_result = handleGroundedLegs();
+  } else if (state_ == State::LOWERING) {
+    changeBase(Vector3(0, 0, -rising_increment_));
     grounded_legs_result = handleGroundedLegs();
   } else if (state_ == State::WALKING) {
     grounded_legs_result = handleGroundedLegs();
@@ -809,8 +815,17 @@ bool Hexapod::updateMoveLegs() {
 bool Hexapod::riseToWalk() {
   if (state_ == State::STANDING) {
     requested_state_ = State::RISING;
+    return true;
   }
-  return requested_state_ == State::RISING;
+  return false;
+}
+
+bool Hexapod::lowerToGround() {
+  if (state_ == State::WALKING) {
+    requested_state_ = State::LOWERING;
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -923,20 +938,32 @@ void Hexapod::handleStateChange() {
 #endif
   }
 
-  // TODO add some conditions for going back
-  // will need to ensure that legs are allowed to finish current step
-  if (state_ == State::WALKING && requested_state_ == State::STANDING && false) {
-    state_ = requested_state_;
-#ifndef __AVR__
-    std::cout << "State changed to: STANDING\n";
+  if (state_ == State::WALKING && requested_state_ == State::LOWERING) {
+    setWalk(Vector3{0.0f, 0.0f, 0.0f}, 0.0f, true);
+    setBody(Transform(), true); // ideally do more smoothly
+    // ensure that legs are allowed to finish current step
+    bool ready_to_change = true;
+    for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+      ready_to_change &= legs_[leg_idx].state_ == Leg::State::ON_GROUND;
+    }
+    if (ready_to_change) {
+      state_ = requested_state_;
+      requested_state_ = State::STANDING;
+#ifdef __AVR__
+      Serial.print(F("State changed to: LOWERING\n"));
+#else
+      std::cout << "State changed to: LOWERING\n";
 #endif
+    }
   }
 
-  // TODO add some conditions for going back
-  if (state_ == State::STANDING && requested_state_ == State::UNSUPPORTED && false) {
+  if (state_ == State::LOWERING && requested_state_ == State::STANDING &&
+      height_ <= dims_.depth / 2.0f) {
     state_ = requested_state_;
-#ifndef __AVR__
-    std::cout << "State changed to: UNSUPPORTED\n";
+#ifdef __AVR__
+    Serial.print(F("State changed to: STANDING\n"));
+#else
+    std::cout << "State changed to: STANDING\n";
 #endif
   }
 
