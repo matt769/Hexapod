@@ -908,7 +908,7 @@ void Hexapod::handleStateChange() {
     if (ready) {
       state_ = requested_state_;
 #ifdef __AVR__
-      Serial.print(F("State changed to: STANDING\n"));
+      Serial.print(F("State: STANDING\n"));
 #else
       std::cout << "State changed to: STANDING\n";
 #endif
@@ -920,7 +920,7 @@ void Hexapod::handleStateChange() {
     state_ = State::RISING;
     requested_state_ = State::WALKING;
 #ifdef __AVR__
-    Serial.print(F("State changed to: RISING\n"));
+    Serial.print(F("State: RISING\n"));
 #else
     std::cout << "State changed to: RISING\n";
 #endif
@@ -932,7 +932,7 @@ void Hexapod::handleStateChange() {
       height_ >= walk_height_default_) {
     state_ = requested_state_;
 #ifdef __AVR__
-    Serial.print(F("State changed to: WALKING\n"));
+    Serial.print(F("State: WALKING\n"));
 #else
     std::cout << "State changed to: WALKING\n";
 #endif
@@ -950,7 +950,7 @@ void Hexapod::handleStateChange() {
       state_ = requested_state_;
       requested_state_ = State::STANDING;
 #ifdef __AVR__
-      Serial.print(F("State changed to: LOWERING\n"));
+      Serial.print(F("State: LOWERING\n"));
 #else
       std::cout << "State changed to: LOWERING\n";
 #endif
@@ -961,7 +961,7 @@ void Hexapod::handleStateChange() {
       height_ <= dims_.depth / 2.0f) {
     state_ = requested_state_;
 #ifdef __AVR__
-    Serial.print(F("State changed to: STANDING\n"));
+    Serial.print(F("State: STANDING\n"));
 #else
     std::cout << "State changed to: STANDING\n";
 #endif
