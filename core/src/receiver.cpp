@@ -96,7 +96,9 @@ void Receiver::processCommand(const uint8_t cmd) {
     Serial.print(current_joint_idx);
     Serial.print('\n');
 #else
-    // TODO
+    std::cout << "Manual mode: " << static_cast<int>(mct)
+    << '\t' << "Leg: "  << current_leg_idx
+    << '\t' << "Joint: " << current_joint_idx << '\n';
 #endif
     return;
   }
