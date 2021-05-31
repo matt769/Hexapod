@@ -122,7 +122,7 @@ TODO upload full derivation
 
 ## How to control
 From a starting position with the body on the ground, call `setLegsToGround()` (once), and `update()` periodically until `getState()` returns Hexapod::State::STANDING.  
-Then call `riseToWalk()` and `update()` periodically until `getState()` returns Hexapod::State::WALKING.  
+Then call `riseToWalk()` (once) and `update()` periodically until `getState()` returns Hexapod::State::WALKING.  
 
 The robot can then be controlled primarily using the `changeBody()` and `setWalk()` functions. The `update()` function should be called for every 'small' time step. In these examples it's done at 50hz.  
 

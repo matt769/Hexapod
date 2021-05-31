@@ -37,7 +37,7 @@ class Hexapod {
   enum class MoveMode { STANDARD, HEADLESS };
   /** @brief Walking is main state, others are used in start up routine. Unsupported implies legs do
    * not any resetriction on foot position. */
-  enum class State { UNSUPPORTED, STANDING, WALKING, FULL_MANUAL };
+  enum class State { UNSUPPORTED, STANDING, RISING, WALKING, LOWERING, FULL_MANUAL };
   /** @brief Gait identifier. Also used as index into gait_seq_ */
   enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, TRIPOD, NUM_GAITS };
 
@@ -98,7 +98,7 @@ class Hexapod {
   bool setAllLegTargetsToGround(uint16_t duration);
   bool setAllLegTargetsToGround();
   bool setLegTargetToGround(uint8_t leg_idx, uint16_t duration);
-  /** @brief Set the base to move upwards until walk_height_default_ reached */
+  /** @brief Request the body to rise from the ground to a walking position */
   bool riseToWalk();
   State getState() const;
 

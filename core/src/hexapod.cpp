@@ -537,6 +537,9 @@ bool Hexapod::update() {
   if (state_ == State::UNSUPPORTED) {
     updateMoveLegs();
   } else if (state_ == State::STANDING) {
+    // nothing to do here at the moment
+  } else if (state_ == State::RISING) {
+    changeBase(Vector3(0, 0, rising_increment_));
     grounded_legs_result = handleGroundedLegs();
   } else if (state_ == State::WALKING) {
     grounded_legs_result = handleGroundedLegs();
@@ -800,20 +803,14 @@ bool Hexapod::updateMoveLegs() {
  * @details
  * One of several basic functions for getting the hexapod to move from a starting position to an
  * upright position supported by the legs from which it can start walking.
- * Basically facilitates the transition from STANDING state to WALKING state
- * TODO I'd like this to only need to be called once, but it's a rather unique movement compared to all others
- *  and probably requires significant additions or changes to support that. Review later.
- * @return true
- * @return false
+ * Facilitates the transition from STANDING state to WALKING state (via RISING state)
+ * @return true if requested state set to RISING
  */
 bool Hexapod::riseToWalk() {
-  if (state_ == State::STANDING && height_ < walk_height_default_) {
-    changeBase(Vector3(0, 0, rising_increment_));
-    requested_state_ = State::WALKING;
-    return true;
-  } else {
-    return false;
+  if (state_ == State::STANDING) {
+    requested_state_ = State::RISING;
   }
+  return requested_state_ == State::RISING;
 }
 
 /**
@@ -903,9 +900,20 @@ void Hexapod::handleStateChange() {
     }
   }
 
+  if (state_ == State::STANDING && requested_state_ == State::RISING) {
+    // immediately transition
+    state_ = State::RISING;
+    requested_state_ = State::WALKING;
+#ifdef __AVR__
+    Serial.print(F("State changed to: RISING\n"));
+#else
+    std::cout << "State changed to: RISING\n";
+#endif
+  }
+
   // go from standing to walking if base it at some predefined position
   // hexapod doesn't actually know base position except the height
-  if (state_ == State::STANDING && requested_state_ == State::WALKING &&
+  if (state_ == State::RISING && requested_state_ == State::WALKING &&
       height_ >= walk_height_default_) {
     state_ = requested_state_;
 #ifdef __AVR__
