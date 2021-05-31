@@ -426,6 +426,8 @@ bool Hexapod::handleRaisedLegs() {
 }
 
 bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step) {
+  if (state_ != State::WALKING) return false;
+
   current_walk_translation_ = walk_step;
   current_walk_turn_ = angle_step;
   return true; // TODO add checks on input(?)
@@ -436,9 +438,7 @@ bool Hexapod::setWalk(const Vector3& walk_step) { return setWalk(walk_step, 0.0f
 bool Hexapod::setWalk(const float angle_step) { return setWalk(Vector3(0.0f, 0.0f, 0.0f), angle_step); }
 
 bool Hexapod::changeWalk(const Vector3& walk_step, float angle_step) {
-  current_walk_translation_ = current_walk_translation_ + walk_step;
-  current_walk_turn_ = current_walk_turn_ + angle_step;
-  return true; // TODO add checks on input(?)
+  return setWalk(current_walk_translation_ + walk_step, current_walk_turn_ + angle_step);
 }
 
 bool Hexapod::changeWalk(const Vector3& walk_step) { return changeWalk(walk_step, 0.0f); }
@@ -1152,9 +1152,6 @@ void Hexapod::populateGaitInfo() {
     gaits_[gait_type].offset[4] = 0.0;
     gaits_[gait_type].offset[5] = 1.0;
   }
-
-
-
 }
 
 } // namespace hexapod
