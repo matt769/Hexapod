@@ -18,7 +18,7 @@ class Controller {
   struct termios cooked, raw;
 };
 
-void quit(int sig) {
+void quit(int /* sig */) {
   ros::shutdown();
   exit(0);
 }
