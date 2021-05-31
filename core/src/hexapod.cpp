@@ -754,7 +754,11 @@ void Hexapod::setMoveMode(const MoveMode move_mode) {
   }
 }
 
+
 bool Hexapod::setLegTarget(const uint8_t leg_idx, const Leg::JointAngles& joint_targets, const uint16_t duration) {
+  bool res = legs_[leg_idx].jointsWithinLimits(joint_targets);
+  if (!res) return false;
+
   const Leg::JointAngles current_angles = legs_[leg_idx].getJointAngles();
   const Leg::JointAngles angle_range{joint_targets.theta_1 - current_angles.theta_1,
                                      joint_targets.theta_2 - current_angles.theta_2,
@@ -773,84 +777,8 @@ bool Hexapod::setLegTarget(const uint8_t leg_idx, const Leg::JointAngles& joint_
                                midpoint,
                                joint_increments,
                                duration);
-  return true; // TODO
-}
-
-
-/**
- * @details
- * One of several basic functions for getting the hexapod to move from a starting position to an
- * upright position supported by the legs from which it can start walking.
- *
- * @param joint_targets
- * @return true if the requested targets were set
- */
-bool Hexapod::setAllLegTargets(const Leg::JointAngles *joint_targets, uint16_t duration) {
-  if (state_ != State::UNSUPPORTED) {
-    return false;
-  }
-
-  // check that targets are achievable
-  bool joint_check_result = true;
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    joint_check_result &= legs_[leg_idx].jointsWithinLimits(joint_targets[leg_idx]);
-  }
-  if (!joint_check_result) {
-#ifdef __AVR__
-    Serial.print(F("Requested movement not achievable\n"));
-#else
-    std::cout << "Requested movement not achievable\n";
-#endif
-    return false;
-  }
-
-  // calculate trajectory
-  // if start and end angles were ok, then everything in between should be too
-  // since we never try and go the 'shorter' way around i.e. don't cross -180/+180 boundary
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    const Leg::JointAngles& leg_joint_targets = joint_targets[leg_idx];
-    const Leg::JointAngles current_angles = legs_[leg_idx].getJointAngles();
-    const Leg::JointAngles angle_range{leg_joint_targets.theta_1 - current_angles.theta_1,
-                                 leg_joint_targets.theta_2 - current_angles.theta_2,
-                                 leg_joint_targets.theta_3 - current_angles.theta_3};
-    const Leg::JointAngles joint_increments{angle_range.theta_1 / static_cast<float>(duration),
-                                      angle_range.theta_2 / static_cast<float>(duration),
-                                      angle_range.theta_3 / static_cast<float>(duration)};
-    // To fit existing setup will need to calculate midpoint although not strictly required
-    const Leg::JointAngles
-        midpoint{current_angles.theta_1 + joint_increments.theta_1 * static_cast<float>(duration/2),
-                 current_angles.theta_2 + joint_increments.theta_2 * static_cast<float>(duration/2),
-                 current_angles.theta_3 + joint_increments.theta_3 * static_cast<float>(duration/2)};
-
-    legs_[leg_idx].setTrajectory(leg_joint_targets,
-                                 joint_increments,
-                                 midpoint,
-                                 joint_increments,
-                                 duration);
-  }
   return true;
 }
-
-/**
- * @details Call setAllLegTargets with the same joint angles for every leg.
- * @param joint_targets
- * @return true if the requested targets were set
- */
-bool Hexapod::setAllLegTargets(const Leg::JointAngles& joint_targets, uint16_t duration) {
-  if (state_ != State::UNSUPPORTED) {
-    return false;
-  }
-
-  Leg::JointAngles joint_targets_all[num_legs_];
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    joint_targets_all[leg_idx] = joint_targets;
-  }
-
-  return setAllLegTargets(joint_targets_all, duration);
-}
-
-
-
 
 /**
  * @details

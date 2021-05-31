@@ -220,7 +220,6 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - How to better define the allowed movement range. Currently it's quite restrictive.
  - Make gait offset parameter controllable?
  - Better way of handling or preventing situations where positions are not achievable
- - Currently includes a variable length array (depending on number of legs) in some of the setup functions. Supported by gcc / avr-gcc but perhaps not ideal (not c++ standard).
 
 ## Bugs
  - When turning, legs on one side are very extended, doesn't seem to correspond with their neutral position

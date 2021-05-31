@@ -143,10 +143,7 @@ class Hexapod {
   float leg_raise_increment_{0.0f};
   const int16_t leg_raise_time_increment_ = 2;
 
-  /** @brief Set robot-wide targets to move all legs to specified joint positions when in unsupported state. */
-  bool setAllLegTargets(const Leg::JointAngles *joint_targets, uint16_t duration);
-  /** @brief Set robot-wide targets to move all legs to common joint position when in unsupported state. */
-  bool setAllLegTargets(const Leg::JointAngles& joint_targets, uint16_t duration);
+  /** @brief Set manual leg target when in unsupported state. */
   bool setLegTarget(uint8_t leg_idx, const Leg::JointAngles& joint_targets, uint16_t duration);
 
  private:

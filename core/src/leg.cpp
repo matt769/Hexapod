@@ -403,6 +403,17 @@ void Leg::setTrajectory(const Leg::JointAngles& target,
 }
 
 
+void Leg::clearTrajectory() {
+  step_idx_ = 0;
+  current_step_duration_ = 0;
+  target_angles_ = getJointAngles();
+  inc_up_angles_ = JointAngles{0.0f, 0.0f, 0.0f};
+  step_apex_angles_ = getJointAngles();
+  inc_down_angles_ = JointAngles{0.0f, 0.0f, 0.0f};
+}
+
+
+
 /**
  * @details
  * Apply the pre-calculated joint increments to the current STAGED joint angles.

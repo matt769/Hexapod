@@ -151,8 +151,9 @@ class Leg {
                      const JointAngles& midpoint,
                      const JointAngles& increment_down,
                      uint16_t duration);
-  /** @brief Updates the current joint angles according to the current joint targets and increments
-    */
+  /** @brief Clear current trajectory. Not to be called during normal use. Maybe during startup. */
+  void clearTrajectory();
+  /** @brief Updates the current joint angles according to the current joint targets and increments */
   void incrementLeg();
   /** @brief Calculate the ROUGH movement limits for the leg when leg base is at a given height above the foot. */
   MovementLimits calculateMovementLimits(float height) const;
