@@ -210,7 +210,7 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
 
 ## Todo / Future (in no particular order)
  - Review the way in which legs move while raised. It's got overly complicated. Could probably be simplified.
-  - I've improved it but it could probably still benefit from overhaul.
+   - I've improved it but it could probably still benefit from overhaul.
  - Better definition of allowed foot movement range.
  - Foot sensors to determine when a foot has actually touched the ground. This would help to allow handling of non-flat terrain.
  - IMU to determine actual body pose.
@@ -220,6 +220,7 @@ roslaunch hexapod control.launch model:=vis/urdf/sillypod.urdf.xacro
  - How to better define the allowed movement range. Currently it's quite restrictive.
  - Make gait offset parameter controllable?
  - Better way of handling or preventing situations where positions are not achievable
+ - Currently includes a variable length array (depending on number of legs) in some of the setup functions. Supported by gcc / avr-gcc but perhaps not ideal (not c++ standard).
 
 ## Bugs
  - When turning, legs on one side are very extended, doesn't seem to correspond with their neutral position
