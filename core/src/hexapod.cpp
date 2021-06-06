@@ -541,7 +541,7 @@ bool Hexapod::update() {
     updateMoveLegs();
   } else if (state_ == State::STANDING) {
     // nothing to do here at the moment
-  } else if (state_ == State::RISING) {
+  } else if (state_ == State::RAISING) {
     changeBase(Vector3(0, 0, rising_increment_));
     grounded_legs_result = handleGroundedLegs();
   } else if (state_ == State::LOWERING) {
@@ -814,7 +814,7 @@ bool Hexapod::updateMoveLegs() {
  */
 bool Hexapod::riseToWalk() {
   if (state_ == State::STANDING) {
-    requested_state_ = State::RISING;
+    requested_state_ = State::RAISING;
     return true;
   }
   return false;
@@ -915,9 +915,9 @@ void Hexapod::handleStateChange() {
     }
   }
 
-  if (state_ == State::STANDING && requested_state_ == State::RISING) {
+  if (state_ == State::STANDING && requested_state_ == State::RAISING) {
     // immediately transition
-    state_ = State::RISING;
+    state_ = State::RAISING;
     requested_state_ = State::WALKING;
 #ifdef __AVR__
     Serial.print(F("State: RISING\n"));
@@ -928,7 +928,7 @@ void Hexapod::handleStateChange() {
 
   // go from standing to walking if base it at some predefined position
   // hexapod doesn't actually know base position except the height
-  if (state_ == State::RISING && requested_state_ == State::WALKING &&
+  if (state_ == State::RAISING && requested_state_ == State::WALKING &&
       height_ >= walk_height_default_) {
     state_ = requested_state_;
 #ifdef __AVR__
