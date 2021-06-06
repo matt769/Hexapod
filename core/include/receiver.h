@@ -18,7 +18,6 @@ class Receiver {
   Receiver();
   explicit Receiver(Hexapod *hexapod);
   void setRobot(Hexapod *hexapod);
-  void update();
   void processCommand(uint8_t cmd);
 
  private:
