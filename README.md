@@ -12,6 +12,10 @@ The structure of the robot is also very configurable (explained further below), 
 
 `vis` provides additional code for visualisation using ROS and RViz. `demo.launch` shows a preset demo of movements, and `control.launch` provides keyboard control of the hexapod (the controls are printed on the screen). There are also several urdf examples provided - a robot of the appropriate configuration is derived and built automatically from the urdf.
 
+`arduino_phantomx` directory contains some Arduino files for running this on a physical robot - more information in this [readme](arduino/README.md).
+
+
+
 ## Visualisation demo
 https://youtu.be/P0InG3q7VjE  
 

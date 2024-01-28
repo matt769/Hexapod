@@ -347,7 +347,7 @@ void loop() {
 
   if (millis() - last_update > update_period) {
     ps4controller.fetchData();
-//    ps4controller.printData(&Serial);
+    // ps4::printData(&Serial, ps4controller.input);
     receiver.processCommand(ps4controller.input);
     hex.update();
     setServoGoalsToCurrentModelJoints();
