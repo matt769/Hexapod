@@ -1,8 +1,9 @@
-#include "hexapod.h"
-#include "build_hexapod.h"
-#include "kinematics_support.h"
-#include "transformations.h"
 #include "visualisation.h"
+
+#include <hexapod_core/hexapod.h>
+#include <hexapod_core/build_hexapod.h>
+#include <hexapod_core/kinematics_support.h>
+#include <hexapod_core/transformations.h>
 
 #include <geometry_msgs/TransformStamped.h>
 #include <ros/ros.h>

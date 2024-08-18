@@ -1,8 +1,8 @@
 #include "build_from_urdf.h"
 
-#include "hexapod.h"
-#include "leg.h"
-#include "transformations.h"
+#include <hexapod_core/hexapod.h>
+#include <hexapod_core/leg.h>
+#include <hexapod_core/transformations.h>
 
 #include <urdf/model.h>
 

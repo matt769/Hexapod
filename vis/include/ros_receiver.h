@@ -1,9 +1,11 @@
 #ifndef HEX_RECEIVER_H
 #define HEX_RECEIVER_H
 
-#include "hexapod.h"
-#include "transformations.h"
-#include "receiver.h"
+#include <hexapod_core/hexapod.h>
+#include <hexapod_core/transformations.h>
+#include <hexapod_core/receiver.h>
+
+
 
 #include <ros/node_handle.h>
 #include <ros/subscriber.h>

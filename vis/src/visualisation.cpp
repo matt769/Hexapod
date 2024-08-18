@@ -1,8 +1,8 @@
 #include "visualisation.h"
 
-#include "hexapod.h"
-#include "leg.h"
-#include "transformations.h"
+#include <hexapod_core/hexapod.h>
+#include <hexapod_core/leg.h>
+#include <hexapod_core/transformations.h>
 
 #include <geometry_msgs/TransformStamped.h>
 #include <ros/ros.h>

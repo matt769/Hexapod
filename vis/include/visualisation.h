@@ -1,7 +1,7 @@
 #ifndef VIS_HEX_H
 #define VIS_HEX_H
 
-#include "hexapod.h"
+#include <hexapod_core/hexapod.h>
 
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>

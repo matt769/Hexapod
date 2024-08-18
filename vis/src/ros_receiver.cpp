@@ -1,7 +1,7 @@
 #include "ros_receiver.h"
 
-#include "hexapod.h"
-#include "transformations.h"
+#include <hexapod_core/hexapod.h>
+#include <hexapod_core/transformations.h>
 
 #include <ros/node_handle.h>
 #include <ros/subscriber.h>
