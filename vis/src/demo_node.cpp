@@ -5,13 +5,13 @@
 #include <hexapod_core/kinematics_support.h>
 #include <hexapod_core/transformations.h>
 
-#include <geometry_msgs/TransformStamped.h>
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
+#include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/transform_stamped.h>
+#include <sensor_msgs/msg/joint_state.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
@@ -30,8 +30,9 @@ void demo_all(Hexapod& hexapod);
 void demo_stand(Hexapod& hexapod);
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "demo_walk");
-  ros::NodeHandle nh;
+//  ros::init(argc, argv, "demo_walk");
+  rclcpp::init(argc, argv);
+//  ros::NodeHandle nh;
 
   Hexapod hexapod = buildDefaultHexapod();
 
@@ -40,19 +41,19 @@ int main(int argc, char** argv) {
     hexapod.setLegJoints(leg_idx, starting_angles);
   }
 
-  Vis visualiser(nh, &hexapod);
+  auto vis_node = std::make_shared<Vis>(&hexapod);
 
   size_t sim_step_no = 0;
-  ros::Rate loop_rate(50);
-  while (ros::ok()) {
+  rclcpp::Rate loop_rate(50);
+  while (rclcpp::ok()) {
     demo_all(hexapod);
 
     // move and update
     hexapod.update();
-    visualiser.update();
+    vis_node->update();
 
     sim_step_no++;
-    ros::spinOnce();
+//    rclcpp::spin_once(); // required?
     loop_rate.sleep();
   }
 

@@ -5,14 +5,16 @@ add_compile_options(-std=c++17 -Wall -Wextra)
 
 find_package(ament_cmake REQUIRED)
 
-message(WARNING ${hexapod_core_FOUND})
+#message(WARNING ${hexapod_core_FOUND})
 
 find_package(hexapod_core REQUIRED)
 
-message(WARNING ${hexapod_core_FOUND})
+#message(WARNING ${hexapod_core_FOUND})
 
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -36,10 +38,13 @@ add_executable(demo_node src/demo_node.cpp
         src/visualisation.cpp
         )
 
-# target_link_libraries(demo_node
-#         ${hexapod_core_LIBRARIES}
-#         )
-ament_target_dependencies(demo_node hexapod_core rclcpp sensor_msgs tf2_geometry_msgs tf2 tf2_ros urdf)
+message(WARNING ${hexapod_core_LIBRARIES})
+# GET IT TO COMPILE, THEN FIX BUILD / EXPLICIT LINKS
+ target_link_libraries(demo_node
+         ${hexapod_core_LIBRARIES}
+         "/home/matt/ws/hexapod_ws/install/hexapod_core/lib/hexapod_core/libhexapod_core.a"
+         )
+ament_target_dependencies(demo_node hexapod_core rclcpp sensor_msgs geometry_msgs visualization_msgs tf2_geometry_msgs tf2 tf2_ros urdf)
 
 
 # add_executable(test_tf

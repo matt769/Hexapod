@@ -5,8 +5,6 @@
 #include <hexapod_core/transformations.h>
 #include <hexapod_core/receiver.h>
 
-
-
 #include <ros/node_handle.h>
 #include <ros/subscriber.h>
 #include <std_msgs/Int32.h>

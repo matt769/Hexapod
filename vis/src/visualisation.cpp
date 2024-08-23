@@ -4,24 +4,28 @@
 #include <hexapod_core/leg.h>
 #include <hexapod_core/transformations.h>
 
-#include <geometry_msgs/TransformStamped.h>
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/time.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 #include <string>
+#include <chrono>
 
 namespace hexapod_vis {
 using namespace hexapod;
+using namespace std::chrono_literals;
 
-Vis::Vis(const ros::NodeHandle& nh, Hexapod *hexapod)
-    : nh_(nh),
+Vis::Vis(Hexapod *hexapod)
+    : Node("hexapod_visualisation_node"),
       hexapod_(hexapod),
       num_legs_(hexapod->num_legs_) {
   const size_t number_of_joints = num_legs_ * 3;
@@ -29,20 +33,24 @@ Vis::Vis(const ros::NodeHandle& nh, Hexapod *hexapod)
   joint_angles_.resize(number_of_joints);
   generateJointNames();
 
-  joints_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
-  foot_traj_marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("foot_trajectories", 1);
-  movement_limits_marker_pub_ = nh_.advertise<visualization_msgs::Marker>("allowed_movement", 1);
+  joints_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 1);
+  foot_traj_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("foot_trajectories", 1);
+  movement_limits_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("allowed_movement", 1);
 
-  tf_listener_ = std::make_unique<tf2_ros::TransformListener>(tf_buffer_);
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+  tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
+  tf_br_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
   initialiseTransforms();
-  ros::Duration(1).sleep();  // make sure tf is ready when we query it shortly
+
+  rclcpp::sleep_for(1s);  // make sure tf is ready when we query it shortly
 }
 
 void Vis::initialiseTransforms() {
   // this tf doesn't exist yet so we need to explicitly create it
   //  (which updateVisWorld doesn't do )
-  geometry_msgs::TransformStamped tf_world_to_base;
-  tf_world_to_base.header.stamp = ros::Time::now();
+  geometry_msgs::msg::TransformStamped tf_world_to_base;
+  tf_world_to_base.header.stamp = this->now();
   tf_world_to_base.header.frame_id = "world";
   tf_world_to_base.child_frame_id = "base_link";
   tf_world_to_base.transform.translation.x = 0.0;
@@ -53,7 +61,7 @@ void Vis::initialiseTransforms() {
   tf_world_to_base.transform.rotation.y = q2.y();
   tf_world_to_base.transform.rotation.z = q2.z();
   tf_world_to_base.transform.rotation.w = q2.w();
-  tf_br_.sendTransform(tf_world_to_base);
+  tf_br_->sendTransform(tf_world_to_base);
 
   updateBody();
   updateJoints();
@@ -101,11 +109,11 @@ void Vis::updateJoints() {
     joint_angles_.at(3 * leg_idx + 2) = leg_joint_angles.theta_3;
   }
 
-  sensor_msgs::JointState msg;
-  msg.header.stamp = ros::Time::now();
+  sensor_msgs::msg::JointState msg;
+  msg.header.stamp = this->now();
   msg.name = joint_names_;
   msg.position = joint_angles_;
-  joints_pub_.publish(msg);
+  joints_pub_->publish(msg);
 }
 
 void Vis::updateBody() {
@@ -118,8 +126,8 @@ void Vis::updateBody() {
   tf2::Quaternion q;
   r.getRotation(q);
 
-  geometry_msgs::TransformStamped tf_base_to_body;
-  tf_base_to_body.header.stamp = ros::Time::now();
+  geometry_msgs::msg::TransformStamped tf_base_to_body;
+  tf_base_to_body.header.stamp = this->now();
   tf_base_to_body.header.frame_id = "base_link";
   tf_base_to_body.child_frame_id = "body_link";
   tf_base_to_body.transform.translation.x = tf_btb.t_(0);
@@ -129,7 +137,7 @@ void Vis::updateBody() {
   tf_base_to_body.transform.rotation.y = q.y();
   tf_base_to_body.transform.rotation.z = q.z();
   tf_base_to_body.transform.rotation.w = q.w();
-  tf_br_.sendTransform(tf_base_to_body);
+  tf_br_->sendTransform(tf_base_to_body);
 }
 
 void Vis::updateWorld() {
@@ -150,8 +158,8 @@ void Vis::updateWorld() {
   tf_base_to_new_base.setOrigin(t_b_nb);
 
   // current world to base
-  geometry_msgs::TransformStamped tf_world_to_base_msg =
-      tf_buffer_.lookupTransform("world", "base_link", ros::Time(0));
+  geometry_msgs::msg::TransformStamped tf_world_to_base_msg =
+      tf_buffer_->lookupTransform("world", "base_link", rclcpp::Time(0));
   tf2::Stamped<tf2::Transform> tf_world_to_base;
   tf2::fromMsg(tf_world_to_base_msg, tf_world_to_base);
 
@@ -166,9 +174,9 @@ void Vis::updateWorld() {
   tf_world_to_base_msg.transform.translation.z = tf_world_to_new_base.getOrigin().z();
   tf_world_to_base_msg.header.frame_id = "world";
   tf_world_to_base_msg.child_frame_id = "base_link";
-  tf_world_to_base_msg.header.stamp = ros::Time::now();
+  tf_world_to_base_msg.header.stamp = this->now();
 
-  tf_br_.sendTransform(tf_world_to_base_msg);
+  tf_br_->sendTransform(tf_world_to_base_msg);
 }
 
 void Vis::update() {
@@ -184,11 +192,11 @@ void Vis::publishFootTrajectories() {
   // transform into base_link
   // create markers and publish
 
-  visualization_msgs::MarkerArray marker_array;
+  visualization_msgs::msg::MarkerArray marker_array;
   int id = 0;
-  visualization_msgs::Marker marker_base;
+  visualization_msgs::msg::Marker marker_base;
   marker_base.header.frame_id = "base_link";
-  marker_base.header.stamp = ros::Time();
+  marker_base.header.stamp = rclcpp::Time();
   marker_base.pose.orientation.x = 0.0;
   marker_base.pose.orientation.y = 0.0;
   marker_base.pose.orientation.z = 0.0;
@@ -204,11 +212,11 @@ void Vis::publishFootTrajectories() {
       const Transform T_base_leg = hexapod_->getBaseToLeg(leg_idx);
       Vector3 raised = T_base_leg * leg.getRaisedPosition();
       Vector3 target = T_base_leg * leg.getTargetPosition();
-      visualization_msgs::Marker marker_raised = marker_base;
+      visualization_msgs::msg::Marker marker_raised = marker_base;
       marker_raised.ns = "foot_traj_raised";
       marker_raised.id = id++;
-      marker_raised.type = visualization_msgs::Marker::SPHERE;
-      marker_raised.action = visualization_msgs::Marker::ADD;
+      marker_raised.type = visualization_msgs::msg::Marker::SPHERE;
+      marker_raised.action = visualization_msgs::msg::Marker::ADD;
       marker_raised.pose.position.x = raised.x();
       marker_raised.pose.position.y = raised.y();
       marker_raised.pose.position.z = raised.z();
@@ -218,11 +226,11 @@ void Vis::publishFootTrajectories() {
       marker_raised.color.b = 0.0;
       marker_array.markers.push_back(marker_raised);
 
-      visualization_msgs::Marker marker_target = marker_base;
+      visualization_msgs::msg::Marker marker_target = marker_base;
       marker_target.ns = "foot_traj_target";
       marker_target.id = id++;
-      marker_target.type = visualization_msgs::Marker::SPHERE;
-      marker_target.action = visualization_msgs::Marker::ADD;
+      marker_target.type = visualization_msgs::msg::Marker::SPHERE;
+      marker_target.action = visualization_msgs::msg::Marker::ADD;
       marker_target.pose.position.x = target.x();
       marker_target.pose.position.y = target.y();
       marker_target.pose.position.z = target.z();
@@ -235,7 +243,7 @@ void Vis::publishFootTrajectories() {
   }
 
   if (!marker_array.markers.empty()) {
-      foot_traj_marker_pub_.publish(marker_array);
+      foot_traj_marker_pub_->publish(marker_array);
   }
 
 }
@@ -264,9 +272,9 @@ void Vis::publishMovementLimits() {
 
 
   if (!triangles.empty()) {
-    visualization_msgs::Marker marker;
+    visualization_msgs::msg::Marker marker;
     marker.header.frame_id = "base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = rclcpp::Time();
     marker.pose.position.x = 0;
     marker.pose.position.y = 0;
     marker.pose.position.z = 0;
@@ -281,19 +289,19 @@ void Vis::publishMovementLimits() {
     marker.scale.x = 1;
     marker.scale.y = 1;
     marker.scale.z = 1;
-    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
-    marker.action = visualization_msgs::Marker::ADD;
+    marker.type = visualization_msgs::msg::Marker::TRIANGLE_LIST;
+    marker.action = visualization_msgs::msg::Marker::ADD;
     marker.ns = "movement_limits";
     marker.id = 0;
 
     for (const auto& p: triangles) {
-      geometry_msgs::Point pmsg;
+      geometry_msgs::msg::Point pmsg;
       pmsg.x = p.x();
       pmsg.y = p.y();
       pmsg.z = p.z();
       marker.points.push_back(pmsg);
     }
-    movement_limits_marker_pub_.publish(marker);
+    movement_limits_marker_pub_->publish(marker);
   }
 }
 
