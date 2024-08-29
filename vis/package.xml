@@ -10,7 +10,7 @@
   
   <depend>hexapod_core</depend>
 
-  <depend>rclcpp</depend>
+<!--  <depend>rclcpp</depend>-->  <!-- Is this included implicitly? -->
   <depend>geometry_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>sensor_msgs</depend>

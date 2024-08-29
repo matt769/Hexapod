@@ -7,6 +7,8 @@ add_compile_options(-std=c++11 -Wall -Wextra -Wpedantic -Wshadow -Wunused
         -Wsign-conversion
         )
 
+find_package(ament_cmake REQUIRED)
+
 add_library(${PROJECT_NAME} STATIC
   src/hexapod.cpp
   src/leg.cpp
@@ -54,3 +56,5 @@ install(EXPORT
         DESTINATION "share/${PROJECT_NAME}/cmake"
         # NAMESPACE ${PROJECT_NAME}::
 )
+
+ament_package()

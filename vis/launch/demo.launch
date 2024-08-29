@@ -1,12 +1,14 @@
 <launch>
 
-  <arg name="model" default="$(find hexapod_vis)/urdf/hexapod.urdf.xacro"  />
-  <arg name="rvizconfig" default="$(find hexapod_vis)/rviz/hexapod.rviz" />
+  <arg name="model" default="$(find-pkg-share hexapod_vis)/urdf/hexapod.urdf.xacro"  />
+  <arg name="rvizconfig" default="$(find-pkg-share hexapod_vis)/rviz/hexapod_ros2.rviz" />
 
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher" >
+    <param name="robot_description" value="$(command '$(find-exec xacro) $(var model)') " />
+  </node>
 
-  <node name="demo_node" pkg="hexapod_vis" type="demo_node" output="screen"/>
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  <node name="demo_node" pkg="hexapod_vis" exec="demo_node" output="screen" />
+
+  <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(var rvizconfig)" />
 
 </launch>

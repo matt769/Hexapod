@@ -78,11 +78,19 @@ ament_target_dependencies(demo_node hexapod_core rclcpp sensor_msgs geometry_msg
 
 
 
+install(
+        TARGETS demo_node
+        DESTINATION lib/${PROJECT_NAME}
+)
 
+install(
+     DIRECTORY launch
+     DESTINATION share/${PROJECT_NAME}
+ )
 
-# install(
-#         DIRECTORY launch
-#         DESTINATION share/${PROJECT_NAME}
-#         )
+install(
+        DIRECTORY urdf
+        DESTINATION share/${PROJECT_NAME}
+)
 
-# ament_package()
+ ament_package()
