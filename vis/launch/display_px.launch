@@ -1,14 +1,16 @@
 <launch>
 
-  <arg name="model" default="$(find hexapod_vis)/urdf/phantomx.urdf.xacro"  />
-  <arg name="rvizconfig" default="$(find hexapod_vis)/rviz/phantomx.rviz" />
+  <arg name="model" default="$(find-pkg-share hexapod_vis)/urdf/phantomx.urdf.xacro"  />
+  <arg name="rvizconfig" default="$(find-pkg-share hexapod_vis)/rviz/phantomx.rviz" />
 
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <node name="tf_base_to_body" pkg="tf2_ros" exec="static_transform_publisher" args="--frame-id base_link --child-frame-id body_link" />
+  <node name="tf_world_to_base" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0.4 --roll 0 --pitch 0 --yaw 0 --frame-id world --child-frame-id base_link" />
 
-  <node name="tf_base_to_body" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 base_link body_link 1" />
-  <node name="tf_world_to_base" pkg="tf" type="static_transform_publisher" args="0 0 0.4 0 0 0 world base_link 1" />
-  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher" >
+    <param name="robot_description" value="$(command '$(find-exec xacro) $(var model)') " />
+  </node>
+
+  <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(var rvizconfig)" />
 
 </launch>
