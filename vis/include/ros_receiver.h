@@ -5,21 +5,19 @@
 #include <hexapod_core/transformations.h>
 #include <hexapod_core/receiver.h>
 
-#include <ros/node_handle.h>
-#include <ros/subscriber.h>
-#include <std_msgs/Int32.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/int32.hpp>
 
 namespace hexapod_vis {
 
-class RosReceiver : public hexapod::Receiver {
+class RosReceiver : public rclcpp::Node, public hexapod::Receiver {
  public:
-  RosReceiver(const ros::NodeHandle& nh, hexapod::Hexapod *hexapod);
+  RosReceiver(hexapod::Hexapod *hexapod);
 
  private:
-  ros::NodeHandle nh_;
-  ros::Subscriber input_sub_;
+  rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr input_sub_;
 
-  void callbackProcessKeyPress(const std_msgs::Int32::ConstPtr& msg);
+  void callbackProcessKeyPress(const std_msgs::msg::Int32& msg);
 };
 
 } // namespace hexapod_vis

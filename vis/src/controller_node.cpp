@@ -1,30 +1,28 @@
-#include <ros/ros.h>
-#include <std_msgs/Int32.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/int32.hpp>
 
 #include <signal.h>
 #include <stdio.h>
 #include <termios.h>
 
-class Controller {
+class Controller : public rclcpp::Node {
  public:
   Controller();
   ~Controller();
   void getInput();
 
  private:
-  ros::NodeHandle nh_;
-  ros::Publisher pub_;
+  rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_;
   int kfd = 0;
   struct termios cooked, raw;
 };
 
 void quit(int /* sig */) {
-  ros::shutdown();
+  rclcpp::shutdown();
   exit(0);
 }
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "controller");
   Controller hex_controller;
 
   signal(SIGINT, quit);
@@ -34,7 +32,10 @@ int main(int argc, char** argv) {
   return (0);
 }
 
-Controller::Controller() { pub_ = nh_.advertise<std_msgs::Int32>("hexapod/command_key", 5); }
+Controller::Controller() : Node("hexapod_controller_node")
+{
+  pub_ = this->create_publisher<std_msgs::msg::Int32>("hexapod/command_key", 5);
+}
 
 Controller::~Controller() { tcsetattr(kfd, TCSANOW, &cooked); }
 
@@ -97,10 +98,10 @@ void Controller::getInput() {
       data_received = true;
     }
 
-    std_msgs::Int32 key;
+    std_msgs::msg::Int32 key;
     key.data = c;
     if (data_received) {
-      pub_.publish(key);
+      pub_->publish(key);
       data_received = false;
     }
   }

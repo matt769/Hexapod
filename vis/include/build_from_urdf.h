@@ -3,9 +3,11 @@
 
 #include <hexapod_core/hexapod.h>
 
+#include <string>
+
 namespace hexapod_vis {
 
-hexapod::Hexapod buildFromURDF();
+hexapod::Hexapod buildFromURDF(const std::string& robot_description_string);
 }
 
 #endif

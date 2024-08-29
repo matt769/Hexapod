@@ -55,31 +55,32 @@ ament_target_dependencies(demo_node hexapod_core rclcpp sensor_msgs geometry_msg
 #         ${hexapod_core_LIBRARIES}
 #         )
 
-# add_executable(controller_node
-#         src/controller_node.cpp
-#         )
+ add_executable(controller_node
+         src/controller_node.cpp
+         )
 
-# target_link_libraries(controller_node
-#         ${hexapod_core_LIBRARIES}
-#         ${catkin_LIBRARIES}
-#         )
+ target_link_libraries(controller_node
+         ${hexapod_core_LIBRARIES}
+         "/home/matt/ws/hexapod_ws/install/hexapod_core/lib/hexapod_core/libhexapod_core.a"
+         )
+ament_target_dependencies(controller_node hexapod_core rclcpp std_msgs)
 
-# add_executable(receiver_node
-#         src/receiver_node.cpp
-#         src/ros_receiver.cpp
-#         src/visualisation.cpp
-#         src/build_from_urdf.cpp
-#         )
+ add_executable(receiver_node
+         src/receiver_node.cpp
+         src/ros_receiver.cpp
+         src/visualisation.cpp
+         src/build_from_urdf.cpp
+         )
 
-# target_link_libraries(receiver_node
-#         ${hexapod_core_LIBRARIES}
-#         ${catkin_LIBRARIES}
-#         )
-
+ target_link_libraries(receiver_node
+         ${hexapod_core_LIBRARIES}
+         "/home/matt/ws/hexapod_ws/install/hexapod_core/lib/hexapod_core/libhexapod_core.a"
+         )
+ament_target_dependencies(receiver_node hexapod_core rclcpp sensor_msgs geometry_msgs visualization_msgs tf2_geometry_msgs tf2 tf2_ros urdf)
 
 
 install(
-        TARGETS demo_node
+        TARGETS demo_node controller_node receiver_node
         DESTINATION lib/${PROJECT_NAME}
 )
 

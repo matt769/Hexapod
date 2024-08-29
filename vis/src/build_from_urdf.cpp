@@ -1,5 +1,8 @@
 #include "build_from_urdf.h"
 
+#include <iostream>
+#include <string>
+
 #include <hexapod_core/hexapod.h>
 #include <hexapod_core/leg.h>
 #include <hexapod_core/transformations.h>
@@ -11,9 +14,9 @@
 namespace hexapod_vis {
 using namespace hexapod;
 
-Hexapod buildFromURDF() {
+Hexapod buildFromURDF(const std::string& robot_description_string) {
   urdf::Model urdf_model;
-  urdf_model.initParam("robot_description");
+  urdf_model.initString(robot_description_string);
 
   urdf::LinkConstSharedPtr body_link = urdf_model.getLink("body_link");
   std::cout << body_link->name << '\n';
