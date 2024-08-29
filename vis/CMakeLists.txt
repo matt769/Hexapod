@@ -78,7 +78,7 @@ ament_target_dependencies(controller_node hexapod_core rclcpp std_msgs)
          )
 ament_target_dependencies(receiver_node hexapod_core rclcpp sensor_msgs geometry_msgs visualization_msgs tf2_geometry_msgs tf2 tf2_ros urdf)
 
-
+# TODO change to share or bin
 install(
         TARGETS demo_node controller_node receiver_node
         DESTINATION lib/${PROJECT_NAME}

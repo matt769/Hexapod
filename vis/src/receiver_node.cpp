@@ -57,15 +57,13 @@ int main(int argc, char **argv) {
   auto vis_node = std::make_shared<Vis>(&hexapod);
   auto receiver_node = std::make_shared<RosReceiver>(&hexapod);
 
-  // HOW TO SPIN THESE?
-
   rclcpp::Rate loop_rate(50);
   // TODO proper shutdown conditions
   while (rclcpp::ok()) {
     hexapod.update();
     vis_node->update();
 
-    rclcpp::spin(receiver_node);
+    rclcpp::spin_some(receiver_node);
     loop_rate.sleep();
   }
 

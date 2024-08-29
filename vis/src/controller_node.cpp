@@ -23,6 +23,8 @@ void quit(int /* sig */) {
 }
 
 int main(int argc, char** argv) {
+  rclcpp::init(argc, argv);
+
   Controller hex_controller;
 
   signal(SIGINT, quit);
@@ -87,7 +89,7 @@ void Controller::getInput() {
   puts("-------------------------------------------------------------------------------");
   puts("                        Now reading from keyboard...");
 
-
+  sleep(10);
   for (;;) {
     // get the next event from the keyboard
     int read_result = read(kfd, &c, 1);

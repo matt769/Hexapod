@@ -19,7 +19,8 @@ RosReceiver::RosReceiver(Hexapod *hexapod) : Node("hexapod_receiver_node"), Rece
 
 void RosReceiver::callbackProcessKeyPress(const std_msgs::msg::Int32& msg) {
   int32_t keyCode = msg.data;
-  std::cout << "Key code pressed: " << msg.data << '\n';
+//  std::cout << "Key code pressed: " << msg.data << '\n';
+  RCLCPP_INFO_STREAM(this->get_logger(), "Key code pressed: " << msg.data);
   processCommand((uint8_t)keyCode);
 }
 
