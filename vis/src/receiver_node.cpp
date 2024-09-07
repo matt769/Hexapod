@@ -49,11 +49,11 @@ int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
 
 //   Hexapod hexapod = buildDefaultHexapod();
-//   Hexapod hexapod = buildDefaultHexapod2();
+   Hexapod hexapod = buildDefaultHexapod2();
 //   Hexapod hexapod = buildDefaultOctapod();
 //   Hexapod hexapod = buildFromURDF(get_urdf_string());
 //  Hexapod hexapod = buildPhantomX();
-  Hexapod hexapod = buildPhantomXForVis();
+//  Hexapod hexapod = buildPhantomXForVis();
   auto vis_node = std::make_shared<Vis>(&hexapod);
   auto receiver_node = std::make_shared<RosReceiver>(&hexapod);
 
