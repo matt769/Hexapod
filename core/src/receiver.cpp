@@ -1,4 +1,4 @@
-#include "receiver.h"
+#include "hexapod_core/receiver.h"
 
 #ifdef __AVR__
 #include <Arduino.h>
@@ -6,8 +6,8 @@
 #include <iostream>
 #endif
 
-#include "hexapod.h"
-#include "transformations.h"
+#include "hexapod_core/hexapod.h"
+#include "hexapod_core/transformations.h"
 
 namespace hexapod {
 

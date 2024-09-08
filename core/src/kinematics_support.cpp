@@ -1,6 +1,6 @@
-#include "kinematics_support.h"
+#include "hexapod_core/kinematics_support.h"
 
-#include "transformations.h"
+#include "hexapod_core/transformations.h"
 
 #ifdef __AVR__
 #include <Arduino.h>

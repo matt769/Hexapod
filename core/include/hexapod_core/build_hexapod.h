@@ -5,7 +5,7 @@
 #ifndef HEXAPOD_BUILD_HEXAPOD_H_
 #define HEXAPOD_BUILD_HEXAPOD_H_
 
-#include "hexapod.h"
+#include "hexapod_core/hexapod.h"
 
 namespace hexapod {
 

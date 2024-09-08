@@ -1,8 +1,8 @@
-#include "leg.h"
+#include "hexapod_core/leg.h"
 
-#include "kinematics_support.h"
-#include "transformations.h"
-#include "joint.h"
+#include "hexapod_core/kinematics_support.h"
+#include "hexapod_core/transformations.h"
+#include "hexapod_core/joint.h"
 
 #ifdef __AVR__
 #include <Arduino.h>

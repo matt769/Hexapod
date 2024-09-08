@@ -1,8 +1,8 @@
 #include <stdlib.h>
-#include "hexapod.h"
-#include "kinematics_support.h"
+#include "hexapod_core/hexapod.h"
+#include "hexapod_core/kinematics_support.h"
 #include "ros/ros.h"
-#include "transformations.h"
+#include "hexapod_core/transformations.h"
 
 // This file is pretty outdated
 

@@ -1,8 +1,8 @@
 #ifndef HEXAPOD_H
 #define HEXAPOD_H
 
-#include "leg.h"
-#include "transformations.h"
+#include "hexapod_core/leg.h"
+#include "hexapod_core/transformations.h"
 
 #ifdef __AVR__
 #include <Arduino.h>

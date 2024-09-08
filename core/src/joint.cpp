@@ -2,7 +2,7 @@
 // Created by matt on 12/04/2021.
 //
 
-#include "joint.h"
+#include "hexapod_core/joint.h"
 
 #ifdef __AVR__
 #include <Arduino.h>
@@ -10,7 +10,7 @@
 #include <cmath>
 #endif
 
-#include "kinematics_support.h"
+#include "hexapod_core/kinematics_support.h"
 
 namespace hexapod {
 

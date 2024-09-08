@@ -1,8 +1,8 @@
 #ifndef HEXAPOD_RECEIVER_H
 #define HEXAPOD_RECEIVER_H
 
-#include "hexapod.h"
-#include "transformations.h"
+#include "hexapod_core/hexapod.h"
+#include "hexapod_core/transformations.h"
 
 namespace hexapod {
 

@@ -1,10 +1,10 @@
-#include "hexapod.h"
+#include "hexapod_core/hexapod.h"
 
-#include "kinematics_support.h"
-#include "leg.h"
-#include "transformations.h"
-#include "joint.h"
-#include "build_hexapod.h"
+#include "hexapod_core/kinematics_support.h"
+#include "hexapod_core/leg.h"
+#include "hexapod_core/transformations.h"
+#include "hexapod_core/joint.h"
+#include "hexapod_core/build_hexapod.h"
 
 #ifdef __AVR__
 #include <Arduino.h>

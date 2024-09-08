@@ -1,7 +1,7 @@
 #ifndef HEXAPOD_UTIL_H
 #define HEXAPOD_UTIL_H
 
-#include "transformations.h"
+#include "hexapod_core/transformations.h"
 
 #ifdef __AVR__
 #include <Arduino.h>

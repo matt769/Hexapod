@@ -2,7 +2,7 @@
 // Created by matt on 12/04/2021.
 //
 
-#include "build_hexapod.h"
+#include "hexapod_core/build_hexapod.h"
 
 namespace hexapod {
 

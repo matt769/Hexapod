@@ -23,9 +23,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-# This doesn't seem like a good way but it's the 'official' way?
-# Can't (not advised to) use glob due to not picking up file changes
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "include/hexapod.h;include/leg.h;include/joint.h;include/kinematics_support.h;include/transformations.h;include/receiver.h;include/build_hexapod.h")
 
 
 add_executable(${PROJECT_NAME}_example
@@ -33,28 +30,41 @@ add_executable(${PROJECT_NAME}_example
 target_include_directories(${PROJECT_NAME}_example PRIVATE include)
 target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
 
-# message(WARNING ${CMAKE_INSTALL_PREFIX})
+
+ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
+#ament_export_dependencies(some_dependency)
+
+install(
+     DIRECTORY include/
+     DESTINATION include
+)
+
 install(
         TARGETS ${PROJECT_NAME}
-        EXPORT "${PROJECT_NAME}Config"
-        LIBRARY DESTINATION lib/${PROJECT_NAME}
-        ARCHIVE DESTINATION lib/${PROJECT_NAME}
-        RUNTIME DESTINATION bin/${PROJECT_NAME}
-        PUBLIC_HEADER DESTINATION include/${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}Targets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
 )
-# install(
-#         DIRECTORY include
-#         DESTINATION include
-# )
+
+install(
+        TARGETS ${PROJECT_NAME}_example
+        RUNTIME DESTINATION bin
+)
+
 # INSTALL (
 #     DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 #     DESTINATION include
 #     FILES_MATCHING PATTERN "*.h*")
 
-install(EXPORT
-        "${PROJECT_NAME}Config"
-        DESTINATION "share/${PROJECT_NAME}/cmake"
-        # NAMESPACE ${PROJECT_NAME}::
-)
+#install(EXPORT
+#        "${PROJECT_NAME}Config"
+#        DESTINATION "share/${PROJECT_NAME}/cmake"
+#        # NAMESPACE ${PROJECT_NAME}::
+#)
+
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
 
 ament_package()

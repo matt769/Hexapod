@@ -6,9 +6,9 @@
 #include <ostream>
 #include <vector>
 
-#include "hexapod.h"
-#include "transformations.h"
-#include "build_hexapod.h"
+#include "hexapod_core/hexapod.h"
+#include "hexapod_core/transformations.h"
+#include "hexapod_core/build_hexapod.h"
 
 using namespace hexapod;
 
