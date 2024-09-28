@@ -57,10 +57,98 @@ class PS4Receiver {
   void processCommand(const ps4::PS4_data& ps4_data) {
     if (!hexapod_) return;
 
+    if (ps4_data.button_l2 && ps4_data.button_r2 && ps4_data.button_x) {
+      hexapod_->setWalk(Vector3(0,0,0)); // TODO should be done in hexapod when setting manual control? or is this not required at all?
+      hexapod_->setFullManualControl(true);
+      hexapod_->setManualLegControl(0);
+      Serial.println(F("Manual leg control"));
+      // TODO currently we don't provide a way to go back to normal control
+    } else if (ps4_data.button_l2 && ps4_data.button_r2 && ps4_data.button_circle) {
+      hexapod_->setWalk(Vector3(0,0,0)); // TODO should be done in hexapod when setting manual control? or is this not required at all?
+      hexapod_->setFullManualControl(true);
+      hexapod_->setManualLegControl(0);
+      hexapod_->setManualJointControl(0);
+      Serial.println(F("Manual joint control"));
+      // TODO currently we don't provide a way to go back to normal control
+    }
+
     if(hexapod_->getState() == Hexapod::State::FULL_MANUAL) {
-      // TODO
-      // Alternate controls
-      // Manual mode entry and exit
+      // TODO Perhaps the MANUAL control states are a bit odd? FULL_MANUAL doesn't really mean much on it's own - will always need to check ManualControlType
+      Hexapod::ManualControlType mct = hexapod_->getManualControlType();
+      uint8_t current_leg_idx = hexapod_->getManualControlLegIdx();
+      uint8_t current_joint_idx = hexapod_->getManualControlJointIdx();
+
+      // TODO only supporting the single leg mode to start
+      if ((mct == Hexapod::ManualControlType::SINGLE_LEG || mct == Hexapod::ManualControlType::SINGLE_JOINT) && (ps4_data.button_up || ps4_data.button_down)) {
+        // Handle changing legs
+        if (ps4_data.button_up && current_leg_idx < hexapod_->num_legs_ - 1) {
+          current_leg_idx += 1;
+        } else if (ps4_data.button_down && current_leg_idx > 0) {
+          current_leg_idx -= 1;
+        }
+        hexapod_->setManualLegControl(current_leg_idx);
+        // Really need to improve hexapod interface - changing the leg will set mode back to SINGLE_LEG, so if in need to go back to  joint mode
+        //  if that's what we were meant to be in
+        if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
+          hexapod_->setManualJointControl(current_joint_idx);
+        }
+        Serial.print(F("Manual control. Leg "));
+        Serial.println(hexapod_->getManualControlLegIdx());
+      }
+
+      if (mct == Hexapod::ManualControlType::SINGLE_LEG) {
+        const float manual_foot_movement_increment = 0.01;
+        Vector3 foot_movement = Vector3();
+        if (ps4_data.l_joystick_x < kJoystickMid - kJoystickDeadzone) {
+          foot_movement.x() = -manual_foot_movement_increment;
+        } else if (ps4_data.l_joystick_x > kJoystickMid + kJoystickDeadzone) {
+          foot_movement.x() = manual_foot_movement_increment;
+        }
+
+        if (ps4_data.l_joystick_y < kJoystickMid - kJoystickDeadzone) {
+          foot_movement.y() = -manual_foot_movement_increment;
+        } else if (ps4_data.l_joystick_y > kJoystickMid + kJoystickDeadzone) {
+          foot_movement.y() = manual_foot_movement_increment;
+        }
+
+        if (ps4_data.r_joystick_y < kJoystickMid - kJoystickDeadzone) {
+          foot_movement.z() = -manual_foot_movement_increment;
+        } else if (ps4_data.r_joystick_y > kJoystickMid + kJoystickDeadzone) {
+          foot_movement.z() = manual_foot_movement_increment;
+        }
+
+        hexapod_->manualMoveFoot(foot_movement);
+
+      }
+
+      if (mct == Hexapod::ManualControlType::SINGLE_JOINT) {
+        // Hexpod doesn't support setting all joints manually in a single timestemp unfortunately
+        // So have to choose one to set
+        if (ps4_data.button_left || ps4_data.button_right) {
+          if (ps4_data.button_right && current_joint_idx < Leg::NUM_JOINTS - 1) {
+            current_joint_idx += 1;
+          } else if (ps4_data.button_left && current_joint_idx > 0) {
+            current_joint_idx -= 1;
+          }
+          hexapod_->setManualJointControl(current_joint_idx);
+          Serial.print(F("Manual control. Joint "));
+          Serial.println(hexapod_->getManualControlJointIdx());
+        }
+
+        const float manual_joint_angle_increment = 0.02;
+        float joint_change = 0.0;
+
+        if (ps4_data.r_joystick_y < kJoystickMid - kJoystickDeadzone) {
+          joint_change = -manual_joint_angle_increment;
+        } else if (ps4_data.r_joystick_y > kJoystickMid + kJoystickDeadzone) {
+          joint_change = manual_joint_angle_increment;
+        }
+
+        hexapod_->manualChangeJoint(joint_change);
+      }
+
+      // TODO Change so that we can hold different buttons to adjust different joints i.e. don't need to explicitly toggle
+      // TODO test this works so far in practice
 
       return;
     }
