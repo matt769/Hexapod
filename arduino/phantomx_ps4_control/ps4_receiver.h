@@ -175,6 +175,10 @@ class PS4Receiver {
       return;
     }
 
+    if (hexapod_->getState() != Hexapod::State::WALKING) {
+      return;
+    }
+
     // MOVEMENT PARAMETERS
     if(ps4_data.button_x) {
       hexapod_->changeLegRaiseTime(-hexapod_->leg_raise_time_increment_); // faster
