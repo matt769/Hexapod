@@ -1,13 +1,15 @@
 <launch>
 
-  <arg name="model" default="$(find hexapod_vis)/urdf/phantomx.urdf.xacro"  />
-  <arg name="rvizconfig" default="$(find hexapod_vis)/rviz/phantomx.rviz" />
+  <arg name="model" default="$(find-pkg-share hexapod_vis)/urdf/phantomx.urdf.xacro"  />
+  <arg name="rvizconfig" default="$(find-pkg-share hexapod_vis)/rviz/hexapod.rviz" />
 
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher" >
+    <param name="robot_description" value="$(command '$(find-exec xacro) $(var model)') " />
+  </node>
 
-  <node name="controller_node" pkg="hexapod_vis" type="controller_node" output="screen" launch-prefix="gnome-terminal --" />
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-  <node name="receiver_node" pkg="hexapod_vis" type="receiver_node" output="screen" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />  
+  <node pkg="hexapod_vis" exec="receiver_node" output="screen" />
+  <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(var rvizconfig)" />
+
+  <node name="controller_node" pkg="hexapod_vis" exec="controller_node" output="screen" launch-prefix="gnome-terminal --" />
 
 </launch>
