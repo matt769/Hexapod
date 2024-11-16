@@ -40,7 +40,7 @@ using namespace util;
  * @param update_frequency
  */
 Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_leg, Leg* legs, const uint16_t update_frequency)
-    : dims_(hex_dims), num_legs_(num_legs), update_frequency_(update_frequency), height_(hex_dims.depth / 2.0f) {
+    : dims_(hex_dims), num_legs_(num_legs), update_frequency_(update_frequency), base_height_(hex_dims.depth / 2.0f) {
   tf_base_to_body_ = Transform();
   tf_base_movement_ = Transform();
   tf_base_to_new_base_target_ = Transform();
@@ -112,7 +112,7 @@ void Hexapod::updateMovementParameters() {
  * @brief Derived from physical dimensions and (expected) update frequency
  */
 void Hexapod::setMovementIncrements() {
-  rising_increment_ = (walk_height_default_ - height_) / static_cast<float>(update_frequency_);
+  rising_increment_ = (walk_height_default_ - base_height_) / static_cast<float>(update_frequency_);
 
   // Movements applied every time step
   walk_translation_increment_ = (dims_.length / 4.0f) / static_cast<float>(update_frequency_);
@@ -316,7 +316,7 @@ Vector3 Hexapod::legToBase(const uint8_t leg_idx, const Vector3& v) const {
  */
 Vector3 Hexapod::getNeutralPosition(const uint8_t leg_idx) const {
   Vector3 leg_neutral = legs_[leg_idx].getNeutralPosition(); // TODO this is actually callng the non-const version and returning a modifyable ref
-  leg_neutral.z() = -height_ + tf_base_to_new_base_target_.t_.z();
+  leg_neutral.z() = -base_height_ + tf_base_to_new_base_target_.t_.z();
   return tf_body_to_leg_[leg_idx] * leg_neutral;
 }
 
@@ -877,7 +877,7 @@ bool Hexapod::setLegTargetToGround(const uint8_t leg_idx, const uint16_t duratio
 
   // some default position
   Vector3 grounded_position = legs_[leg_idx].getNeutralPosition(); // TODO this is actually calling the non-const version and returning a modifyable ref
-  grounded_position.z() = -height_;
+  grounded_position.z() = -base_height_;
   Leg::JointAngles grounded_angles;
   bool ik_result = legs_[leg_idx].calculateJointAngles(grounded_position, Leg::IKMode::WALK, grounded_angles);
 
@@ -899,7 +899,7 @@ void Hexapod::handleStateChange() {
     for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
       // get position in base frame
       const float leg_height = getFootPosition(leg_idx).z();
-      const float floor_height = -height_;
+      const float floor_height = -base_height_;
       // TODO review hardcoded value?
       if (!compareFloat(leg_height, floor_height, 0.0001f)) {
         ready = false;
@@ -929,7 +929,7 @@ void Hexapod::handleStateChange() {
   // go from standing to walking if base it at some predefined position
   // hexapod doesn't actually know base position except the height
   if (state_ == State::RAISING && requested_state_ == State::WALKING &&
-      height_ >= walk_height_default_) {
+      base_height_ >= walk_height_default_) {
     state_ = requested_state_;
 #ifdef __AVR__
     Serial.print(F("State: WALKING\n"));
@@ -958,7 +958,7 @@ void Hexapod::handleStateChange() {
   }
 
   if (state_ == State::LOWERING && requested_state_ == State::STANDING &&
-      height_ <= dims_.depth / 2.0f) {
+      base_height_ <= dims_.depth / 2.0f) {
     state_ = requested_state_;
 #ifdef __AVR__
     Serial.print(F("State: STANDING\n"));
@@ -983,7 +983,7 @@ const Transform& Hexapod::getBaseToBody() const { return tf_base_to_body_; }
 
 const Transform& Hexapod::getBaseMovement() const { return tf_base_movement_; }
 
-float Hexapod::getHeight() const { return height_; }
+float Hexapod::getHeight() const { return base_height_; }
 
 const Transform Hexapod::getBaseToLeg(const uint8_t leg_idx) {
   return tf_base_to_body_ * tf_body_to_leg_[leg_idx];
@@ -1086,7 +1086,7 @@ void Hexapod::commitTargets() {
     }
     if (base_change_) {
       tf_base_movement_ = tf_base_to_new_base_target_;
-      height_ += tf_base_to_new_base_target_.t_.z(); // (P)REFACTOR I think that only getNeutralPosition will be affected
+      base_height_ += tf_base_to_new_base_target_.t_.z(); // (P)REFACTOR I think that only getNeutralPosition will be affected
     }
     if (body_change_) {
       tf_base_to_body_ = tf_base_to_body_target_;

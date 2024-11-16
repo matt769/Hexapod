@@ -180,7 +180,7 @@ class Hexapod {
   GaitDefinition gaits_[5];
   Leg* legs_;
   /** @brief Height of base frame above ground */
-  float height_;
+  float base_height_;
   /** @brief Relationship between base frame and body frame */
   Transform tf_base_to_body_;  //
   /** @brief Fixed relationship between body frame and leg frames */
