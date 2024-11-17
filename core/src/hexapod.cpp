@@ -84,6 +84,8 @@ void Hexapod::setUpdateFrequency(const uint16_t update_frequency) {
   foot_air_time_ = foot_air_time_default_;
 }
 
+// This should only be called in the initial setup
+// TODO improve design
 void Hexapod::updateMovementParameters() {
   // set various movement parameters based on body/leg dimensions
   const float leg_length_full_extension = legs_[0].dims_.a + legs_[0].dims_.b + legs_[0].dims_.c;
@@ -983,7 +985,7 @@ const Transform& Hexapod::getBaseToBody() const { return tf_base_to_body_; }
 
 const Transform& Hexapod::getBaseMovement() const { return tf_base_movement_; }
 
-float Hexapod::getHeight() const { return base_height_; }
+float Hexapod::getHeight() const { return base_height_ + tf_base_to_body_.t_.z(); }
 
 const Transform Hexapod::getBaseToLeg(const uint8_t leg_idx) {
   return tf_base_to_body_ * tf_body_to_leg_[leg_idx];
@@ -1089,6 +1091,7 @@ void Hexapod::commitTargets() {
       base_height_ += tf_base_to_new_base_target_.t_.z(); // (P)REFACTOR I think that only getNeutralPosition will be affected
     }
     if (body_change_) {
+      const bool body_change_z = tf_base_to_body_target_.t_.z() - tf_base_to_body_.t_.z() != 0.0;
       tf_base_to_body_ = tf_base_to_body_target_;
     }
 }
