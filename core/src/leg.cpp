@@ -24,6 +24,8 @@ Leg::Leg(Dims dims, Joint *joints)
   joints_[JOINT_2] = joints[1];
   joints_[JOINT_3] = joints[2];
   setJointAngles({joints_[JOINT_1].angle_, joints_[JOINT_2].angle_, joints_[JOINT_3].angle_});
+  // This is an initial estimate, the robot that this leg belongs to needs to call
+  //  updateMovementLimits with the actual values
   const float est_walk_height = dims_.c / 2.0; // just a guess at the actual height
   const float est_raised_height = (dims_.c / 2.0) * 0.7;
   updateMovementLimits(est_walk_height, est_raised_height);

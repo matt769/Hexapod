@@ -1093,6 +1093,13 @@ void Hexapod::commitTargets() {
     if (body_change_) {
       const bool body_change_z = tf_base_to_body_target_.t_.z() - tf_base_to_body_.t_.z() != 0.0;
       tf_base_to_body_ = tf_base_to_body_target_;
+      // TODO *** this may not be suitable for arduino version ***
+      if (body_change_z) {
+          for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+            legs_[leg_idx].updateMovementLimits(getHeight(), getHeight() - leg_lift_height_default_);
+          }
+      }
+
     }
 }
 
