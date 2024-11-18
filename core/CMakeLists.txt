@@ -8,6 +8,7 @@ add_compile_options(-std=c++11 -Wall -Wextra -Wpedantic -Wshadow -Wunused
         )
 
 find_package(ament_cmake REQUIRED)
+find_package(Catch2 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
   src/hexapod.cpp
@@ -66,5 +67,11 @@ install(
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
+
+
+add_executable(tests tests/test_main.cpp tests/test_joint.cpp)
+target_link_libraries(tests PRIVATE ${PROJECT_NAME} Catch2::Catch2)
+
+
 
 ament_package()
