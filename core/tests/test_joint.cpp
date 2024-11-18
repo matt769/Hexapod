@@ -2,7 +2,8 @@
 
 #include <catch2/catch.hpp>
 
-//#include <iostream>
+#include <vector>
+#include <tuple>
 
 using namespace hexapod;
 
@@ -186,3 +187,19 @@ TEST_CASE( "Joint offset flip") {
   }
 }
 
+TEST_CASE( "Joint limits") {
+
+  const std::vector<std::tuple<float, float, float, bool>> joint_definitions = {
+    {-50, 100, 0, false},
+    {50, 100, 0, false},
+    {-50, 100, 0, true},
+    {50, 100, 0, true}
+  };
+
+  for (const auto [pll, pul, off, flip]: joint_definitions) {
+    Joint j(pll, pul, 0, off, flip);
+    const float flip_val = 1.0 ? !flip : -1.0;
+    REQUIRE(j.lower_limit_ == flip_val * (pul-off));
+    REQUIRE(j.upper_limit_ == flip_val * (pll-off));
+  }
+}
