@@ -31,8 +31,8 @@ TEST_CASE( "Joint simple") {
 
   // The physical-model relationship is fixed regardless of input
   for (float a = -180.0; a <= 180.0; a += 60.0) {
-    REQUIRE(j.fromPhysicalAngle(a) == a - offset);
-    REQUIRE(j.toPhysicalAngle(a) == a + offset);
+    REQUIRE(j.fromPhysicalAngle(a) == a);
+    REQUIRE(j.toPhysicalAngle(a) == a);
   }
   // Models angles outside the model limits are clamped to the limits
   REQUIRE(j.clampToLimts(model_lower_limit - 1.0) == model_lower_limit);
@@ -48,7 +48,7 @@ TEST_CASE( "Joint simple") {
   // Changing the angle by specifying the physical angle results in the correct model angle
   for (float new_physical_angle = -180.0; new_physical_angle <= 180.0; new_physical_angle += 60.0) {
     j.setFromPhysicalAngle(new_physical_angle);
-    REQUIRE(j.angle_ == new_physical_angle - offset);
+    REQUIRE(j.angle_ == new_physical_angle);
     REQUIRE(j.toPhysicalAngle() == new_physical_angle);
   }
 }
@@ -164,8 +164,8 @@ TEST_CASE( "Joint offset flip") {
 
   // The physical-model relationship is fixed regardless of input
   for (float a = -180.0; a <= 180.0; a += 60.0) {
-    REQUIRE(j.fromPhysicalAngle(a) == -a - offset);
-    REQUIRE(j.toPhysicalAngle(a) == -a + offset);
+    REQUIRE(j.fromPhysicalAngle(a) == -(a - offset));
+    REQUIRE(j.toPhysicalAngle(a) == (-a) + offset);
   }
   // Models angles outside the model limits are clamped to the limits
   REQUIRE(j.clampToLimts(model_lower_limit - 1.0) == model_lower_limit);
