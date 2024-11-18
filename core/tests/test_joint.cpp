@@ -187,19 +187,34 @@ TEST_CASE( "Joint offset flip") {
   }
 }
 
+struct JointLimitTest {
+  float pll;
+  float pul;
+  float offset;
+  bool flip;
+  float expected_mll;
+  float expected_mul;
+
+};
+
+
 TEST_CASE( "Joint limits") {
 
-  const std::vector<std::tuple<float, float, float, bool>> joint_definitions = {
-    {-50, 100, 0, false},
-    {50, 100, 0, false},
-    {-50, 100, 0, true},
-    {50, 100, 0, true}
+  const std::vector<JointLimitTest> joint_definitions = {
+    {-50, 100, 0, false, -50, 100},
+    {50, 100, 0, false, 50, 100},
+    {-50, 100, 0, true, -100, 50},
+    {50, 100, 0, true, -100, -50},
+    {-50, 100, 20, false, -70, 80},
+    {50, 100, 20, false, 30, 80},
+    {-50, 100, 20, true, -80, 70},
+    {50, 100, 20, true, -80, -30},
   };
 
-  for (const auto [pll, pul, off, flip]: joint_definitions) {
-    Joint j(pll, pul, 0, off, flip);
-    const float flip_val = 1.0 ? !flip : -1.0;
-    REQUIRE(j.lower_limit_ == flip_val * (pul-off));
-    REQUIRE(j.upper_limit_ == flip_val * (pll-off));
+  size_t i = 0;
+  for (const auto test_case: joint_definitions) {
+    Joint j(test_case.pll, test_case.pul, 0, test_case.offset, test_case.flip);
+    REQUIRE(j.lower_limit_ == test_case.expected_mll);
+    REQUIRE(j.upper_limit_ == test_case.expected_mul);
   }
 }
