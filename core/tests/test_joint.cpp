@@ -187,6 +187,52 @@ TEST_CASE( "Joint offset flip") {
   }
 }
 
+TEST_CASE( "Joint builder offset flip") {
+    const float starting_physical_angle = 5;
+    const float offset = 20;
+    const float physical_lower_limit = -50;
+    const float physical_upper_limit = 100;
+    const bool flip = true;
+    const float model_lower_limit = -80;
+    const float model_upper_limit = 70;
+    const float starting_model_angle = 15;
+    // Confirm I'm not doing anything weird with setup
+    REQUIRE(physical_upper_limit - physical_lower_limit == model_upper_limit - model_lower_limit);
+
+    auto jp = JointBuilder(offset, flip)
+                    .addPhysicalLimits(physical_lower_limit, physical_upper_limit)
+                    .setPhysicalAngle(starting_physical_angle).create();
+
+    REQUIRE(jp.lower_limit_ == model_lower_limit);
+    REQUIRE(jp.upper_limit_ == model_upper_limit);
+    REQUIRE(jp.angle() == starting_model_angle);
+    REQUIRE(jp.physicalAngle() == starting_physical_angle);
+
+    auto jm = JointBuilder(offset, flip)
+            .addModelLimits(model_lower_limit, model_upper_limit)
+            .setModelAngle(starting_model_angle).create();
+
+    REQUIRE(jm.lower_limit_ == model_lower_limit);
+    REQUIRE(jm.upper_limit_ == model_upper_limit);
+    REQUIRE(jm.angle() == starting_model_angle);
+    REQUIRE(jm.physicalAngle() == starting_physical_angle);
+
+    // Also check the alternate construction functions
+    auto jp2 = Joint::createFromPhysicalAngles(physical_lower_limit, physical_upper_limit, starting_physical_angle, offset, flip);
+    REQUIRE(jp2.lower_limit_ == jp.lower_limit_);
+    REQUIRE(jp2.upper_limit_ == jp.upper_limit_);
+    REQUIRE(jp2.angle() == jp.angle());
+    REQUIRE(jp2.physicalAngle() == jp.physicalAngle());
+
+    auto jm2 = Joint::createFromModelAngles(model_lower_limit, model_upper_limit, starting_model_angle, offset, flip);
+    REQUIRE(jm2.lower_limit_ == jm.lower_limit_);
+    REQUIRE(jm2.upper_limit_ == jm.upper_limit_);
+    REQUIRE(jm2.angle() == jm.angle());
+    REQUIRE(jm2.physicalAngle() == jm.physicalAngle());
+
+}
+
+
 struct JointLimitTest {
   float pll;
   float pul;
