@@ -106,8 +106,8 @@ Joint::Joint(float offset, bool flip_axis) : offset_(offset), flip_axis_(!flip_a
 
 JointBuilder::JointBuilder(const float offset, const bool flip_axis) : joint(offset, flip_axis) {}
     JointBuilder JointBuilder::addPhysicalLimits(const float physical_lower_limit, const float physical_upper_limit) {
-    joint.lower_limit_ = joint.fromPhysicalAngle(joint.flip_axis_ > 1 ? physical_lower_limit : physical_upper_limit);
-    joint.upper_limit_ = joint.fromPhysicalAngle(joint.flip_axis_ > 1? physical_upper_limit : physical_lower_limit);
+    joint.lower_limit_ = joint.fromPhysicalAngle(joint.flip_axis_ >= 0 ? physical_lower_limit : physical_upper_limit);
+    joint.upper_limit_ = joint.fromPhysicalAngle(joint.flip_axis_ >= 0 ? physical_upper_limit : physical_lower_limit);
     return *this;
 }
 
