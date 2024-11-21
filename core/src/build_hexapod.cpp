@@ -137,16 +137,16 @@ hexapod::Hexapod buildPhantomX() {
   constexpr float joint_3_offset = 46.0 * kDegToRad;
   constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
   hexapod::Joint rhs_leg_joints[num_joints];
-  rhs_leg_joints[0] = hexapod::Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
-  rhs_leg_joints[1] = hexapod::Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
-  rhs_leg_joints[2] = hexapod::Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
+  // TODO after testing, switch to setting using model angle
+  rhs_leg_joints[0] = JointBuilder().addModelLimits(-80.0f * kDegToRad, 80.0f * kDegToRad).setPhysicalAngle(0.0).create();
+  rhs_leg_joints[1] = JointBuilder(joint_2_offset).addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad).setPhysicalAngle(joint_2_offset).create();
+  rhs_leg_joints[2] = JointBuilder(joint_3_offset_mod).addModelLimits(-120.0f * kDegToRad, 88.0f * kDegToRad).setPhysicalAngle(joint_3_offset_mod).create();
   hexapod::Leg rhs_leg(leg_dims, rhs_leg_joints);
 
   hexapod::Joint lhs_leg_joints[num_joints];
-  lhs_leg_joints[0] = hexapod::Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
-  lhs_leg_joints[1] = hexapod::Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, -joint_2_offset, -joint_2_offset, true);
-  lhs_leg_joints[2] =
-      hexapod::Joint(-88.0f * kDegToRad, 120.0f * kDegToRad, -joint_3_offset_mod, -joint_3_offset_mod, true);
+  lhs_leg_joints[0] = JointBuilder().addModelLimits(-80.0f * kDegToRad, 80.0f * kDegToRad).setPhysicalAngle(0.0).create();
+  lhs_leg_joints[1] = JointBuilder(-joint_2_offset).addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad).setPhysicalAngle(-joint_2_offset).create();
+  lhs_leg_joints[2] = JointBuilder(-joint_3_offset_mod).addModelLimits(-88.0f * kDegToRad, 120.0f * kDegToRad).setPhysicalAngle(-joint_3_offset_mod).create();
   hexapod::Leg lhs_leg(leg_dims, lhs_leg_joints);
 
   // Make an array of legs and copy the one we just made into all elements
@@ -206,15 +206,15 @@ hexapod::Hexapod buildPhantomXForVis() {
   constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
   hexapod::Joint rhs_leg_joints[num_joints];
   // Start off with legs 'flat' / pointing directly out
-  rhs_leg_joints[0] = hexapod::Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
-  rhs_leg_joints[1] = hexapod::Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
-  rhs_leg_joints[2] = hexapod::Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
+  rhs_leg_joints[0] = JointBuilder().addModelLimits(-80.0f * kDegToRad, 80.0f * kDegToRad).setPhysicalAngle(0.0).create();
+  rhs_leg_joints[1] = JointBuilder(joint_2_offset).addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad).setPhysicalAngle(joint_2_offset).create();
+  rhs_leg_joints[2] = JointBuilder(joint_3_offset_mod).addModelLimits(-120.0f * kDegToRad, 88.0f * kDegToRad).setPhysicalAngle(joint_3_offset_mod).create();
   hexapod::Leg rhs_leg(leg_dims, rhs_leg_joints);
 
   hexapod::Joint lhs_leg_joints[num_joints];
-  lhs_leg_joints[0] = hexapod::Joint(-80.0f * kDegToRad, 80.0f * kDegToRad, 0.0, 0.0);
-  lhs_leg_joints[1] = hexapod::Joint(-95.0f * kDegToRad, 95.0f * kDegToRad, joint_2_offset, joint_2_offset);
-  lhs_leg_joints[2] = hexapod::Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
+  lhs_leg_joints[0] = JointBuilder().addModelLimits(-80.0f * kDegToRad, 80.0f * kDegToRad).setPhysicalAngle(0.0).create();
+  lhs_leg_joints[1] = JointBuilder(joint_2_offset).addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad).setPhysicalAngle(joint_2_offset).create();
+  lhs_leg_joints[2] = JointBuilder(joint_3_offset_mod).addModelLimits(-120.0f * kDegToRad, 88.0f * kDegToRad).setPhysicalAngle(joint_3_offset_mod).create();
   hexapod::Leg lhs_leg(leg_dims, lhs_leg_joints);
 
   // Make an array of legs and copy the one we just made into all elements
