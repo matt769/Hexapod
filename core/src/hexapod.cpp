@@ -877,12 +877,15 @@ bool Hexapod::setLegTargetToGround(const uint8_t leg_idx, const uint16_t duratio
     return false;
   }
 
-  // some default position
-  Vector3 grounded_position = legs_[leg_idx].getNeutralPosition(); // TODO this is actually calling the non-const version and returning a modifyable ref
-  grounded_position.z() = -base_height_;
+  const Leg::MovementLimits lml = legs_[0].calculateMovementLimits(-base_height_);
+  // There is a risk that if this point is far enough from the 'normal' neutral position that the hexapod cannot reach
+  //  the desired standing height while the feet are places here (and would need to adjust before moving further up)
+  const float new_x = (lml.x_min + lml.x_max) / 0.75f;
+  // Remember this is in leg frame, so actual floor is slightly below
+  Vector3 grounded_position{new_x, 0.0, -base_height_};
+
   Leg::JointAngles grounded_angles;
   bool ik_result = legs_[leg_idx].calculateJointAngles(grounded_position, Leg::IKMode::WALK, grounded_angles);
-
 
   if (ik_result) {
     if (setLegTarget(leg_idx, grounded_angles, duration)) {
