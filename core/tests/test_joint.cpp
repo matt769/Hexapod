@@ -39,14 +39,14 @@ TEST_CASE( "Joint simple") {
     REQUIRE(j.toPhysicalAngle(a) == a);
   }
   // Models angles outside the model limits are clamped to the limits
-  REQUIRE(j.clampToLimts(model_lower_limit - 1.0) == model_lower_limit);
-  REQUIRE(j.clampToLimts(model_upper_limit + 1.0) == model_upper_limit);
+  REQUIRE(j.clampToLimits(model_lower_limit - 1.0) == model_lower_limit);
+  REQUIRE(j.clampToLimits(model_upper_limit + 1.0) == model_upper_limit);
   // Model angles equal to the model limits are clamped to the limits / unchanged
-  REQUIRE(j.clampToLimts(model_lower_limit) == model_lower_limit);
-  REQUIRE(j.clampToLimts(model_upper_limit) == model_upper_limit);
+  REQUIRE(j.clampToLimits(model_lower_limit) == model_lower_limit);
+  REQUIRE(j.clampToLimits(model_upper_limit) == model_upper_limit);
   // Model angles between the limits are unchanged
   for (float a = model_lower_limit; a < model_upper_limit; a += 1.0) {
-    REQUIRE(j.clampToLimts(a) == a);
+    REQUIRE(j.clampToLimits(a) == a);
   }
 
   // Changing the angle by specifying the physical angle results in the correct model angle
@@ -90,14 +90,14 @@ TEST_CASE( "Joint offset") {
     REQUIRE(j.toPhysicalAngle(a) == a + offset);
   }
   // Models angles outside the model limits are clamped to the limits
-  REQUIRE(j.clampToLimts(model_lower_limit - 1.0) == model_lower_limit);
-  REQUIRE(j.clampToLimts(model_upper_limit + 1.0) == model_upper_limit);
+  REQUIRE(j.clampToLimits(model_lower_limit - 1.0) == model_lower_limit);
+  REQUIRE(j.clampToLimits(model_upper_limit + 1.0) == model_upper_limit);
   // Model angles equal to the model limits are clamped to the limits / unchanged
-  REQUIRE(j.clampToLimts(model_lower_limit) == model_lower_limit);
-  REQUIRE(j.clampToLimts(model_upper_limit) == model_upper_limit);
+  REQUIRE(j.clampToLimits(model_lower_limit) == model_lower_limit);
+  REQUIRE(j.clampToLimits(model_upper_limit) == model_upper_limit);
   // Model angles between the limits are unchanged
   for (float a = model_lower_limit; a < model_upper_limit; a += 1.0) {
-    REQUIRE(j.clampToLimts(a) == a);
+    REQUIRE(j.clampToLimits(a) == a);
   }
 
   // Changing the angle by specifying the physical angle results in the correct model angle
@@ -134,14 +134,14 @@ TEST_CASE( "Joint flip") {
     REQUIRE(j.toPhysicalAngle(a) == -a);
   }
   // Models angles outside the model limits are clamped to the limits
-  REQUIRE(j.clampToLimts(model_lower_limit - 1.0) == model_lower_limit);
-  REQUIRE(j.clampToLimts(model_upper_limit + 1.0) == model_upper_limit);
+  REQUIRE(j.clampToLimits(model_lower_limit - 1.0) == model_lower_limit);
+  REQUIRE(j.clampToLimits(model_upper_limit + 1.0) == model_upper_limit);
   // Model angles equal to the model limits are clamped to the limits / unchanged
-  REQUIRE(j.clampToLimts(model_lower_limit) == model_lower_limit);
-  REQUIRE(j.clampToLimts(model_upper_limit) == model_upper_limit);
+  REQUIRE(j.clampToLimits(model_lower_limit) == model_lower_limit);
+  REQUIRE(j.clampToLimits(model_upper_limit) == model_upper_limit);
   // Model angles between the limits are unchanged
   for (float a = model_lower_limit; a < model_upper_limit; a += 1.0) {
-    REQUIRE(j.clampToLimts(a) == a);
+    REQUIRE(j.clampToLimits(a) == a);
   }
 
   // Changing the angle by specifying the physical angle results in the correct model angle
@@ -178,14 +178,14 @@ TEST_CASE( "Joint offset flip") {
     REQUIRE(j.toPhysicalAngle(a) == (-a) + offset);
   }
   // Models angles outside the model limits are clamped to the limits
-  REQUIRE(j.clampToLimts(model_lower_limit - 1.0) == model_lower_limit);
-  REQUIRE(j.clampToLimts(model_upper_limit + 1.0) == model_upper_limit);
+  REQUIRE(j.clampToLimits(model_lower_limit - 1.0) == model_lower_limit);
+  REQUIRE(j.clampToLimits(model_upper_limit + 1.0) == model_upper_limit);
   // Model angles equal to the model limits are clamped to the limits / unchanged
-  REQUIRE(j.clampToLimts(model_lower_limit) == model_lower_limit);
-  REQUIRE(j.clampToLimts(model_upper_limit) == model_upper_limit);
+  REQUIRE(j.clampToLimits(model_lower_limit) == model_lower_limit);
+  REQUIRE(j.clampToLimits(model_upper_limit) == model_upper_limit);
   // Model angles between the limits are unchanged
   for (float a = model_lower_limit; a < model_upper_limit; a += 1.0) {
-    REQUIRE(j.clampToLimts(a) == a);
+    REQUIRE(j.clampToLimits(a) == a);
   }
 
   // Changing the angle by specifying the physical angle results in the correct model angle
