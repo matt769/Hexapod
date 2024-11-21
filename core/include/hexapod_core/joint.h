@@ -45,7 +45,7 @@ class Joint {
   /// @brief is the passed angle within the model joint limits (with some float tolerance)
   bool isWithinLimits(float angle) const;
   /// @brief clamp the passed model angle down so that it is within the model joint limits
-  float clampToLimts(float angle) const;
+  float clampToLimits(float angle) const;
   /// @brief Set the angle using the model angle
   void set(float model_angle);
   /// @brief Get the model angle
