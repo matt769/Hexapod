@@ -30,6 +30,9 @@ TEST_CASE( "Joint simple") {
   // And it has the correct relationship with the model angle
   REQUIRE(j.angle_ == starting_physical_angle - offset);
 
+  // lower limit always below upper
+  REQUIRE(j.lower_limit_ < j.upper_limit_);
+
   // The physical-model relationship is fixed regardless of input
   for (float a = -180.0; a <= 180.0; a += 60.0) {
     REQUIRE(j.fromPhysicalAngle(a) == a);
@@ -78,6 +81,8 @@ TEST_CASE( "Joint offset") {
   REQUIRE(j.toPhysicalAngle() == starting_physical_angle);
   // And it has the correct relationship with the model angle
   REQUIRE(j.angle_ == starting_physical_angle - offset);
+    // lower limit always below upper
+    REQUIRE(j.lower_limit_ < j.upper_limit_);
 
   // The physical-model relationship is fixed regardless of input
   for (float a = -180.0; a <= 180.0; a += 60.0) {
@@ -120,6 +125,8 @@ TEST_CASE( "Joint flip") {
   REQUIRE(j.toPhysicalAngle() == starting_physical_angle);
   // And it has the correct relationship with the model angle
   REQUIRE(j.angle_ == starting_physical_angle - offset);
+    // lower limit always below upper
+    REQUIRE(j.lower_limit_ < j.upper_limit_);
 
   // The physical-model relationship is fixed regardless of input
   for (float a = -180.0; a <= 180.0; a += 60.0) {
@@ -162,6 +169,8 @@ TEST_CASE( "Joint offset flip") {
   REQUIRE(j.toPhysicalAngle() == starting_physical_angle);
   // And it has the correct relationship with the model angle
   REQUIRE(j.angle_ == -(starting_physical_angle - offset));
+    // lower limit always below upper
+    REQUIRE(j.lower_limit_ < j.upper_limit_);
 
   // The physical-model relationship is fixed regardless of input
   for (float a = -180.0; a <= 180.0; a += 60.0) {
@@ -207,6 +216,7 @@ TEST_CASE( "Joint builder offset flip") {
     REQUIRE(jp.upper_limit_ == model_upper_limit);
     REQUIRE(jp.angle() == starting_model_angle);
     REQUIRE(jp.physicalAngle() == starting_physical_angle);
+    REQUIRE(jp.lower_limit_ < jp.upper_limit_);
 
     auto jm = JointBuilder(offset, flip)
             .addModelLimits(model_lower_limit, model_upper_limit)
@@ -216,6 +226,7 @@ TEST_CASE( "Joint builder offset flip") {
     REQUIRE(jm.upper_limit_ == model_upper_limit);
     REQUIRE(jm.angle() == starting_model_angle);
     REQUIRE(jm.physicalAngle() == starting_physical_angle);
+    REQUIRE(jm.lower_limit_ < jm.upper_limit_);
 
     // Also check the alternate construction functions
     auto jp2 = Joint::createFromPhysicalAngles(physical_lower_limit, physical_upper_limit, starting_physical_angle, offset, flip);
@@ -223,12 +234,14 @@ TEST_CASE( "Joint builder offset flip") {
     REQUIRE(jp2.upper_limit_ == jp.upper_limit_);
     REQUIRE(jp2.angle() == jp.angle());
     REQUIRE(jp2.physicalAngle() == jp.physicalAngle());
+    REQUIRE(jp2.lower_limit_ < jp2.upper_limit_);
 
     auto jm2 = Joint::createFromModelAngles(model_lower_limit, model_upper_limit, starting_model_angle, offset, flip);
     REQUIRE(jm2.lower_limit_ == jm.lower_limit_);
     REQUIRE(jm2.upper_limit_ == jm.upper_limit_);
     REQUIRE(jm2.angle() == jm.angle());
     REQUIRE(jm2.physicalAngle() == jm.physicalAngle());
+    REQUIRE(jm2.lower_limit_ < jm2.upper_limit_);
 
 }
 
@@ -262,5 +275,12 @@ TEST_CASE( "Joint limits") {
     Joint j(test_case.pll, test_case.pul, 0, test_case.offset, test_case.flip);
     REQUIRE(j.lower_limit_ == test_case.expected_mll);
     REQUIRE(j.upper_limit_ == test_case.expected_mul);
+    REQUIRE(j.lower_limit_ < j.upper_limit_);
   }
+}
+
+TEST_CASE("regression1") {
+    // On creating this joint I was getting limits the wrong way around
+    auto j = JointBuilder(46.0).addPhysicalLimits(-95.0f, 95.0f).setPhysicalAngle(46.0).create();
+    REQUIRE(j.lower_limit_ < j.upper_limit_);
 }
