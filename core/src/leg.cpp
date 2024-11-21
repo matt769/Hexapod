@@ -59,7 +59,7 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
   angles[0].theta_1 = atan2(pos.y(), pos.x());
   angles[0].theta_1 = wrapAngle(angles[0].theta_1);
   if (joints_[JOINT_1].isWithinLimits(angles[0].theta_1)) {
-    angles[0].theta_1 = joints_[JOINT_1].clampToLimts(angles[0].theta_1);
+    angles[0].theta_1 = joints_[JOINT_1].clampToLimits(angles[0].theta_1);
   } else {
     // TODO change to be consistent with approach for joint 2
     const float test_angle_1 = angles[0].theta_1 + M_PI;
@@ -98,7 +98,7 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
     for (uint8_t i = 0; i < 2; i++) {
       angles[i].theta_3 = wrapAngle(angles[i].theta_3);
       if (joints_[JOINT_3].isWithinLimits(angles[i].theta_3)) {
-        angles[i].theta_3 = joints_[JOINT_3].clampToLimts(angles[i].theta_3);
+        angles[i].theta_3 = joints_[JOINT_3].clampToLimits(angles[i].theta_3);
         angles_valid[i] = true;
       }
     }
@@ -116,7 +116,7 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
       angles[i].theta_2 = atan2(pos.z(), ha) - atan2(kc, kb);
       angles[i].theta_2 = wrapAngle(angles[i].theta_2);
       if (joints_[JOINT_2].isWithinLimits(angles[i].theta_2)) {
-        angles[i].theta_2 = joints_[JOINT_2].clampToLimts(angles[i].theta_2);
+        angles[i].theta_2 = joints_[JOINT_2].clampToLimits(angles[i].theta_2);
         // possible that it's within the limits but not the one we want,
         //   still need to check the +/- PI option
         if (!validateJointAngles(angles[i], pos)) {
@@ -170,7 +170,7 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
   th1 = atan2(pos.y(), pos.x());
 
   if (joints_[JOINT_1].isWithinLimits(th1)) {
-    th1 = joints_[JOINT_1].clampToLimts(th1);
+    th1 = joints_[JOINT_1].clampToLimits(th1);
   } else {
     return 0;
   }
@@ -189,7 +189,7 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
     // but the negative version also valid
     // and for walking, we want to option where J3 is negative
     if (joints_[JOINT_3].isWithinLimits(th3)) {
-      th3 = joints_[JOINT_3].clampToLimts(th3);
+      th3 = joints_[JOINT_3].clampToLimits(th3);
     } else {
       return 0;
     }
@@ -203,7 +203,7 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
   th2 = atan2(pos.z(), ha) - atan2(kc, kb);
   th2 = wrapAngle(th2);
   if (joints_[JOINT_2].isWithinLimits(th2)) {
-    th2 = joints_[JOINT_2].clampToLimts(th2);
+    th2 = joints_[JOINT_2].clampToLimits(th2);
   }
 
   JointAngles tmp{th1, th2, th3};

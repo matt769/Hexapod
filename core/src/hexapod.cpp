@@ -1041,7 +1041,7 @@ void Hexapod::manualChangeJoint(const float angle_change) {
   if (state_ == State::FULL_MANUAL && manual_control_type_== ManualControlType::SINGLE_JOINT) {
     // TODO this is very awkward/awful! Maybe some refactoring required (make JointAngles an indexable array)
     const Joint joint = legs_[manual_leg_idx_].joints_[manual_joint_idx_];
-    const float new_angle = joint.clampToLimts(joint.angle_ + angle_change);
+    const float new_angle = joint.clampToLimits(joint.angle_ + angle_change);
     // can't set it directly, need to do so via leg, which only offers setting all the angles
     Leg::JointAngles current_joint_angles = legs_[manual_leg_idx_].getJointAngles();
     switch (manual_joint_idx_) {
