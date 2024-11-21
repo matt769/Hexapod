@@ -145,7 +145,7 @@ hexapod::Hexapod buildPhantomX() {
   hexapod::Joint lhs_leg_joints[num_joints];
   lhs_leg_joints[0] = JointBuilder().addModelLimits(-80.0f * kDegToRad, 80.0f * kDegToRad).setModelAngle(0.0).create();
   lhs_leg_joints[1] = JointBuilder(-joint_2_offset).addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad).setModelAngle(0.0).create();
-  lhs_leg_joints[2] = JointBuilder(-joint_3_offset_mod).addModelLimits(-88.0f * kDegToRad, 120.0f * kDegToRad).setModelAngle(0.0).create();
+  lhs_leg_joints[2] = JointBuilder(-joint_3_offset_mod).addModelLimits(-120.0f * kDegToRad, 88.0f * kDegToRad).setModelAngle(0.0).create();
   hexapod::Leg lhs_leg(leg_dims, lhs_leg_joints);
 
   // Make an array of legs and copy the one we just made into all elements
