@@ -6,6 +6,9 @@
 #include <ostream>
 #include <vector>
 
+
+#include "hexapod_core/joint.h"
+#include "hexapod_core/leg.h"
 #include "hexapod_core/hexapod.h"
 #include "hexapod_core/transformations.h"
 #include "hexapod_core/build_hexapod.h"
@@ -17,6 +20,19 @@ std::ostream& operator<<(std::ostream& os, const Vector3& v) {
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const Leg::JointAngles& j) {
+    os << j.theta_1 << ' '  << j.theta_2 << ' ' << j.theta_3;
+    return os;
+}
+
+Vector3 ToPhysicalDeg(const Leg& l, const Leg::JointAngles& a) {
+    return Vector3{
+        l.joints_[0].toPhysicalAngle(a.theta_1) * 180.0f / (float)M_PI,
+        l.joints_[1].toPhysicalAngle(a.theta_2) * 180.0f / (float)M_PI,
+        l.joints_[2].toPhysicalAngle(a.theta_3) * 180.0f / (float)M_PI
+    };
+}
+
 
 int main() {
 //  Hexapod h1 = buildDefaultHexapod();
@@ -24,9 +40,46 @@ int main() {
 //  Hexapod h3 = buildDefaultOctapod();
 //  Hexapod h4 = buildPhantomXForVis();
 //  Hexapod h5 = buildPhantomX();
-  Hexapod h6 = buildPhantomXForVis();
+
+  Joint j1 = JointBuilder(0,false).addPhysicalLimits(1,3).setPhysicalAngle(2).create();
+  Joint j2 = JointBuilder(0,false).addModelLimits(1,3).setModelAngle(2).create();
+  Joint j3 = JointBuilder(0,false).addModelLimits(1,3).setPhysicalAngle(2).create();
+
+//    {
+//        constexpr float kDegToRad = M_PI / 180.0;
+//        constexpr float joint_2_offset = 14.0 * kDegToRad;
+//        constexpr float joint_3_offset = 46.0 * kDegToRad;
+//        constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
+//        auto jr = hexapod::Joint(-120.0f * kDegToRad, 88.0f * kDegToRad, joint_3_offset_mod, joint_3_offset_mod);
+//        auto jl = hexapod::Joint(-88.0f * kDegToRad, 120.0f * kDegToRad, -joint_3_offset_mod, -joint_3_offset_mod,
+//                                 true);
+//
+//        std::cout << jr.lower_limit_ << '\t' << jr.upper_limit_ << '\t' << jr.angle_ << std::endl;
+//        std::cout << jl.lower_limit_ << '\t' << jl.upper_limit_ << '\t' << jl.angle_ << std::endl;
+//
+//        return 0;
+//    }
+//  Hexapod h6 = buildPhantomXForVis();
 
   Hexapod hexapod = buildPhantomXForVis();
+
+  Hexapod px2 = buildPhantomX();
+  auto left_leg = px2.getLeg(0);
+  auto right_leg = px2.getLeg(1);
+
+//  auto l = hexapod.getLeg(0);
+//  Vector3 grounded_position{0.174964011, 0.0, 0.07/2.0};
+//    std::cout << "pos" << '\t' << grounded_position << '\n';
+//    Leg::JointAngles grounded_angles;
+//    bool ik_result = l.calculateJointAngles(grounded_position, Leg::IKMode::WALK, grounded_angles);
+//    if (ik_result) {
+//        bool res = l.jointsWithinLimits(grounded_angles);
+//        std::cout << res << '\t' << grounded_angles << '\n';
+////        auto pd = ToPhysicalDeg(l, grounded_angles);
+//        std::cout << "pd\t" << ToPhysicalDeg(l, grounded_angles) << '\n';
+//    }
+
+
 
   const Leg& test_leg = hexapod.getLeg(0);
   const float walk_height_default = test_leg.dims_.c / 2.0;
@@ -46,11 +99,15 @@ int main() {
   while (hexapod.getState() != Hexapod::State::STANDING) {
     hexapod.update();
   }
+  std::cout << "finished setAllLegTargetsToGround\n";
 
   while (hexapod.getState() == Hexapod::State::STANDING) {
     hexapod.riseToWalk();
     hexapod.update();
   }
+  std::cout << "finished riseToWalk\n";
+
+
 
 //  hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
 //  for (int i =0; i < 1; ++i) {
