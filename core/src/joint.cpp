@@ -68,7 +68,7 @@ bool Joint::isWithinLimits(const float angle) const {
   return (angle >= lower_limit_ - hexapod::util::eps) &&
       (angle < upper_limit_ + hexapod::util::eps);
 }
-float Joint::clampToLimts(const float angle) const {
+float Joint::clampToLimits(const float angle) const {
   return fmax(fmin(angle, upper_limit_), lower_limit_);
 }
 
