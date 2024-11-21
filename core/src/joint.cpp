@@ -15,13 +15,12 @@
 namespace hexapod {
 
 /**
- * @brief Construct a new Joint object
  * @details All input should relate to the physical joint used - it will be modified to fit the internal
  *  hexapod reference frames based on the offset and flip_axis parameters as required.
- *
+ * This constructor may be removed in the near future in favour of more explicit instantiation.
  * @param physical_lower_limit The joint limit in the clockwise direction of the physical joint. Always less than upper.
  * @param physical_upper_limit  The joint limit in the anti-clockwise direction of the physical joint. Always more than lower.
- * @param physical_angle The starting angle of the joint
+ * @param physical_angle The starting physical angle of the joint
  * @param offset The physical angle at which the model joint is at zero degrees
  * @param flip_axis If the physical model uses a joint that has its Z axis reversed
  */
