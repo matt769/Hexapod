@@ -432,7 +432,7 @@ bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step, const bo
   if (force || (state_ == State::WALKING && requested_state_ == State::WALKING)) {
     walk_step_requested_ = walk_step;
     turn_step_requested_ = angle_step;
-    return true;  // TODO add checks on input(?)
+    return true;
   }
   return false;
 }
@@ -459,11 +459,13 @@ bool Hexapod::setWalkingTargets() {
         cos(-total_base_rotation_) * walk_step_requested_.x() - sin(-total_base_rotation_) * walk_step_requested_.y();
     float y =
         sin(-total_base_rotation_) * walk_step_requested_.x() + cos(-total_base_rotation_) * walk_step_requested_.y();
-    walk_step_target_ = Vector3(x, y, 0);
-  } else {
-    walk_step_target_ = walk_step_requested_;
+    walk_step_requested_ = Vector3(x, y, 0);
   }
+
+  // TODO Now limit the requests if necessary
+  walk_step_target_ = walk_step_requested_;
   turn_step_target_ = turn_step_requested_;
+
   tf_base_to_new_base_target_.R_.setRPYExtr(0.0f, 0.0f, turn_step_target_);
   tf_base_to_new_base_target_.t_ = walk_step_target_;
   base_change_ = true;
