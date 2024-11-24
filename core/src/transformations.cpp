@@ -35,19 +35,13 @@ float& Vector3::y() { return data_[1]; }
 
 float& Vector3::z() { return data_[2]; }
 
-Vector3 operator+(const Vector3& v1, const Vector3& v2) {
-  return Vector3(v1(0) + v2(0), v1(1) + v2(1), v1(2) + v2(2));
-}
+Vector3 operator+(const Vector3& v1, const Vector3& v2) { return Vector3(v1(0) + v2(0), v1(1) + v2(1), v1(2) + v2(2)); }
 
 Vector3 operator-(const Vector3& v) { return Vector3(-v(0), -v(1), -v(2)); }
 
-Vector3 operator-(const Vector3& v1, const Vector3& v2) {
-  return Vector3(v1(0) - v2(0), v1(1) - v2(1), v1(2) - v2(2));
-}
+Vector3 operator-(const Vector3& v1, const Vector3& v2) { return Vector3(v1(0) - v2(0), v1(1) - v2(1), v1(2) - v2(2)); }
 
-float Vector3::norm() const {
-  return sqrtf(data_[0] * data_[0] + data_[1] * data_[1] + data_[2] * data_[2]);
-}
+float Vector3::norm() const { return sqrtf(data_[0] * data_[0] + data_[1] * data_[1] + data_[2] * data_[2]); }
 
 Vector3 Vector3::unit() const {
   Vector3 result;
@@ -62,9 +56,7 @@ const float& RotationMatrix::operator()(const uint8_t rowIdx, const uint8_t colI
   return data_[rowIdx][colIdx];
 }
 
-float& RotationMatrix::operator()(const uint8_t rowIdx, const uint8_t colIdx) {
-  return data_[rowIdx][colIdx];
-}
+float& RotationMatrix::operator()(const uint8_t rowIdx, const uint8_t colIdx) { return data_[rowIdx][colIdx]; }
 
 RotationMatrix RotationMatrix::inverse() const {
   RotationMatrix result;
@@ -245,9 +237,7 @@ Transform operator*(const Transform& a, const Transform& b) {
 
 Vector3 operator*(const Transform& T, const Vector3& v) { return T.t_ + T.R_ * v; }
 
-Vector3 operator*(float scalar, const Vector3& v) {
-  return Vector3{v.x() * scalar, v.y() * scalar, v.z() * scalar};
-}
+Vector3 operator*(float scalar, const Vector3& v) { return Vector3{v.x() * scalar, v.y() * scalar, v.z() * scalar}; }
 
 bool operator==(const Vector3& v1, const Vector3& v2) {
   return v1.x() == v2.x() && v1.y() == v2.y() && v1.z() == v2.z();

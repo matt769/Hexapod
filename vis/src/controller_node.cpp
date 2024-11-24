@@ -34,8 +34,7 @@ int main(int argc, char** argv) {
   return (0);
 }
 
-Controller::Controller() : Node("hexapod_controller_node")
-{
+Controller::Controller() : Node("hexapod_controller_node") {
   pub_ = this->create_publisher<std_msgs::msg::Int32>("hexapod/command_key", 5);
 }
 

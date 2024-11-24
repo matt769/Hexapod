@@ -1,14 +1,14 @@
 #include "hexapod_core/leg.h"
 
+#include "hexapod_core/joint.h"
 #include "hexapod_core/kinematics_support.h"
 #include "hexapod_core/transformations.h"
-#include "hexapod_core/joint.h"
 
 #ifdef __AVR__
 #include <Arduino.h>
 #else
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
 #include <iostream>
 #endif
 
@@ -18,7 +18,7 @@ using namespace util;
 
 Leg::Leg() {}
 
-Leg::Leg(Dims dims, Joint *joints)
+Leg::Leg(Dims dims, Joint* joints)
     : dims_(dims), neutral_pos_{(dims.a + dims.b + dims.c) * 2.0f / 3.0f, 0.0f, 0.0f}, step_idx_{0} {
   joints_[JOINT_1] = joints[0];
   joints_[JOINT_2] = joints[1];
@@ -26,7 +26,7 @@ Leg::Leg(Dims dims, Joint *joints)
   setJointAngles({joints_[JOINT_1].angle_, joints_[JOINT_2].angle_, joints_[JOINT_3].angle_});
   // This is an initial estimate, the robot that this leg belongs to needs to call
   //  updateMovementLimits with the actual values
-  const float est_walk_height = dims_.c / 2.0; // just a guess at the actual height
+  const float est_walk_height = dims_.c / 2.0;  // just a guess at the actual height
   const float est_raised_height = (dims_.c / 2.0) * 0.7;
   updateMovementLimits(est_walk_height, est_raised_height);
 }
@@ -88,8 +88,7 @@ uint8_t Leg::calculateJointAnglesFull(const Vector3& pos, JointAngles angles[2])
   } else {
     ha = pos.y() / sin_theta_1 - dims_.a;
   }
-  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) /
-      (2 * dims_.b * dims_.c);
+  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) / (2 * dims_.b * dims_.c);
 
   if (clamp(ka, -1.0f, 1.0f)) {
     angles[0].theta_3 = acos(ka);
@@ -182,8 +181,7 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
   } else {
     ha = pos.y() / sin(th1) - dims_.a;
   }
-  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) /
-      (2 * dims_.b * dims_.c);
+  float ka = (pos.z() * pos.z() + ha * ha - dims_.b * dims_.b - dims_.c * dims_.c) / (2 * dims_.b * dims_.c);
   if (clamp(ka, -1.0f, 1.0f)) {
     th3 = -acos(ka);  // acos result always positive (between 0 and pi)
     // but the negative version also valid
@@ -248,7 +246,6 @@ bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
   return calculateJointAngles(pos, ik_mode, staged_angles_);
 }
 
-
 /**
  * @details
  *
@@ -258,20 +255,20 @@ bool Leg::calculateJointAngles(const Vector3& pos, const IKMode ik_mode) {
  */
 bool Leg::jointsWithinLimits(const JointAngles& joint_angles) const {
   return (joints_[JOINT_1].isWithinLimits(joint_angles.theta_1) &&
-      joints_[JOINT_2].isWithinLimits(joint_angles.theta_2) &&
-      joints_[JOINT_3].isWithinLimits(joint_angles.theta_3));
+          joints_[JOINT_2].isWithinLimits(joint_angles.theta_2) &&
+          joints_[JOINT_3].isWithinLimits(joint_angles.theta_3));
 }
 
 /**
  * @details
- * Forward kinematics on joint angles to find the associated foot position. The provided joint angles MUST be valid!
+ * Forward kinematics on joint angles to find the associated foot position. The provided joint
+ * angles MUST be valid!
  *
  * @param angles Joint angles to calculate position for - ASSUME THEY ARE VALID
  * @param[out] pos Calculated foot position
  */
 void Leg::calculateFootPosition(const JointAngles& angles, Vector3& pos) const {
-  const float h =
-      dims_.a + dims_.b * cos(angles.theta_2) + dims_.c * cos(angles.theta_2 + angles.theta_3);
+  const float h = dims_.a + dims_.b * cos(angles.theta_2) + dims_.c * cos(angles.theta_2 + angles.theta_3);
   pos.x() = h * cos(angles.theta_1);
   pos.y() = h * sin(angles.theta_1);
   pos.z() = dims_.b * sin(angles.theta_2) + dims_.c * sin(angles.theta_2 + angles.theta_3);
@@ -290,25 +287,20 @@ void Leg::setJointAngles(const JointAngles& angles) {
   joints_[JOINT_1].angle_ = angles.theta_1;
   joints_[JOINT_2].angle_ = angles.theta_2;
   joints_[JOINT_3].angle_ = angles.theta_3;
-  staged_angles_ = angles; // keep in sync in case we've done a 'direct' update (or anything else that hasn't used IK to calculated first)
+  staged_angles_ = angles;  // keep in sync in case we've done a 'direct' update (or anything else
+                            // that hasn't used IK to calculated first)
   updateFootPosition();
 }
 
-void Leg::setJointAnglesFromPhysical(const JointAngles& angles) {
-  setJointAngles(fromPhysicalAngles(angles));
-}
+void Leg::setJointAnglesFromPhysical(const JointAngles& angles) { setJointAngles(fromPhysicalAngles(angles)); }
 
 Leg::JointAngles Leg::getStagedAngles() const { return staged_angles_; }
 
-void Leg::setStagedAngles(const JointAngles& angles) {
-  staged_angles_ = angles;
-}
+void Leg::setStagedAngles(const JointAngles& angles) { staged_angles_ = angles; }
 
 void Leg::applyStagedAngles() { setJointAngles(staged_angles_); }
 
-void Leg::resetStagedAngles() {
-  staged_angles_ = getJointAngles();
-}
+void Leg::resetStagedAngles() { staged_angles_ = getJointAngles(); }
 
 /**
  * @details
@@ -329,8 +321,7 @@ uint8_t Leg::chooseJointAnglesNearest(const JointAngles angle_options[2], uint8_
     return 0;
   } else {
     // joint 2 alone should be sufficient on which to make this decision
-    if (fabs(angle_options[0].theta_2 - ref_angles.theta_2) <
-        fabs(angle_options[1].theta_2 - ref_angles.theta_2)) {
+    if (fabs(angle_options[0].theta_2 - ref_angles.theta_2) < fabs(angle_options[1].theta_2 - ref_angles.theta_2)) {
       return 0;
     } else {
       return 1;
@@ -391,11 +382,9 @@ void Leg::calculateTrajectory() {
   }
 }
 
-void Leg::setTrajectory(const Leg::JointAngles& target,
-                   const Leg::JointAngles& increment_up,
-                   const Leg::JointAngles& midpoint,
-                   const Leg::JointAngles& increment_down,
-                   const uint16_t duration) {
+void Leg::setTrajectory(const Leg::JointAngles& target, const Leg::JointAngles& increment_up,
+                        const Leg::JointAngles& midpoint, const Leg::JointAngles& increment_down,
+                        const uint16_t duration) {
   step_idx_ = 0;
   current_step_duration_ = duration;
   target_angles_ = target;
@@ -403,7 +392,6 @@ void Leg::setTrajectory(const Leg::JointAngles& target,
   step_apex_angles_ = midpoint;
   inc_down_angles_ = increment_down;
 }
-
 
 void Leg::clearTrajectory() {
   step_idx_ = 0;
@@ -413,8 +401,6 @@ void Leg::clearTrajectory() {
   step_apex_angles_ = getJointAngles();
   inc_down_angles_ = JointAngles{0.0f, 0.0f, 0.0f};
 }
-
-
 
 /**
  * @details
@@ -443,17 +429,17 @@ void Leg::incrementLeg() {
     current_joint_angles.theta_2 += inc_down_angles_.theta_2;
     current_joint_angles.theta_3 += inc_down_angles_.theta_3;
   } else {
-    return; // trajectory has finished, incrementLeg() should have no effect
+    return;  // trajectory has finished, incrementLeg() should have no effect
   }
   step_idx_++;
 }
 
 Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
-
   // start off by finding the limits in x/y(in leg frame)
   // maybe could consider as diamond
   // later may want to to something more complex (approximate circle?)
-  Vector3 neutral = getNeutralPosition(); // TODO this is actually callng the non-const version and returning a modifyable ref
+  Vector3 neutral = getNeutralPosition();  // TODO this is actually callng the non-const version and
+                                           // returning a modifyable ref
   neutral.z() = -height;
 
   MovementLimits leg_movement_limits{neutral.x(), neutral.x(), neutral.y(), neutral.y()};
@@ -467,7 +453,7 @@ Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
   const float max_extension = dims_.a + dims_.b + dims_.c;
   float test_value;
 
-//  float test_value = max_extension;
+  //  float test_value = max_extension;
   // 100 steps for now
   // start at the absolute limit
   // MAX X
@@ -479,7 +465,7 @@ Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
       leg_movement_limits.x_max = test_value;
       break;
     }
-    test_value -= max_extension/100.0f;
+    test_value -= max_extension / 100.0f;
   }
 
   test_value = -max_extension;
@@ -490,7 +476,7 @@ Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
       leg_movement_limits.x_min = test_value;
       break;
     }
-    test_value += max_extension/100.0f;
+    test_value += max_extension / 100.0f;
   }
 
   const float max_y_extension = sqrt(max_extension * max_extension + neutral.x() * neutral.x());
@@ -502,7 +488,7 @@ Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
       leg_movement_limits.y_max = test_value;
       break;
     }
-    test_value -= max_y_extension/100.0f;
+    test_value -= max_y_extension / 100.0f;
   }
 
   test_value = -max_y_extension;
@@ -513,7 +499,7 @@ Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
       leg_movement_limits.y_min = test_value;
       break;
     }
-    test_value += max_y_extension/100.0f;
+    test_value += max_y_extension / 100.0f;
   }
 
   return leg_movement_limits;
@@ -526,24 +512,24 @@ void Leg::updateMovementLimits(const float walk_height, const float raised_heigh
 
 /**
  * @details Clamp a position to within the currently set movement_limits area
- * The movement_limits area describes a diamond which approximates the true area (probably ellipsoidal).
- * The movement limits are calculated for a specific foot Z position. If this changes, the limits would need to be recalculated,
- *  but for the moment this is just intended to be quite rough.
- * If clamped, the modified position will be in the same direction from the neutral position as the original, but
- *  on the border of the diamond.
- * Only consider XY.
+ * The movement_limits area describes a diamond which approximates the true area (probably
+ * ellipsoidal). The movement limits are calculated for a specific foot Z position. If this changes,
+ * the limits would need to be recalculated, but for the moment this is just intended to be quite
+ * rough. If clamped, the modified position will be in the same direction from the neutral position
+ * as the original, but on the border of the diamond. Only consider XY.
  * @param the target position, which may be modified if outside allowed area
  * @return true if modified
  */
 Vector3 Leg::clampTarget(const Vector3& target_position, const MovementLimits& limits) const {
-  // TODO include some simple checks to see if inside max circle within diamond, and then return unmodified?
+  // TODO include some simple checks to see if inside max circle within diamond, and then return
+  // unmodified?
   Vector3 clamped_target = target_position;
   // where is target relative to neutral
   Vector3 neutral = neutral_pos_;
   neutral.z() = target_position.z();
   const Vector3 movement = target_position - neutral;
   if (util::comparePositions(movement, Vector3{0.0, 0.0, 0.0})) {
-    return clamped_target; // zero vector, nothing to clamp
+    return clamped_target;  // zero vector, nothing to clamp
   }
 
   // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection Given two points on each line
@@ -553,10 +539,10 @@ Vector3 Leg::clampTarget(const Vector3& target_position, const MovementLimits& l
   // 4 movement
   auto findIntersection = [&](const Vector3& ep1, const Vector3& ep2) -> Vector3 {
     const float D = (ep1.x() - ep2.x()) * (-movement.y()) - (ep1.y() - ep2.y()) * (-movement.x());
-    const float k = (ep1.x()*ep2.y() - ep1.y()*ep2.x());
+    const float k = (ep1.x() * ep2.y() - ep1.y() * ep2.x());
     const float x = (k * (-movement.x())) / D;
     const float y = (k * (-movement.y())) / D;
-    return Vector3{x, y , 0.0};
+    return Vector3{x, y, 0.0};
   };
 
   // which side of the diamond will the movement vector pass through (if it extends far enough)
@@ -586,9 +572,7 @@ Vector3 Leg::clampTarget(const Vector3& target_position, const MovementLimits& l
     }
   }
 
-  auto twoDNormSquared = [](const Vector3& v) -> float {
-    return v.x()*v.x() + v.y()*v.y();
-  };
+  auto twoDNormSquared = [](const Vector3& v) -> float { return v.x() * v.x() + v.y() * v.y(); };
 
   if (twoDNormSquared(movement) > twoDNormSquared(intersection)) {
     clamped_target = neutral + intersection;
@@ -625,16 +609,16 @@ bool Leg::stepUpdate() {
     // update target angles
     if (!calculateJointAngles(target_pos_, IKMode::WALK, target_angles_)) {
 #ifndef __AVR__
-      std::cout << "Could not calculate joint angles at requested foot target position "
-                << target_pos_.x() <<'\t' << target_pos_.y() <<'\t'<< target_pos_.z() << '\n';
+      std::cout << "Could not calculate joint angles at requested foot target position " << target_pos_.x() << '\t'
+                << target_pos_.y() << '\t' << target_pos_.z() << '\n';
 #endif
       return false;
     }
     // update trajectory apex_angles_
     if (!calculateJointAngles(raised_pos_, IKMode::WALK, step_apex_angles_)) {
 #ifndef __AVR__
-      std::cout << "Could not calculate joint angles at requested raise limit position "
-                << raised_pos_.x() <<'\t' << raised_pos_.y() <<'\t'<< raised_pos_.z() << '\n';
+      std::cout << "Could not calculate joint angles at requested raise limit position " << raised_pos_.x() << '\t'
+                << raised_pos_.y() << '\t' << raised_pos_.z() << '\n';
 #endif
       return false;
     }
@@ -665,12 +649,12 @@ bool Leg::updateStatus(const bool raise) {
     state_ = State::ON_GROUND;
     step_idx_ = 0;
   }
-    // If it's already at its target then don't lift but return true as if it had
+  // If it's already at its target then don't lift but return true as if it had
   else if (raise && state_ == State::ON_GROUND) {
     const float d = (current_pos_ - target_pos_).norm();
     if (!compareFloat(d, 0.0f, target_tolerance)) {
       state_ = State::RAISED;
-      step_idx_ = 0; // TODO review where this is set throughout
+      step_idx_ = 0;  // TODO review where this is set throughout
     }
     result = true;
   }
@@ -685,8 +669,7 @@ bool Leg::updateStatus(const bool raise) {
  * @param raised_pos Apex of the leg raise movement
  * @param foot_air_time
  */
-void Leg::updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
-                        uint16_t foot_air_time) {
+void Leg::updateTargets(const Vector3& target_pos, const Vector3& raised_pos, uint16_t foot_air_time) {
   target_pos_ = clampTarget(target_pos, movement_limits_grounded_);
   raised_pos_ = clampTarget(raised_pos, movement_limits_raised_);
   new_step_duration_ = foot_air_time;
@@ -698,11 +681,9 @@ Leg::JointAngles Leg::getJointAngles() const {
 }
 
 Leg::JointAngles Leg::getJointAnglesPhysical() const {
-  return JointAngles{joints_[JOINT_1].toPhysicalAngle(),
-                     joints_[JOINT_2].toPhysicalAngle(),
+  return JointAngles{joints_[JOINT_1].toPhysicalAngle(), joints_[JOINT_2].toPhysicalAngle(),
                      joints_[JOINT_3].toPhysicalAngle()};
 }
-
 
 Leg::JointAngles Leg::fromPhysicalAngles(const Leg::JointAngles& physical_angles) const {
   return Leg::JointAngles{joints_[JOINT_1].fromPhysicalAngle(physical_angles.theta_1),
@@ -715,7 +696,6 @@ Leg::JointAngles Leg::toPhysicalAngles(const Leg::JointAngles& model_angles) con
                           joints_[JOINT_2].toPhysicalAngle(model_angles.theta_2),
                           joints_[JOINT_3].toPhysicalAngle(model_angles.theta_3)};
 }
-
 
 void Leg::setStartingAngles(Leg::JointAngles starting_angles) {
   setJointAngles(starting_angles);
@@ -731,10 +711,14 @@ uint16_t Leg::getCurrentStepDuration() const { return current_step_duration_; }
  *  Otherwise return 1 (i.e. trajectory complete).
  * @return percentage progress through trajectory (0 to 1)
  */
-float Leg::getCurrentStepProgress() const{
-  if (state_ == State::ON_GROUND) { return 1.0f; }
-  else if (step_idx_ == 0) { return 0.0; }
-  else { return static_cast<float>(step_idx_) / static_cast<float>(current_step_duration_); }
+float Leg::getCurrentStepProgress() const {
+  if (state_ == State::ON_GROUND) {
+    return 1.0f;
+  } else if (step_idx_ == 0) {
+    return 0.0;
+  } else {
+    return static_cast<float>(step_idx_) / static_cast<float>(current_step_duration_);
+  }
 }
 
-} // namespace hexapod
+}  // namespace hexapod

@@ -21,7 +21,7 @@ struct GaitDefinition {
 /** @class Hexapod
  * @brief A hexapod contains a body and a number of legs (not actually limited to 6), and manages
  * the legs in order to move the body around.
-*/
+ */
 class Hexapod {
  public:
   /** @brief Describes a basic cuboid body shape */
@@ -42,7 +42,7 @@ class Hexapod {
   enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, TRIPOD, NUM_GAITS };
 
   /** @brief Construct a new Hexapod object */
-  Hexapod(uint8_t num_legs, Dims hex_dims, Transform *tf_body_to_leg, Leg *legs, uint16_t update_frequency = 50);
+  Hexapod(uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_leg, Leg* legs, uint16_t update_frequency = 50);
   ~Hexapod();
   Hexapod(const Hexapod&) = delete;
   Hexapod(Hexapod&&) = default;
@@ -92,7 +92,6 @@ class Hexapod {
   bool setLegJoints(uint8_t leg_idx, const Leg::JointAngles& joint_angles);
   bool setLegJointsPhysical(uint8_t leg_idx, const Leg::JointAngles& physical_joint_angles);
   uint16_t getUpdateFrequency() const;
-
 
   /** @brief From unsupported state set feet targets to the ground. */
   bool setAllLegTargetsToGround(uint16_t duration);
@@ -151,7 +150,8 @@ class Hexapod {
  private:
   /** @brief Update movement parameters based on dimensions and update frequency */
   void updateMovementParameters();
-  /** @brief At what frequency (per second) will update() be called. Used to set speed of some movements. */
+  /** @brief At what frequency (per second) will update() be called. Used to set speed of some
+   * movements. */
   uint16_t update_frequency_;
   /** @brief During start up, hexapod will rise to this height before entering walking state */
   float walk_height_default_;
@@ -184,7 +184,7 @@ class Hexapod {
   /** @brief Relationship between base frame and body frame */
   Transform tf_base_to_body_;  //
   /** @brief Fixed relationship between body frame and leg frames */
-  Transform *tf_body_to_leg_;
+  Transform* tf_body_to_leg_;
   MoveMode move_mode_ = MoveMode::STANDARD;
   State state_ = State::UNSUPPORTED;
   State requested_state_ = State::UNSUPPORTED;
@@ -220,7 +220,7 @@ class Hexapod {
   float allowed_foot_position_diameter_;
 
   uint8_t current_gait_seq_ = Gait::RIPPLE;
-  uint8_t gait_next_leg_seq_no_ = 0; // Note that this is NOT a leg index
+  uint8_t gait_next_leg_seq_no_ = 0;  // Note that this is NOT a leg index
   float stance_width_ = stance_width_default_;
   float leg_lift_height_ = leg_lift_height_default_;
   float foot_ground_travel_ratio_ = fgtr_default_;
@@ -230,13 +230,14 @@ class Hexapod {
   /** @brief The currently selected leg if under Manual SINGLE_LEG control */
   uint8_t manual_leg_idx_;
   /** @brief The currently selected leg if under Manual SINGLE_JOINT control */
-  uint8_t manual_joint_idx_; // index into Leg::JointAngles
+  uint8_t manual_joint_idx_;  // index into Leg::JointAngles
 
   /** @brief Calculate the required joint angles for all grounded legs */
   bool calculateGroundedLegs();
   /** @brief Applies the pre-calculated joint angles for all grounded legs. */
   void applyChangesGroundedLegs();
-  /** @brief Apply all the staged leg angles and maybe update some current hexapod state variables */
+  /** @brief Apply all the staged leg angles and maybe update some current hexapod state variables
+   */
   void commitLegJointChanges();
   /** @brief Returns number of legs currently raised. */
   uint8_t getNumLegsRaised() const;
@@ -280,9 +281,8 @@ class Hexapod {
   void populateGaitInfo();
   bool setWalkingTargets();
   void setMovementIncrements();
-
 };
 
-} // namespace hexapod
+}  // namespace hexapod
 
-#endif // HEXAPOD_H
+#endif  // HEXAPOD_H

@@ -32,8 +32,8 @@ Hexapod buildFromURDF(const std::string& robot_description_string) {
     // get body to base transformation
     urdf::Pose pose = leg_base->parent_joint->parent_to_joint_origin_transform;
     Transform body_to_leg_tf;
-    body_to_leg_tf.R_ = QuaternionToRotationMatrix(
-        Quaternion(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z));
+    body_to_leg_tf.R_ =
+        QuaternionToRotationMatrix(Quaternion(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z));
     body_to_leg_tf.t_ = Vector3(pose.position.x, pose.position.y, pose.position.z);
 
     // get leg dimensions
@@ -80,15 +80,14 @@ Hexapod buildFromURDF(const std::string& robot_description_string) {
   std::cout << "Leg link lengths:" << '\n';
   for (size_t idx = 0; idx < num_legs; idx++) {
     std::cout << "Leg " << idx << '\n';
-    std::cout << "Dimensions: " << legs[idx].dims_.a << ", " << legs[idx].dims_.b << ", "
-              << legs[idx].dims_.c << '\n';
+    std::cout << "Dimensions: " << legs[idx].dims_.a << ", " << legs[idx].dims_.b << ", " << legs[idx].dims_.c << '\n';
     std::cout << "Located "
-              << ":" << leg_tfs_for_build[idx].t_.x() << ", " << leg_tfs_for_build[idx].t_.y()
-              << ", " << leg_tfs_for_build[idx].t_.z() << '\n';
+              << ":" << leg_tfs_for_build[idx].t_.x() << ", " << leg_tfs_for_build[idx].t_.y() << ", "
+              << leg_tfs_for_build[idx].t_.z() << '\n';
     std::cout << "Based on urdf joint: " << joint_names.at(idx) << '\n';
   }
 
   return Hexapod(num_legs, hex_dims, std::move(leg_tfs_for_build), std::move(legs));
 }
 
-}  // namespace
+}  // namespace hexapod_vis

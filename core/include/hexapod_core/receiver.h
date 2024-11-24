@@ -29,6 +29,6 @@ class Receiver {
   Vector3 manual_ud;
 };
 
-} // namespace hexapod
+}  // namespace hexapod
 
-#endif // HEXAPOD_RECEIVER_H
+#endif  // HEXAPOD_RECEIVER_H

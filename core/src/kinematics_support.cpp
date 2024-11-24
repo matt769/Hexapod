@@ -8,8 +8,6 @@
 #include <cmath>
 #endif
 
-
-
 namespace hexapod {
 namespace util {
 
@@ -42,5 +40,5 @@ bool clamp(float& val, const float lower, const float upper) {
   }
 }
 
-} // namespace util
-} // namespace hexapod
+}  // namespace util
+}  // namespace hexapod

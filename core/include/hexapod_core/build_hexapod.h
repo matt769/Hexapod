@@ -18,6 +18,6 @@ hexapod::Hexapod buildPhantomXForVis();
 /** @brief Returns a Hexapod object consistent with example file octapod.urdf.xacro */
 hexapod::Hexapod buildDefaultOctapod();
 
-} // namespace hexapod
+}  // namespace hexapod
 
-#endif // HEXAPOD_BUILD_HEXAPOD_H_
+#endif  // HEXAPOD_BUILD_HEXAPOD_H_

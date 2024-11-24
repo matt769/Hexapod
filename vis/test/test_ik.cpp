@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include "hexapod_core/hexapod.h"
 #include "hexapod_core/kinematics_support.h"
-#include "ros/ros.h"
 #include "hexapod_core/transformations.h"
+#include "ros/ros.h"
 
 // This file is pretty outdated
 
@@ -69,8 +69,8 @@ bool testIK(float a, float b, float c, bool verbose) {
   Leg test_leg;
   Leg::JointAngles test_angles{a, b, c};
   if (verbose)
-    std::cout << "Test angle: " << test_angles.theta_1 << ", " << test_angles.theta_2 << ", "
-              << test_angles.theta_3 << '\n';
+    std::cout << "Test angle: " << test_angles.theta_1 << ", " << test_angles.theta_2 << ", " << test_angles.theta_3
+              << '\n';
   Vector3 pos, pos_result_1, pos_result_2;
   test_leg.calculateFootPosition(test_angles, pos);
   if (verbose) std::cout << "Position: " << pos.x() << ", " << pos.y() << ", " << pos.z() << '\n';
@@ -103,19 +103,17 @@ bool testIK(float a, float b, float c, bool verbose) {
     return true;
   } else {
     if (verbose)
-      std::cout << "Angles 1: " << result_angles[0].theta_1 << ", " << result_angles[0].theta_2
-                << ", " << result_angles[0].theta_3 << '\n';
+      std::cout << "Angles 1: " << result_angles[0].theta_1 << ", " << result_angles[0].theta_2 << ", "
+                << result_angles[0].theta_3 << '\n';
     test_leg.calculateFootPosition(result_angles[0], pos_result_1);
     if (verbose)
-      std::cout << "Position: " << pos_result_1.x() << ", " << pos_result_1.y() << ", "
-                << pos_result_1.z() << '\n';
+      std::cout << "Position: " << pos_result_1.x() << ", " << pos_result_1.y() << ", " << pos_result_1.z() << '\n';
     if (verbose)
-      std::cout << "Angles 2: " << result_angles[1].theta_1 << ", " << result_angles[1].theta_2
-                << ", " << result_angles[1].theta_3 << '\n';
+      std::cout << "Angles 2: " << result_angles[1].theta_1 << ", " << result_angles[1].theta_2 << ", "
+                << result_angles[1].theta_3 << '\n';
     test_leg.calculateFootPosition(result_angles[1], pos_result_2);
     if (verbose)
-      std::cout << "Position: " << pos_result_2.x() << ", " << pos_result_2.y() << ", "
-                << pos_result_2.z() << '\n';
+      std::cout << "Position: " << pos_result_2.x() << ", " << pos_result_2.y() << ", " << pos_result_2.z() << '\n';
     return false;
   }
 }

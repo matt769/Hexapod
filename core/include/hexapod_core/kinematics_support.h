@@ -18,7 +18,7 @@ bool compareFloat(float a, float b, float tolerance);
 bool approxEqual(Vector3 a, Vector3 b, float tolerance);
 bool clamp(float& val, float lower, float upper);
 
-} // namespace util
-} // namespace hexapod
+}  // namespace util
+}  // namespace hexapod
 
-#endif // HEXAPOD_UTIL_H
+#endif  // HEXAPOD_UTIL_H

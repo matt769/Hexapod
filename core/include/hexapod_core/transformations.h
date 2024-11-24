@@ -84,6 +84,6 @@ bool operator==(const Vector3& v1, const Vector3& v2);
 bool operator!=(const Vector3& v1, const Vector3& v2);
 RotationMatrix QuaternionToRotationMatrix(const Quaternion& q);
 
-} // namespace hexapod
+}  // namespace hexapod
 
-#endif // HEXAPOD_TRANSFORMATIONS_H
+#endif  // HEXAPOD_TRANSFORMATIONS_H

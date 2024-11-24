@@ -4,30 +4,27 @@
 #include <hexapod_core/leg.h>
 #include <hexapod_core/transformations.h>
 
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp/time.hpp>
-#include <geometry_msgs/msg/transform_stamped.hpp>
-#include <sensor_msgs/msg/joint_state.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
-#include <tf2_ros/buffer.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/time.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
-#include <string>
 #include <chrono>
+#include <string>
 
 namespace hexapod_vis {
 using namespace hexapod;
 using namespace std::chrono_literals;
 
-Vis::Vis(Hexapod *hexapod)
-    : Node("hexapod_visualisation_node"),
-      hexapod_(hexapod),
-      num_legs_(hexapod->num_legs_) {
+Vis::Vis(Hexapod* hexapod) : Node("hexapod_visualisation_node"), hexapod_(hexapod), num_legs_(hexapod->num_legs_) {
   const size_t number_of_joints = num_legs_ * 3;
   joint_names_.resize(number_of_joints);
   joint_angles_.resize(number_of_joints);
@@ -120,8 +117,8 @@ void Vis::updateBody() {
   const Transform tf_btb = hexapod_->getBaseToBody();
   // convert to tf matrix3x3
   tf2::Matrix3x3 r;
-  r.setValue(tf_btb.R_(0, 0), tf_btb.R_(0, 1), tf_btb.R_(0, 2), tf_btb.R_(1, 0), tf_btb.R_(1, 1),
-             tf_btb.R_(1, 2), tf_btb.R_(2, 0), tf_btb.R_(2, 1), tf_btb.R_(2, 2));
+  r.setValue(tf_btb.R_(0, 0), tf_btb.R_(0, 1), tf_btb.R_(0, 2), tf_btb.R_(1, 0), tf_btb.R_(1, 1), tf_btb.R_(1, 2),
+             tf_btb.R_(2, 0), tf_btb.R_(2, 1), tf_btb.R_(2, 2));
   // extract quaternion from it using tf2 implementation
   tf2::Quaternion q;
   r.getRotation(q);
@@ -145,9 +142,8 @@ void Vis::updateWorld() {
   const Transform tf_b_nb = hexapod_->getBaseMovement();  // for brevity, base to new base
   // convert to tf matrix3x3
   tf2::Matrix3x3 r;
-  r.setValue(tf_b_nb.R_(0, 0), tf_b_nb.R_(0, 1), tf_b_nb.R_(0, 2), tf_b_nb.R_(1, 0),
-             tf_b_nb.R_(1, 1), tf_b_nb.R_(1, 2), tf_b_nb.R_(2, 0), tf_b_nb.R_(2, 1),
-             tf_b_nb.R_(2, 2));
+  r.setValue(tf_b_nb.R_(0, 0), tf_b_nb.R_(0, 1), tf_b_nb.R_(0, 2), tf_b_nb.R_(1, 0), tf_b_nb.R_(1, 1), tf_b_nb.R_(1, 2),
+             tf_b_nb.R_(2, 0), tf_b_nb.R_(2, 1), tf_b_nb.R_(2, 2));
   // extract quaternion from it using tf2 implementation
   tf2::Quaternion q_b_nb;
   r.getRotation(q_b_nb);
@@ -243,9 +239,8 @@ void Vis::publishFootTrajectories() {
   }
 
   if (!marker_array.markers.empty()) {
-      foot_traj_marker_pub_->publish(marker_array);
+    foot_traj_marker_pub_->publish(marker_array);
   }
-
 }
 
 void Vis::publishMovementLimits() {
@@ -270,7 +265,6 @@ void Vis::publishMovementLimits() {
     }
   }
 
-
   if (!triangles.empty()) {
     visualization_msgs::msg::Marker marker;
     marker.header.frame_id = "base_link";
@@ -294,7 +288,7 @@ void Vis::publishMovementLimits() {
     marker.ns = "movement_limits";
     marker.id = 0;
 
-    for (const auto& p: triangles) {
+    for (const auto& p : triangles) {
       geometry_msgs::msg::Point pmsg;
       pmsg.x = p.x();
       pmsg.y = p.y();
@@ -305,4 +299,4 @@ void Vis::publishMovementLimits() {
   }
 }
 
-} // namespace hexapod
+}  // namespace hexapod_vis

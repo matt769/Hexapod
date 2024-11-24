@@ -5,14 +5,14 @@
 #ifndef HEXAPOD_LEG_H
 #define HEXAPOD_LEG_H
 
-#include "hexapod_core/transformations.h"
 #include "hexapod_core/joint.h"
+#include "hexapod_core/transformations.h"
 
 #ifdef __AVR__
 #include <Arduino.h>
 #else
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
 #endif
 
 namespace hexapod {
@@ -42,9 +42,9 @@ class Leg {
     float c;
   };
   /**
- * @brief Describes a rough area where the leg can move.
- * @details Likely calculated for a specific height (i.e. foot z value)
- */
+   * @brief Describes a rough area where the leg can move.
+   * @details Likely calculated for a specific height (i.e. foot z value)
+   */
   struct MovementLimits {
     float x_min;
     float x_max;
@@ -64,7 +64,7 @@ class Leg {
    * Also known as base, hip and knee joints
    * @see joints_
    */
-  enum { JOINT_1 = 0, JOINT_2, JOINT_3, NUM_JOINTS }; // TODO name this?
+  enum { JOINT_1 = 0, JOINT_2, JOINT_3, NUM_JOINTS };  // TODO name this?
   /** @brief Leg state */
   enum class State { ON_GROUND, RAISED };
   /** @brief Inverse kinematics mode
@@ -86,7 +86,7 @@ class Leg {
    * along the x-axis of the leg base frame.
    * The foot will be at distance a+b+c (no offsets in y or z) from the leg base.
    */
-  Leg(Dims dims, Joint *joints);
+  Leg(Dims dims, Joint* joints);
   /** @brief Calculate joint angles for a given foot position */
   bool calculateJointAngles(const Vector3& pos, const IKMode ik_mode, JointAngles& calculated_angles) const;
   /** @brief Calculate joint angles for a given foot position and stage the result */
@@ -120,12 +120,15 @@ class Leg {
   Vector3 getRaisedPosition() const;
   /** @brief Returns the current joint angles */
   JointAngles getJointAngles() const;
-  /** @brief Returns the current joint angles taking into account offset and axis flip for external use. */
+  /** @brief Returns the current joint angles taking into account offset and axis flip for external
+   * use. */
   JointAngles getJointAnglesPhysical() const;
 
-  /** @brief Conversion from physical to model joint angles, based on the specific joints for this leg. **/
+  /** @brief Conversion from physical to model joint angles, based on the specific joints for this
+   * leg. **/
   JointAngles fromPhysicalAngles(const Leg::JointAngles& physical_angles) const;
-  /** @brief Conversion from model to physical joint angles, based on the specific joints for this leg. **/
+  /** @brief Conversion from model to physical joint angles, based on the specific joints for this
+   * leg. **/
   JointAngles toPhysicalAngles(const Leg::JointAngles& model_angles) const;
 
   /** @brief Updates joint angles as required by current trajectory. Must be called every period
@@ -134,8 +137,7 @@ class Leg {
   /** @brief Updates leg status. Must be called every period. */
   bool updateStatus(bool raise);
   /** @brief Update leg raise trajectory targets */
-  void updateTargets(const Vector3& target_pos, const Vector3& raised_pos,
-                     uint16_t foot_air_time);
+  void updateTargets(const Vector3& target_pos, const Vector3& raised_pos, uint16_t foot_air_time);
   /** @brief Initialise leg angles, position and targets */
   void setStartingAngles(JointAngles starting_angles);
   /** @brief Return step index (progress through a step). 0 if on the ground. */
@@ -146,21 +148,19 @@ class Leg {
   float getCurrentStepProgress() const;
 
   /** @brief Sets a manually calculated trajectory */
-  void setTrajectory(const JointAngles& target,
-                     const JointAngles& increment_up,
-                     const JointAngles& midpoint,
-                     const JointAngles& increment_down,
-                     uint16_t duration);
+  void setTrajectory(const JointAngles& target, const JointAngles& increment_up, const JointAngles& midpoint,
+                     const JointAngles& increment_down, uint16_t duration);
   /** @brief Clear current trajectory. Not to be called during normal use. Maybe during startup. */
   void clearTrajectory();
-  /** @brief Updates the current joint angles according to the current joint targets and increments */
+  /** @brief Updates the current joint angles according to the current joint targets and increments
+   */
   void incrementLeg();
-  /** @brief Calculate the ROUGH movement limits for the leg when leg base is at a given height above the foot. */
+  /** @brief Calculate the ROUGH movement limits for the leg when leg base is at a given height
+   * above the foot. */
   MovementLimits calculateMovementLimits(float height) const;
   void updateMovementLimits(float walk_height, float raised_height);
   /** @brief Modifies target position to be within roughly estimated movement limits */
   Vector3 clampTarget(const Vector3& target_position, const MovementLimits& limits) const;
-
 
  private:
   /** @brief Current foot position relative to the leg base frame */
@@ -179,7 +179,8 @@ class Leg {
   JointAngles staged_angles_;
   /** @brief Track leg movement while raised */
   uint16_t step_idx_ = 0;
-  /** @brief The number of time steps that the leg will spend raised for the current step trajectory */
+  /** @brief The number of time steps that the leg will spend raised for the current step trajectory
+   */
   uint16_t current_step_duration_;
   /** @brief The final position (in leg base frame) of the foot during a step */
   Vector3 target_pos_;
@@ -206,6 +207,6 @@ class Leg {
   void calculateTrajectory();
 };
 
-} // namespace hexapod
+}  // namespace hexapod
 
-#endif // HEXAPOD_LEG_H
+#endif  // HEXAPOD_LEG_H

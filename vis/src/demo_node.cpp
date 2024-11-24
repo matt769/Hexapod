@@ -1,19 +1,19 @@
 #include "visualisation.h"
 
-#include <hexapod_core/hexapod.h>
 #include <hexapod_core/build_hexapod.h>
+#include <hexapod_core/hexapod.h>
 #include <hexapod_core/kinematics_support.h>
 #include <hexapod_core/transformations.h>
 
-#include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/transform_stamped.h>
 #include <sensor_msgs/msg/joint_state.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 using namespace hexapod_vis;
 using namespace hexapod;
@@ -30,9 +30,9 @@ void demo_all(Hexapod& hexapod);
 void demo_stand(Hexapod& hexapod);
 
 int main(int argc, char** argv) {
-//  ros::init(argc, argv, "demo_walk");
+  //  ros::init(argc, argv, "demo_walk");
   rclcpp::init(argc, argv);
-//  ros::NodeHandle nh;
+  //  ros::NodeHandle nh;
 
   Hexapod hexapod = buildDefaultHexapod();
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     vis_node->update();
 
     sim_step_no++;
-//    rclcpp::spin_once(); // required?
+    //    rclcpp::spin_once(); // required?
     loop_rate.sleep();
   }
 
@@ -228,18 +228,15 @@ void demo_body2(Hexapod& hexapod) {
   }
   z_translation += z_increment;
 
-  if ((x_angle > x_angle_limit && x_angle_increment > 0) ||
-      (x_angle < -x_angle_limit && x_angle_increment)) {
+  if ((x_angle > x_angle_limit && x_angle_increment > 0) || (x_angle < -x_angle_limit && x_angle_increment)) {
     x_angle_increment *= -1.0;
   }
   x_angle += x_angle_increment;
-  if ((y_angle > y_angle_limit && y_angle_increment > 0) ||
-      (y_angle < -y_angle_limit && y_angle_increment)) {
+  if ((y_angle > y_angle_limit && y_angle_increment > 0) || (y_angle < -y_angle_limit && y_angle_increment)) {
     y_angle_increment *= -1.0;
   }
   y_angle += y_angle_increment;
-  if ((z_angle > z_angle_limit && z_angle_increment > 0) ||
-      (z_angle < -z_angle_limit && z_angle_increment)) {
+  if ((z_angle > z_angle_limit && z_angle_increment > 0) || (z_angle < -z_angle_limit && z_angle_increment)) {
     z_angle_increment *= -1.0;
   }
   z_angle += z_angle_increment;
@@ -257,7 +254,7 @@ void demo_body2(Hexapod& hexapod) {
 class CycleValue {
  public:
   CycleValue(float val, float inc, float limit, size_t limit_cycles)
-      : val_(val), start_val_(val_), inc_(inc), limit_(limit), limit_cycles_(limit_cycles){};
+      : val_(val), start_val_(val_), inc_(inc), limit_(limit), limit_cycles_(limit_cycles) {};
   float value() {
     if (finished()) {
       return val_;
@@ -359,8 +356,8 @@ void demo_all(Hexapod& hexapod) {
     tf_base_to_body_new.t_(2) = z_pos2.value();
     tf_base_to_body_new.R_.setRPYExtr(x_ang2.value(), y_ang2.value(), z_ang2.value());
     hexapod.setBody(tf_base_to_body_new);
-    if (x_ang2.finished() && y_ang2.finished() && z_ang2.finished() && x_pos2.finished() &&
-        y_pos2.finished() && z_pos2.finished()) {
+    if (x_ang2.finished() && y_ang2.finished() && z_ang2.finished() && x_pos2.finished() && y_pos2.finished() &&
+        z_pos2.finished()) {
       stage++;
     }
   }
@@ -547,8 +544,8 @@ void demo_all(Hexapod& hexapod) {
     }
 
     hexapod.setWalk(Vector3(0.004, -0.002, 0), (5.0 * M_PI / 180.0) / 50.0);
-    if (x_ang3.finished() && y_ang3.finished() && z_ang3.finished() && x_pos3.finished() &&
-        y_pos3.finished() && z_pos3.finished()) {
+    if (x_ang3.finished() && y_ang3.finished() && z_ang3.finished() && x_pos3.finished() && y_pos3.finished() &&
+        z_pos3.finished()) {
       stage++;
     }
   }
@@ -560,8 +557,8 @@ void demo_all(Hexapod& hexapod) {
     tf_base_to_body_new.t_(2) = z_pos3.value();
     tf_base_to_body_new.R_.setRPYExtr(x_ang3.value(), y_ang3.value(), z_ang3.value());
     hexapod.setBody(tf_base_to_body_new);
-    if (x_ang3.finished() && y_ang3.finished() && z_ang3.finished() && x_pos3.finished() &&
-        y_pos3.finished() && z_pos3.finished()) {
+    if (x_ang3.finished() && y_ang3.finished() && z_ang3.finished() && x_pos3.finished() && y_pos3.finished() &&
+        z_pos3.finished()) {
       stage++;
     }
   }
@@ -575,4 +572,3 @@ void demo_all(Hexapod& hexapod) {
 
   sim_step_no++;
 }
-
