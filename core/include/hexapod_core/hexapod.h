@@ -174,7 +174,12 @@ class Hexapod {
   /** @brief For moving the body up from the ground to a walking position */
   float rising_increment_;
 
+  float walk_translation_max_per_leg_step_;
+
   Vector3 walk_step_requested_{0.0f, 0.0f, 0.0f};
+  // We assume that within a leg step (leg lifts off ground, leg sets down on ground), there will not be significantly
+  //  alternating movement requests that are getting cancelled out in the accumulation
+  Vector3 walk_step_applied_this_leg_step_{0.0f, 0.0f, 0.0f};
   float turn_step_requested_{0.0f};
 
   GaitDefinition gaits_[5];

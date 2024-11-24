@@ -124,6 +124,8 @@ void Hexapod::setMovementIncrements() {
   body_translation_increment_ = (dims_.width / 20.0f);
   stance_width_increment_ = (dims_.width / 20.0f);
   leg_raise_increment_ = leg_lift_height_default_ / 10.0f;
+
+  walk_translation_max_per_leg_step_ = walk_translation_increment_;
 }
 
 void Hexapod::printMovementParameters() {
@@ -462,8 +464,32 @@ bool Hexapod::setWalkingTargets() {
     walk_step_requested_ = Vector3(x, y, 0);
   }
 
-  // TODO Now limit the requests if necessary
-  walk_step_target_ = walk_step_requested_;
+  // Now limit the requests if necessary
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; ++leg_idx) {
+    if (legs_[leg_idx].state_ == Leg::State::ON_GROUND && legs_[leg_idx].prev_state_ == Leg::State::RAISED) {
+      // a leg has just finished its step, so reset the accumulated motion limit
+      walk_step_applied_this_leg_step_ = {0.0, 0.0, 0.0};
+      break;
+    }
+  }
+
+  const float allowed_change_abs_x = walk_translation_max_per_leg_step_ - walk_step_applied_this_leg_step_.x();
+  const float requested_change_x = walk_step_requested_.x() - walk_step_current_.x();
+  const float change_abs_x = fmin(allowed_change_abs_x, fabs(requested_change_x));
+  const float change_x = requested_change_x >= 0 ? change_abs_x : -change_abs_x;
+  walk_step_applied_this_leg_step_.x() += change_x;
+  // surely this can be a bit nicer??
+
+  const float allowed_change_abs_y = walk_translation_max_per_leg_step_ - walk_step_applied_this_leg_step_.y();
+  const float requested_change_y = walk_step_requested_.y() - walk_step_current_.y();
+  const float change_abs_y = fmin(allowed_change_abs_y, fabs(requested_change_y));
+  const float change_y = requested_change_y >= 0 ? change_abs_y : -change_abs_y;
+  walk_step_applied_this_leg_step_.y() += change_y;
+
+  walk_step_target_.x() = walk_step_current_.x() + change_x;
+  walk_step_target_.y() = walk_step_current_.y() + change_y;
+
+  // We're not restricting change in turning speed currently
   turn_step_target_ = turn_step_requested_;
 
   tf_base_to_new_base_target_.R_.setRPYExtr(0.0f, 0.0f, turn_step_target_);
