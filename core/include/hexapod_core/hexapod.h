@@ -175,7 +175,7 @@ class Hexapod {
   float rising_increment_;
 
   Vector3 walk_step_requested_{0.0f, 0.0f, 0.0f};
-  float current_walk_turn_{0.0f};
+  float turn_step_requested_{0.0f};
 
   GaitDefinition gaits_[5];
   Leg* legs_;
