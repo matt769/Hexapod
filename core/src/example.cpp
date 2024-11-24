@@ -98,12 +98,14 @@ int main() {
   }
   std::cout << "finished setAllLegTargetsToGround\n";
 
-  while (hexapod.getState() == Hexapod::State::STANDING) {
-    hexapod.riseToWalk();
+  hexapod.riseToWalk();  // the raising has been triggered but need to wait for it to get there
+
+  while (hexapod.getState() != Hexapod::State::WALKING) {
     hexapod.update();
   }
   std::cout << "finished riseToWalk\n";
 
+  std::cout << (int)hexapod.getState() << '\n';
   //  hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
   //  for (int i =0; i < 1; ++i) {
   //    hexapod.setWalk(Vector3(-0.001f, -0.001f, 0.0f), 0.0);
@@ -111,9 +113,11 @@ int main() {
   //  }
 
   for (int i = 0; i < 50; ++i) {
-    hexapod.setWalk(Vector3(0.001f, -0.0f, 0.0f), 0.0);
+    hexapod.setWalk(
+        Vector3(hexapod.walk_translation_increment_ * 2.0f, hexapod.walk_translation_increment_ * -4.0f, 0.0f), 0.0);
     hexapod.update();
   }
+
   exit(0);
 
   Vector3 small_step = Vector3(-0.001f, -0.001f, 0.0f);
