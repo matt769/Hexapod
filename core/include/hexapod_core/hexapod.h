@@ -174,7 +174,7 @@ class Hexapod {
   /** @brief For moving the body up from the ground to a walking position */
   float rising_increment_;
 
-  Vector3 current_walk_translation_{0.0f, 0.0f, 0.0f};
+  Vector3 walk_step_requested_{0.0f, 0.0f, 0.0f};
   float current_walk_turn_{0.0f};
 
   GaitDefinition gaits_[5];
