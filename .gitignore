@@ -3,6 +3,11 @@ rough
 core/doxygen
 !core/doxygen/Doxyfile
 
+
+# Clion artifacts
 .idea
 cmake-build-debug
 cmake-build-release
+
+# I've got a symlink to the .clang-format file in the root to make it easier when opening this package on it's own in CLion, but want to ignore in git (only want/need 1 copy of this file)
+core/.clang-format
