@@ -442,7 +442,7 @@ bool Hexapod::setWalk(const Vector3& walk_step) { return setWalk(walk_step, 0.0f
 bool Hexapod::setWalk(const float angle_step) { return setWalk(Vector3(0.0f, 0.0f, 0.0f), angle_step); }
 
 bool Hexapod::changeWalk(const Vector3& walk_step, float angle_step) {
-  return setWalk(walk_step_requested_ + walk_step, turn_step_requested_ + angle_step);
+  return setWalk(walk_step_current_ + walk_step, turn_step_current_ + angle_step);
 }
 
 bool Hexapod::changeWalk(const Vector3& walk_step) { return changeWalk(walk_step, 0.0f); }
