@@ -61,9 +61,11 @@ int main() {
 
   Hexapod hexapod = buildPhantomXForVis();
 
-  Hexapod px2 = buildPhantomX();
-  auto left_leg = px2.getLeg(0);
-  auto right_leg = px2.getLeg(1);
+  //  hexapod.getLeg(0).calculateMovementLimits(0.0659999996)
+
+  //  Hexapod px2 = buildPhantomX();
+  //  auto left_leg = px2.getLeg(0);
+  //  auto right_leg = px2.getLeg(1);
 
   //  auto l = hexapod.getLeg(0);
   //  Vector3 grounded_position{0.174964011, 0.0, 0.07/2.0};
@@ -114,7 +116,7 @@ int main() {
 
   for (int i = 0; i < 50; ++i) {
     hexapod.setWalk(
-        Vector3(hexapod.walk_translation_increment_ * 2.0f, hexapod.walk_translation_increment_ * -4.0f, 0.0f), 0.0);
+        Vector3(hexapod.walk_translation_increment_ * 1.0f, hexapod.walk_translation_increment_ * -1.0f, 0.0f), 0.0);
     hexapod.update();
   }
 
