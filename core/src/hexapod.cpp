@@ -531,7 +531,16 @@ bool Hexapod::changeBody(const Transform& tf_base_to_body_change) {
   return setBody(tf_base_to_body_target);
 }
 
-bool Hexapod::clearWalk() { return setWalk(Vector3(0.0f, 0.0f, 0.0f), 0.0f); }
+void Hexapod::clearWalk() {
+  // Clear all the movement variables to prevent changes being throttled
+  walk_step_applied_this_leg_step_ = Vector3(0.0f, 0.0f, 0.0f);
+  walk_step_requested_ = Vector3(0.0f, 0.0f, 0.0f);
+  walk_step_target_ = Vector3(0.0f, 0.0f, 0.0f);
+  walk_step_current_ = Vector3(0.0f, 0.0f, 0.0f);
+  turn_step_requested_ = 0.0f;
+  turn_step_target_ = 0.0f;
+  turn_step_current_ = 0.0f;
+}
 
 /**
  * @details

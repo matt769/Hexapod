@@ -123,7 +123,7 @@ void Receiver::processCommand(const uint8_t cmd) {
       hexapod_->changeWalk(-hexapod_->walk_turn_increment_);
       break;
     case 120:  // x  Stop
-      hexapod_->setWalk(Vector3{0.0f, 0.0f, 0.0f}, 0.0f);
+      hexapod_->clearWalk();
       break;
 
     case 116:  // t  Move body forward

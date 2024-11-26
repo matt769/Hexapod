@@ -63,7 +63,7 @@ class Hexapod {
   /** @brief Change turning movement for the next period */
   bool changeWalk(float angle_step);
   /** @brief Resets any walk or turn commands. Does not affect body rotation or translation. */
-  bool clearWalk();
+  void clearWalk();
 
   /** @brief Set absolute body rotation and translation relative to the base */
   bool setBody(const Transform& tf_base_to_body_target, bool force = false);

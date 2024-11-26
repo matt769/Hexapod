@@ -58,15 +58,15 @@ class PS4Receiver {
     if (!hexapod_) return;
 
     if (ps4_data.button_l2 && ps4_data.button_r2 && ps4_data.button_x) {
-      hexapod_->setWalk(Vector3(0, 0, 0));  // TODO should be done in hexapod when setting manual
-                                            // control? or is this not required at all?
+      hexapod_->clearWalk();  // TODO should be done in hexapod when setting manual
+                              // control? or is this not required at all?
       hexapod_->setFullManualControl(true);
       hexapod_->setManualLegControl(0);
       Serial.println(F("Manual leg control"));
       // TODO currently we don't provide a way to go back to normal control
     } else if (ps4_data.button_l2 && ps4_data.button_r2 && ps4_data.button_circle) {
-      hexapod_->setWalk(Vector3(0, 0, 0));  // TODO should be done in hexapod when setting manual
-                                            // control? or is this not required at all?
+      hexapod_->clearWalk();  // TODO should be done in hexapod when setting manual
+                              // control? or is this not required at all?
       hexapod_->setFullManualControl(true);
       hexapod_->setManualLegControl(0);
       hexapod_->setManualJointControl(0);
@@ -276,8 +276,14 @@ class PS4Receiver {
     float scaled_walk_increment = walk_increment * kMaxTransSpeed;      // can do once at start
     float scaled_turn_increment = walk_turn_increment * kMaxTurnSpeed;  // can do once at start
     // Note: in hexapod, forward is along x axis, left/right along y
-    hexapod_->setWalk(Vector3{speed_trans_y * scaled_walk_increment, speed_trans_x * scaled_walk_increment, 0.0f},
-                      turn_speed * scaled_turn_increment);
+    const Vector3 requested_translation =
+        Vector3{speed_trans_y * scaled_walk_increment, speed_trans_x * scaled_walk_increment, 0.0f};
+    const float requested_turn = turn_speed * scaled_turn_increment;
+    if (requested_translation.x() == 0.0f && requested_translation.y() == 0.0f && requested_turn == 0.0f) {
+      hexapod->clearWalk();
+    } else {
+      hexapod_->setWalk(requested_translation, requested_turn);
+    }
 
     // Only do these changes if holding L1
     if (ps4_data.button_l1) {
