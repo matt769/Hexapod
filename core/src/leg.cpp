@@ -435,73 +435,114 @@ void Leg::incrementLeg() {
 }
 
 Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
-  // start off by finding the limits in x/y(in leg frame)
-  // maybe could consider as diamond
-  // later may want to to something more complex (approximate circle?)
-  Vector3 neutral = getNeutralPosition();  // TODO this is actually callng the non-const version and
-                                           // returning a modifyable ref
-  neutral.z() = -height;
+  // start off by finding the limits in x/y(in leg frame) and consider the limits as a diamond
+  // (later may want to do something more complex)
 
-  MovementLimits leg_movement_limits{neutral.x(), neutral.x(), neutral.y(), neutral.y()};
+  const float min_extension = 0.0;  // actually the leg could potentially go further back but we ignore this
+  const float max_extension = dims_.a + dims_.b + dims_.c;
+  const float range_x = max_extension - min_extension;
+
+  // We don't know what height the body will be, so it's difficult to guarantee what value of x is definitely achievable
+  //  if we want a convenient starting point, so we need to search for it (look every 10% of the range)
   Leg::JointAngles ik_result_angles;
 
-  // Sense check that neutral position is achievable!
-  if (!calculateJointAngles(neutral, Leg::IKMode::WALK, ik_result_angles)) {
-    return leg_movement_limits;
+  // start somewhere in the middle
+  const float centre_x = min_extension + range_x * 0.5f;
+  float starting_x;
+  bool found_start = false;
+  for (uint8_t i = 0; i < 5; ++i) {
+    const float test_value = centre_x + (float)i * 0.1f;
+    found_start = calculateJointAngles(Vector3(test_value, 0.0, -height), Leg::IKMode::WALK, ik_result_angles);
+    if (found_start) {
+      starting_x = test_value;
+      break;
+    }
+  }
+  // If not found, look the other direction
+  if (!found_start) {
+    for (uint8_t i = 0; i < 5; ++i) {
+      const float test_value = centre_x - (float)i * 0.1f;
+      found_start = calculateJointAngles(Vector3(test_value, 0.0, -height), Leg::IKMode::WALK, ik_result_angles);
+      if (found_start) {
+        starting_x = test_value;
+        break;
+      }
+    }
   }
 
-  const float max_extension = dims_.a + dims_.b + dims_.c;
+  if (!found_start) {
+    return MovementLimits{
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+    };
+  }
+
+  MovementLimits leg_movement_limits{starting_x, starting_x, 0.0f, 0.0f};
   float test_value;
 
-  //  float test_value = max_extension;
   // 100 steps for now
-  // start at the absolute limit
-  // MAX X
+  const float increment = range_x * 0.01f;
+  // start at the absolute limit, move inwards and break as soon as we find an achievable position
+  bool min_x_found = false;
+  bool max_x_found = false;
+
   test_value = max_extension;
-  while (test_value > neutral.x()) {
-    Vector3 test_position = neutral;
-    test_position.x() = test_value;
+  while (test_value > starting_x) {
+    Vector3 test_position{test_value, 0.0f, -height};
     if (calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
-      leg_movement_limits.x_max = test_value;
+      leg_movement_limits.x_max = test_position.x();
+      max_x_found = true;
       break;
     }
-    test_value -= max_extension / 100.0f;
+    test_value -= increment;
   }
 
-  test_value = -max_extension;
-  while (test_value < neutral.x()) {
-    Vector3 test_position = neutral;
-    test_position.x() = test_value;
+  test_value = min_extension;
+  while (test_value < starting_x) {
+    Vector3 test_position{test_value, 0.0f, -height};
     if (calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
-      leg_movement_limits.x_min = test_value;
+      leg_movement_limits.x_min = test_position.x();
+      min_x_found = true;
       break;
     }
-    test_value += max_extension / 100.0f;
+    test_value += increment;
   }
 
-  const float max_y_extension = sqrt(max_extension * max_extension + neutral.x() * neutral.x());
+  if (!min_x_found || !max_x_found) {
+    return MovementLimits{
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+    };
+  }
+
+  bool max_y_found = false;
+  const float mid_x = (leg_movement_limits.x_max + leg_movement_limits.x_min) * 0.5f;
+  const float max_y_extension = sqrt(max_extension * max_extension + mid_x * mid_x);
+  const float starting_y = 0.0f;
   test_value = max_y_extension;
-  while (test_value > neutral.y()) {
-    Vector3 test_position = neutral;
-    test_position.y() = test_value;
+  while (test_value > 0.0f) {
+    Vector3 test_position{mid_x, test_value, -height};
     if (calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
-      leg_movement_limits.y_max = test_value;
+      leg_movement_limits.y_max = test_position.y();
+      max_y_found = true;
       break;
     }
-    test_value -= max_y_extension / 100.0f;
+    test_value -= increment;
+  }
+  if (!max_y_found) {
+    return MovementLimits{
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+    };
   }
 
-  test_value = -max_y_extension;
-  while (test_value < neutral.y()) {
-    Vector3 test_position = neutral;
-    test_position.y() = test_value;
-    if (calculateJointAngles(test_position, Leg::IKMode::WALK, ik_result_angles)) {
-      leg_movement_limits.y_min = test_value;
-      break;
-    }
-    test_value += max_y_extension / 100.0f;
-  }
-
+  leg_movement_limits.y_min = -leg_movement_limits.y_max;  // We assume that y limits are symmetric around 0
   return leg_movement_limits;
 }
 
