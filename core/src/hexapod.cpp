@@ -128,6 +128,7 @@ void Hexapod::setMovementIncrements() {
   leg_raise_increment_ = leg_lift_height_default_ / 10.0f;
 
   walk_translation_max_per_leg_step_ = walk_translation_increment_;
+  step_dist_ = sqrtf(2 * walk_translation_increment_ * walk_translation_increment_);
 }
 
 void Hexapod::printMovementParameters() {
@@ -490,6 +491,23 @@ bool Hexapod::setWalkingTargets() {
 
   walk_step_target_.x() = walk_step_current_.x() + change_x;
   walk_step_target_.y() = walk_step_current_.y() + change_y;
+
+  // also adjust the step time
+  // what should the relationship be? ignore the fact that this is manually adjustable too for the moment
+  // if we double the step distance, should we halve the step speed?
+  // let's try that to start
+
+  // Note that
+
+  if (walk_step_target_ == Vector3()) {
+    setLegRaiseTime(foot_air_time_default_);
+  } else {
+    const float sq =
+        sqrtf(walk_step_target_.x() * walk_step_target_.x() + walk_step_target_.y() * walk_step_target_.y());
+    const uint16_t time_units = (uint16_t)(sq / step_dist_) * 2;
+    setLegRaiseTime(foot_air_time_default_ - time_units);
+  }
+  foot_air_time_;
 
   // We're not restricting change in turning speed currently
   turn_step_target_ = turn_step_requested_;

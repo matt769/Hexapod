@@ -161,6 +161,7 @@ class Hexapod {
   uint16_t foot_air_time_min_;
   uint16_t foot_air_time_max_;
   uint16_t foot_air_time_;
+  float step_dist_;
   float stance_width_min_;
   float stance_width_max_;
   float stance_width_default_;
