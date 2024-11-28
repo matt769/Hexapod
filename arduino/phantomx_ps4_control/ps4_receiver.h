@@ -280,7 +280,7 @@ class PS4Receiver {
         Vector3{speed_trans_y * scaled_walk_increment, speed_trans_x * scaled_walk_increment, 0.0f};
     const float requested_turn = turn_speed * scaled_turn_increment;
     if (requested_translation.x() == 0.0f && requested_translation.y() == 0.0f && requested_turn == 0.0f) {
-      hexapod->clearWalk();
+      hexapod_->clearWalk();
     } else {
       hexapod_->setWalk(requested_translation, requested_turn);
     }
