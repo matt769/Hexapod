@@ -134,7 +134,12 @@ class Hexapod {
   uint8_t getManualControlLegIdx() const;
   uint8_t getManualControlJointIdx() const;
 
+  // TODO remove defaults and put all in the movement parameter functions
+  float walk_translation_max_{0.0f};
+  uint8_t walk_translation_num_increments_{10};
   float walk_translation_increment_{0.0f};
+  float walk_turn_max_{0.0f};
+  uint8_t walk_turn_num_increments_{10};
   float walk_turn_increment_{0.0f};
   const float body_rotation_increment_{1.0f * M_PI / 180.0};
   float body_translation_increment_{0.0f};
@@ -204,7 +209,7 @@ class Hexapod {
   Vector3 walk_step_current_;
   /** @brief Requested walk vector. */
   Vector3 walk_step_target_;
-  /** @brief Current walk vector. */
+  /** @brief Current turn angle. */
   float turn_step_current_;
   /** @brief Requested turn angle. */
   float turn_step_target_;
@@ -229,7 +234,7 @@ class Hexapod {
   uint8_t gait_next_leg_seq_no_ = 0;  // Note that this is NOT a leg index
   float stance_width_ = stance_width_default_;
   float leg_lift_height_ = leg_lift_height_default_;
-  float foot_ground_travel_ratio_ = fgtr_default_;
+  float foot_ground_travel_ratio_ = fgtr_default_;  // TODO not used
   float total_base_rotation_ = 0.0f;
 
   ManualControlType manual_control_type_;

@@ -61,6 +61,11 @@ int main() {
 
   Hexapod hexapod = buildPhantomXForVis();
 
+  //  const float sq = sqrtf(0.00119999994*0.00119999994);
+  //  const float new_air_time = sq * 20000.002;
+  //  std::cout << sq << '\t' << new_air_time << '\n';
+  //
+
   //  hexapod.getLeg(0).calculateMovementLimits(0.0659999996)
 
   //  Hexapod px2 = buildPhantomX();
@@ -94,7 +99,7 @@ int main() {
     hexapod.setLegJoints(leg_idx, starting_angles);
   }
 
-  hexapod.setAllLegTargetsToGround(50);
+  hexapod.setAllLegTargetsToGround();
   while (hexapod.getState() != Hexapod::State::STANDING) {
     hexapod.update();
   }
@@ -116,7 +121,7 @@ int main() {
 
   for (int i = 0; i < 50; ++i) {
     hexapod.setWalk(
-        Vector3(hexapod.walk_translation_increment_ * 1.0f, hexapod.walk_translation_increment_ * -1.0f, 0.0f), 0.0);
+        Vector3(hexapod.walk_translation_increment_ * 10.0f, hexapod.walk_translation_increment_ * -10.0f, 0.0f), 0.0);
     hexapod.update();
   }
 
