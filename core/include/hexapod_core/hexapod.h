@@ -41,6 +41,21 @@ class Hexapod {
   /** @brief Gait identifier. Also used as index into gait_seq_ */
   enum Gait { RIPPLE = 0, LEFT_RIGHT_LEFT_RIGHT, LHS_THEN_RHS, AROUND_THE_CLOCK, TRIPOD, NUM_GAITS };
 
+  /** @brief Velocity of the base in x and y axes */
+  struct BaseTranslationLevels {
+    int16_t x;
+    int16_t y;
+  };
+  /** @brief Base velocities in the 3 allowed DoF (tx, ty, rz) */
+  struct BaseMovementLevels {
+    /** @brief Velocity of the base in x and y axes */
+    BaseTranslationLevels t;
+    /** @brief Angular velocity of the base around its Z axis */
+    int16_t r;
+    /** @brief Method added for convenience since this will be a common operation */
+    bool isZero() const;
+  };
+
   /** @brief Construct a new Hexapod object */
   Hexapod(uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_leg, Leg* legs, uint16_t update_frequency = 50);
   ~Hexapod();
@@ -293,6 +308,13 @@ class Hexapod {
   bool setWalkingTargets();
   void setMovementIncrements();
 };
+
+Hexapod::BaseTranslationLevels operator+(const Hexapod::BaseTranslationLevels& a,
+                                         const Hexapod::BaseTranslationLevels& b);
+Hexapod::BaseTranslationLevels operator-(const Hexapod::BaseTranslationLevels& a,
+                                         const Hexapod::BaseTranslationLevels& b);
+Hexapod::BaseMovementLevels operator+(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b);
+Hexapod::BaseMovementLevels operator-(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b);
 
 }  // namespace hexapod
 

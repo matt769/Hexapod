@@ -18,6 +18,27 @@ namespace hexapod {
 
 using namespace util;
 
+bool Hexapod::BaseMovementLevels::isZero() const { return t.x == 0 && t.y == 0 && r == 0; }
+
+// Note: may get narrowing conversion warnings when compiling these 4 functions not on microcontroller
+Hexapod::BaseTranslationLevels operator+(const Hexapod::BaseTranslationLevels& a,
+                                         const Hexapod::BaseTranslationLevels& b) {
+  return Hexapod::BaseTranslationLevels{a.x + b.x, a.y + b.y};
+}
+
+Hexapod::BaseTranslationLevels operator-(const Hexapod::BaseTranslationLevels& a,
+                                         const Hexapod::BaseTranslationLevels& b) {
+  return Hexapod::BaseTranslationLevels{a.x - b.x, a.y - b.y};
+}
+
+Hexapod::BaseMovementLevels operator+(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b) {
+  return Hexapod::BaseMovementLevels{a.t + b.t, a.r + b.r};
+}
+
+Hexapod::BaseMovementLevels operator-(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b) {
+  return Hexapod::BaseMovementLevels{a.t - b.t, a.r - b.r};
+}
+
 /**
  * @details
  * The transforms and Legs provided MUST be in the following order:
