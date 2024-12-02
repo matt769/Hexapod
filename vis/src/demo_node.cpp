@@ -71,22 +71,18 @@ void demo_stand(Hexapod& hexapod) {
     hexapod.riseToWalk();
   }
   if (hexapod.getState() == Hexapod::State::WALKING) {
-    hexapod.setWalk(Vector3(0.002f, 0.0f, 0.0f), (0.0 * M_PI / 180.0) / 50.0);
+    hexapod.increaseWalkForward();
   }
 
   sim_step++;
 }
 
-void demo_walk(Hexapod& hexapod) {
-  Vector3 step(0.002f, 0.0f, 0.0f);
-  hexapod.setWalk(step);
-}
+void demo_walk(Hexapod& hexapod) { hexapod.increaseWalkForward(); }
 
 void demo_turn(Hexapod& hexapod) {
   static size_t sim_step_no = 0;
   if (sim_step_no > 100) {
-    float angle_step = (5.0 * M_PI / 180.0) / 50.0;
-    hexapod.setWalk(angle_step);
+    hexapod.increaseRotationCCW();
   }
   sim_step_no++;
 }
@@ -94,16 +90,18 @@ void demo_turn(Hexapod& hexapod) {
 void demo_walk_turn(Hexapod& hexapod) {
   static size_t sim_step_no = 0;
   if (sim_step_no == 200) {
-    Vector3 small_step = Vector3(0.002f, 0.001f, 0.0f);
-    hexapod.setWalk(small_step);
+    hexapod.increaseWalkForward();
+    hexapod.increaseWalkForward();
+    hexapod.increaseWalkLeft();
   } else if (sim_step_no == 400) {
-    Vector3 small_step = Vector3(0.0f, 0.0f, 0.0f);
-    float angle_step = (5.0 * M_PI / 180.0) / 50.0;
-    hexapod.setWalk(small_step, angle_step);
+    hexapod.clearWalk();
+    hexapod.increaseRotationCCW();
+    hexapod.increaseRotationCCW();
   } else if (sim_step_no == 600) {
-    Vector3 small_step = Vector3(-0.001f, -0.001f, 0.0f);
-    float angle_step = (-5.0 * M_PI / 180.0) / 50.0;
-    hexapod.setWalk(small_step, angle_step);
+    hexapod.clearWalk();
+    hexapod.increaseWalkForward();
+    hexapod.increaseWalkLeft();
+    hexapod.increaseRotationCCW();
   }
   sim_step_no++;
 }
@@ -130,9 +128,10 @@ void demo_walk_turn_body(Hexapod& hexapod) {
     tf_base_to_body_new.t_(1) = t;
     tf_base_to_body_new.t_(2) = t;
     // and walk at same time
-    Vector3 small_step = Vector3(0.002f, 0.002f, 0.0f);
-    float angle_step = (3.0 * M_PI / 180.0) / 50.0;
-    hexapod.setWalk(small_step, angle_step);
+    hexapod.clearWalk();
+    hexapod.increaseWalkForward();
+    hexapod.increaseWalkLeft();
+    hexapod.increaseRotationCCW();
     hexapod.setBody(tf_base_to_body_new);
   }
   sim_step_no++;
@@ -181,8 +180,7 @@ void demo_body_then_walk(Hexapod& hexapod) {
     tf_base_to_body_new.t_(2) = t;
     hexapod.setBody(tf_base_to_body_new);
   } else if (sim_step_no > 250) {
-    Vector3 small_step = Vector3(0.002f, 0.0f, 0.0f);
-    hexapod.setWalk(small_step);
+    hexapod.increaseWalkForward();
   }
   sim_step_no++;
 }
@@ -377,7 +375,7 @@ void demo_all(Hexapod& hexapod) {
     stage++;
   }
   if (stage == 10) {
-    hexapod.setWalk(Vector3(0.0, 0, 0));
+    hexapod.clearWalk();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 100;
     }
@@ -389,7 +387,7 @@ void demo_all(Hexapod& hexapod) {
 
   // Walk
   if (stage == 11) {
-    hexapod.setWalk(Vector3(0.003, 0, 0));
+    hexapod.increaseWalkForward();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 200;
     }
@@ -400,7 +398,7 @@ void demo_all(Hexapod& hexapod) {
   }
   // pause
   if (stage == 12) {
-    hexapod.setWalk(Vector3(0.0, 0, 0));
+    hexapod.clearWalk();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 150;
     }
@@ -411,7 +409,7 @@ void demo_all(Hexapod& hexapod) {
   }
   // backwards
   if (stage == 13) {
-    hexapod.setWalk(Vector3(-0.003, 0, 0));
+    hexapod.decreaseWalkForward();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 200;
     }
@@ -422,7 +420,7 @@ void demo_all(Hexapod& hexapod) {
   }
   // pause
   if (stage == 14) {
-    hexapod.setWalk(Vector3(0.0, 0, 0));
+    hexapod.clearWalk();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 250;
     }
@@ -433,7 +431,7 @@ void demo_all(Hexapod& hexapod) {
   }
   // side
   if (stage == 15) {
-    hexapod.setWalk(Vector3(0.0, -0.003, 0));
+    hexapod.increaseWalkLeft();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 200;
     }
@@ -444,7 +442,8 @@ void demo_all(Hexapod& hexapod) {
   }
   // and back
   if (stage == 16) {
-    hexapod.setWalk(Vector3(0.0, 0.003, 0));
+    hexapod.decreaseWalkLeft();
+    hexapod.decreaseWalkLeft();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 300;
     }
@@ -455,7 +454,8 @@ void demo_all(Hexapod& hexapod) {
   }
   // angled
   if (stage == 17) {
-    hexapod.setWalk(Vector3(-0.002, -0.002, 0));
+    hexapod.increaseWalkForward();
+    hexapod.increaseWalkLeft();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 300;
     }
@@ -464,9 +464,10 @@ void demo_all(Hexapod& hexapod) {
       sim_step_no_target = 0;
     }
   }
-  // Turn 135ish
+  // Turn
   if (stage == 18) {
-    hexapod.setWalk((7.0 * M_PI / 180.0) / 50.0);
+    hexapod.clearWalk();
+    hexapod.increaseRotationCCW();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 300;
     }
@@ -476,7 +477,8 @@ void demo_all(Hexapod& hexapod) {
     }
   }
   if (stage == 19) {
-    hexapod.setWalk((15.0 * M_PI / 180.0) / 50.0);
+    hexapod.increaseRotationCCW();
+    hexapod.increaseRotationCCW();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 300;
     }
@@ -487,7 +489,9 @@ void demo_all(Hexapod& hexapod) {
   }
   // Walk forward
   if (stage == 20) {
-    hexapod.setWalk(Vector3(0.004, 0, 0));
+    hexapod.clearWalk();
+    hexapod.increaseWalkForward();
+    hexapod.increaseWalkForward();
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 150;
     }
@@ -498,7 +502,6 @@ void demo_all(Hexapod& hexapod) {
   }
   // Change gait
   if (stage == 21) {
-    hexapod.setWalk(Vector3(0.004, 0, 0));
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 300;
       hexapod.changeGait(Hexapod::Gait::LEFT_RIGHT_LEFT_RIGHT);
@@ -510,7 +513,6 @@ void demo_all(Hexapod& hexapod) {
   }
   // Change gait
   if (stage == 22) {
-    hexapod.setWalk(Vector3(0.004, 0, 0));
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 300;
       hexapod.changeGait(Hexapod::Gait::LHS_THEN_RHS);
@@ -522,7 +524,6 @@ void demo_all(Hexapod& hexapod) {
   }
   // Change gait
   if (stage == 23) {
-    hexapod.setWalk(Vector3(0.004, 0, 0));
     if (sim_step_no_target < sim_step_no) {
       sim_step_no_target = sim_step_no + 300;
       hexapod.changeGait(Hexapod::Gait::AROUND_THE_CLOCK);
@@ -543,7 +544,13 @@ void demo_all(Hexapod& hexapod) {
       sim_step_no_target = 0;
     }
 
-    hexapod.setWalk(Vector3(0.004, -0.002, 0), (5.0 * M_PI / 180.0) / 50.0);
+    hexapod.clearWalk();
+    hexapod.increaseWalkForward();
+    hexapod.increaseWalkForward();
+    hexapod.decreaseWalkLeft();
+    hexapod.decreaseWalkLeft();
+    hexapod.increaseRotationCCW();
+    hexapod.increaseRotationCCW();
     if (x_ang3.finished() && y_ang3.finished() && z_ang3.finished() && x_pos3.finished() && y_pos3.finished() &&
         z_pos3.finished()) {
       stage++;
@@ -551,7 +558,13 @@ void demo_all(Hexapod& hexapod) {
   }
   // Everything
   if (stage == 25) {
-    hexapod.setWalk(Vector3(0.004, -0.002, 0), (5.0 * M_PI / 180.0) / 50.0);
+    hexapod.clearWalk();
+    hexapod.increaseWalkForward();
+    hexapod.increaseWalkForward();
+    hexapod.decreaseWalkLeft();
+    hexapod.decreaseWalkLeft();
+    hexapod.increaseRotationCCW();
+    hexapod.increaseRotationCCW();
     tf_base_to_body_new.t_(0) = x_pos3.value();
     tf_base_to_body_new.t_(1) = y_pos3.value();
     tf_base_to_body_new.t_(2) = z_pos3.value();
@@ -567,7 +580,12 @@ void demo_all(Hexapod& hexapod) {
   // TODO add change leg lift height
 
   if (stage == 26) {
-    hexapod.setWalk(Vector3(0.008, -0.008, 0));
+    hexapod.clearWalk();
+    hexapod.decreaseWalkLeft();
+    hexapod.decreaseWalkLeft();
+    hexapod.decreaseWalkLeft();
+    hexapod.decreaseWalkLeft();
+    hexapod.decreaseWalkLeft();
   }
 
   sim_step_no++;

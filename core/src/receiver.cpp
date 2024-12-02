@@ -16,9 +16,6 @@ Receiver::Receiver(Hexapod* hexapod) { setRobot(hexapod); }
 
 void Receiver::setRobot(Hexapod* hexapod) {
   hexapod_ = hexapod;
-  float walk_increment = hexapod_->walk_translation_increment_;
-  walk_increment_fb = Vector3{walk_increment, 0.0f, 0.0f};
-  walk_increment_lr = Vector3{0.0f, walk_increment, 0.0f};
   manual_fb = Vector3{0.001, 0.0f, 0.0f};
   manual_lr = Vector3{0.0f, 0.001, 0.0f};
   manual_ud = Vector3{0.0f, 0.0f, 0.001};
@@ -105,22 +102,22 @@ void Receiver::processCommand(const uint8_t cmd) {
 
   switch (cmd) {
     case 119:  // w  Increase forward velocity
-      hexapod_->changeWalk(walk_increment_fb);
+      hexapod_->increaseWalkForward();
       break;
     case 115:  // s Decrease forward velocity
-      hexapod_->changeWalk(-walk_increment_fb);
+      hexapod_->decreaseWalkForward();
       break;
     case 97:  // a Increase leftward velocity
-      hexapod_->changeWalk(walk_increment_lr);
+      hexapod_->increaseWalkLeft();
       break;
     case 100:  // d Decrease leftward velocity
-      hexapod_->changeWalk(-walk_increment_lr);
+      hexapod_->decreaseWalkLeft();
       break;
     case 113:  // q Increase CCW angular velocity
-      hexapod_->changeWalk(hexapod_->walk_turn_increment_);
+      hexapod_->increaseRotationCCW();
       break;
     case 101:  // e Decrease CCW angular velocity
-      hexapod_->changeWalk(-hexapod_->walk_turn_increment_);
+      hexapod_->decreaseRotationCCW();
       break;
     case 120:  // x  Stop
       hexapod_->clearWalk();

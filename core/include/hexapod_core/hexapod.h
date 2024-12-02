@@ -45,6 +45,7 @@ class Hexapod {
   struct BaseTranslationLevels {
     int16_t x;
     int16_t y;
+    bool isZero() const;
   };
   /** @brief Base velocities in the 3 allowed DoF (tx, ty, rz) */
   struct BaseMovementLevels {
@@ -66,17 +67,30 @@ class Hexapod {
   void setUpdateFrequency(const uint16_t update_frequency);
   void printMovementParameters();
   /** @brief Set translation and turning movement for the next period */
-  bool setWalk(const Vector3& walk_step, float angle_step, bool force = false);
+  bool setWalk(const BaseMovementLevels& speed_levels, bool force = false);
+  bool setWalk(const BaseTranslationLevels& translation_speed_levels, int16_t rotation_speed_level);
   /** @brief Set translation movement for the next period */
-  bool setWalk(const Vector3& walk_step);
+  bool setWalk(const BaseTranslationLevels& translation_speed_levels);
   /** @brief Set turning movement for the next period */
-  bool setWalk(float angle_step);
+  bool setWalk(int16_t rotation_speed_level);
   /** @brief Change translation and turning movement for the next period */
-  bool changeWalk(const Vector3& walk_step, float angle_step);
+  bool changeWalk(const BaseMovementLevels& speed_levels);
+  bool changeWalk(const BaseTranslationLevels& translation_speed_levels, int16_t rotation_speed_level);
   /** @brief Change translation movement for the next period */
-  bool changeWalk(const Vector3& walk_step);
+  bool changeWalk(const BaseTranslationLevels& translation_speed_levels);
   /** @brief Change turning movement for the next period */
-  bool changeWalk(float angle_step);
+  bool changeWalk(int16_t rotation_speed_level);
+
+  bool increaseWalkForward();
+  bool decreaseWalkForward();
+  bool setWalkForward(uint16_t speed_level);
+  bool increaseWalkLeft();
+  bool decreaseWalkLeft();
+  bool setWalkLeft(uint16_t speed_level);
+  bool increaseRotationCCW();
+  bool decreaseRotationCCW();
+  bool setRotationCCW(uint16_t speed_level);
+
   /** @brief Resets any walk or turn commands. Does not affect body rotation or translation. */
   void clearWalk();
 
@@ -107,6 +121,9 @@ class Hexapod {
   bool setLegJoints(uint8_t leg_idx, const Leg::JointAngles& joint_angles);
   bool setLegJointsPhysical(uint8_t leg_idx, const Leg::JointAngles& physical_joint_angles);
   uint16_t getUpdateFrequency() const;
+  uint16_t getMovementNumIncrements() const;
+  float getWalkSpeedMax() const;
+  float getTurnSpeedMax() const;
 
   /** @brief From unsupported state set feet targets to the ground. */
   bool setAllLegTargetsToGround(uint16_t duration);
@@ -151,9 +168,11 @@ class Hexapod {
 
   // TODO remove defaults and put all in the movement parameter functions
   float walk_translation_max_{0.0f};
+  // TODO may want to increase later for finer control (but while testing keep relatively low
   uint8_t walk_translation_num_increments_{10};
   float walk_translation_increment_{0.0f};
   float walk_turn_max_{0.0f};
+  // TODO may want to increase later for finer control (but while testing keep relatively low
   uint8_t walk_turn_num_increments_{10};
   float walk_turn_increment_{0.0f};
   const float body_rotation_increment_{1.0f * M_PI / 180.0};
@@ -181,7 +200,7 @@ class Hexapod {
   uint16_t foot_air_time_min_;
   uint16_t foot_air_time_max_;
   uint16_t foot_air_time_;
-  float step_dist_;
+  float time_steps_per_speed_level_;
   float stance_width_min_;
   float stance_width_max_;
   float stance_width_default_;
@@ -196,12 +215,15 @@ class Hexapod {
   float rising_increment_;
 
   float walk_translation_max_per_leg_step_;
+  int16_t speed_change_max_each_leg_step_ = 1;
 
-  Vector3 walk_step_requested_{0.0f, 0.0f, 0.0f};
+  BaseMovementLevels speeds_requested_{{0, 0}, 0};
+  //  Vector3 walk_step_requested_{0.0f, 0.0f, 0.0f};
   // We assume that within a leg step (leg lifts off ground, leg sets down on ground), there will not be significantly
   //  alternating movement requests that are getting cancelled out in the accumulation
-  Vector3 walk_step_applied_this_leg_step_{0.0f, 0.0f, 0.0f};
-  float turn_step_requested_{0.0f};
+  //  Vector3 walk_step_applied_this_leg_step_{0.0f, 0.0f, 0.0f};
+  BaseMovementLevels speed_change_applied_so_far_this_leg_step_{{0, 0}, 0};
+  //  float turn_step_requested_{0.0f};
 
   GaitDefinition gaits_[5];
   Leg* legs_;
@@ -221,13 +243,17 @@ class Hexapod {
   /** @brief Target base to body transform expressed in current base frame */
   Transform tf_base_to_body_target_;
   /** @brief Current walk vector. */
-  Vector3 walk_step_current_;
+  //  Vector3 walk_step_current_;
+
+  BaseMovementLevels speeds_current_{{0, 0}, 0};
+  BaseMovementLevels speeds_target_{{0, 0}, 0};
+
   /** @brief Requested walk vector. */
-  Vector3 walk_step_target_;
+  //  Vector3 walk_step_target_;
   /** @brief Current turn angle. */
-  float turn_step_current_;
+  //  float turn_step_current_;
   /** @brief Requested turn angle. */
-  float turn_step_target_;
+  //  float turn_step_target_;
   /** @brief Flag to indicate there's been a change in base to body */
   bool body_change_ = false;
   /** @brief Flag to indicate there's been a change in base to 'new' base' */
@@ -313,8 +339,12 @@ Hexapod::BaseTranslationLevels operator+(const Hexapod::BaseTranslationLevels& a
                                          const Hexapod::BaseTranslationLevels& b);
 Hexapod::BaseTranslationLevels operator-(const Hexapod::BaseTranslationLevels& a,
                                          const Hexapod::BaseTranslationLevels& b);
+bool operator==(const Hexapod::BaseTranslationLevels& a, const Hexapod::BaseTranslationLevels& b);
+bool operator!=(const Hexapod::BaseTranslationLevels& a, const Hexapod::BaseTranslationLevels& b);
 Hexapod::BaseMovementLevels operator+(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b);
 Hexapod::BaseMovementLevels operator-(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b);
+bool operator==(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b);
+bool operator!=(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b);
 
 }  // namespace hexapod
 

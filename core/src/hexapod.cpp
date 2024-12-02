@@ -9,8 +9,10 @@
 #ifdef __AVR__
 #include <Arduino.h>
 #else
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #endif
 
@@ -18,7 +20,9 @@ namespace hexapod {
 
 using namespace util;
 
-bool Hexapod::BaseMovementLevels::isZero() const { return t.x == 0 && t.y == 0 && r == 0; }
+bool Hexapod::BaseTranslationLevels::isZero() const { return x == 0 && y == 0; }
+
+bool Hexapod::BaseMovementLevels::isZero() const { return t.isZero() && r == 0; }
 
 // Note: may get narrowing conversion warnings when compiling these 4 functions not on microcontroller
 Hexapod::BaseTranslationLevels operator+(const Hexapod::BaseTranslationLevels& a,
@@ -31,6 +35,11 @@ Hexapod::BaseTranslationLevels operator-(const Hexapod::BaseTranslationLevels& a
   return Hexapod::BaseTranslationLevels{a.x - b.x, a.y - b.y};
 }
 
+bool operator==(const Hexapod::BaseTranslationLevels& a, const Hexapod::BaseTranslationLevels& b) {
+  return a.x == b.x && a.y == b.y;
+}
+bool operator!=(const Hexapod::BaseTranslationLevels& a, const Hexapod::BaseTranslationLevels& b) { return !(a == b); }
+
 Hexapod::BaseMovementLevels operator+(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b) {
   return Hexapod::BaseMovementLevels{a.t + b.t, a.r + b.r};
 }
@@ -38,6 +47,11 @@ Hexapod::BaseMovementLevels operator+(const Hexapod::BaseMovementLevels& a, cons
 Hexapod::BaseMovementLevels operator-(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b) {
   return Hexapod::BaseMovementLevels{a.t - b.t, a.r - b.r};
 }
+
+bool operator==(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b) {
+  return a.t == b.t && a.r == b.r;
+}
+bool operator!=(const Hexapod::BaseMovementLevels& a, const Hexapod::BaseMovementLevels& b) { return !(a == b); }
 
 /**
  * @details
@@ -163,7 +177,9 @@ void Hexapod::setMovementIncrements() {
   leg_raise_increment_ = leg_lift_height_default_ / 10.0f;
 
   walk_translation_max_per_leg_step_ = walk_translation_increment_;
-  step_dist_ = sqrtf(2 * walk_translation_increment_ * walk_translation_increment_);
+  // need to determine how much to reduce air time as speed level changes
+  time_steps_per_speed_level_ = static_cast<float>(foot_air_time_default_ - foot_air_time_min_) /
+                                static_cast<float>(walk_translation_num_increments_);
 }
 
 void Hexapod::printMovementParameters() {
@@ -211,6 +227,10 @@ bool Hexapod::setLegJointsPhysical(const uint8_t leg_idx, const Leg::JointAngles
 }
 
 uint16_t Hexapod::getUpdateFrequency() const { return update_frequency_; }
+
+uint16_t Hexapod::getMovementNumIncrements() const { return walk_translation_num_increments_; }
+float Hexapod::getWalkSpeedMax() const { return walk_translation_max_; }
+float Hexapod::getTurnSpeedMax() const { return walk_turn_max_; }
 
 /**
  * @details
@@ -475,94 +495,149 @@ bool Hexapod::handleRaisedLegs() {
   return leg_movement_result;
 }
 
-bool Hexapod::setWalk(const Vector3& walk_step, const float angle_step, const bool force) {
+bool Hexapod::setWalk(const BaseMovementLevels& speeds_requested, bool force) {
   // don't set if not in walking state, or if trying to leave walking state
   if (force || (state_ == State::WALKING && requested_state_ == State::WALKING)) {
-    walk_step_requested_ = walk_step;
-    turn_step_requested_ = angle_step;
+    // TODO check limits
+
+    speeds_requested_ = speeds_requested;
     return true;
   }
   return false;
 }
 
-bool Hexapod::setWalk(const Vector3& walk_step) { return setWalk(walk_step, 0.0f); }
-
-bool Hexapod::setWalk(const float angle_step) { return setWalk(Vector3(0.0f, 0.0f, 0.0f), angle_step); }
-
-bool Hexapod::changeWalk(const Vector3& walk_step, float angle_step) {
-  return setWalk(walk_step_current_ + walk_step, turn_step_current_ + angle_step);
+bool Hexapod::setWalk(const BaseTranslationLevels& translation_speed_levels, const int16_t rotation_speed_level) {
+  return setWalk(BaseMovementLevels{translation_speed_levels, rotation_speed_level});
 }
 
-bool Hexapod::changeWalk(const Vector3& walk_step) { return changeWalk(walk_step, 0.0f); }
+bool Hexapod::setWalk(const BaseTranslationLevels& translation_speed_levels) {
+  return setWalk(translation_speed_levels, 0);
+}
 
-bool Hexapod::changeWalk(float angle_step) { return changeWalk(Vector3(0.0f, 0.0f, 0.0f), angle_step); }
+bool Hexapod::setWalk(const int16_t rotation_speed_level) {
+  return setWalk(BaseTranslationLevels{0, 0}, rotation_speed_level);
+}
+
+bool Hexapod::changeWalk(const BaseMovementLevels& speed_level_changes) {
+  return setWalk(speeds_current_ + speed_level_changes);
+}
+
+bool Hexapod::changeWalk(const BaseTranslationLevels& translation_speed_level_changes,
+                         const int16_t rotation_speed_level_changes) {
+  return changeWalk(BaseMovementLevels{translation_speed_level_changes, rotation_speed_level_changes});
+}
+
+bool Hexapod::changeWalk(const BaseTranslationLevels& translation_speed_level_changes) {
+  return changeWalk(translation_speed_level_changes, 0);
+}
+
+bool Hexapod::changeWalk(const int16_t rotation_speed_level_change) {
+  return changeWalk(BaseTranslationLevels{0, 0}, rotation_speed_level_change);
+}
+
+bool Hexapod::increaseWalkForward() { return changeWalk(BaseTranslationLevels{1, 0}); }
+bool Hexapod::decreaseWalkForward() { return changeWalk(BaseTranslationLevels{-1, 0}); }
+bool Hexapod::increaseWalkLeft() { return changeWalk(BaseTranslationLevels{0, 1}); }
+bool Hexapod::decreaseWalkLeft() { return changeWalk(BaseTranslationLevels{0, -1}); }
+bool Hexapod::increaseRotationCCW() { return changeWalk(1); }
+bool Hexapod::decreaseRotationCCW() { return changeWalk(-1); }
+bool Hexapod::setWalkForward(const uint16_t speed_level) {
+  auto modified_request = speeds_requested_;
+  modified_request.t.x = speed_level;
+  setWalk(modified_request);
+}
+bool Hexapod::setWalkLeft(const uint16_t speed_level) {
+  auto modified_request = speeds_requested_;
+  modified_request.t.y = speed_level;
+  setWalk(modified_request);
+}
+bool Hexapod::setRotationCCW(const uint16_t speed_level) {
+  auto modified_request = speeds_requested_;
+  modified_request.r = speed_level;
+  setWalk(modified_request);
+}
 
 bool Hexapod::setWalkingTargets() {
+#ifndef __AVR__
+  using namespace std;  // for min, sin, cos
+#endif
   if (state_ != State::WALKING) {
     return false;
   }
 
-  if (move_mode_ == MoveMode::HEADLESS) {
-    float x =
-        cos(-total_base_rotation_) * walk_step_requested_.x() - sin(-total_base_rotation_) * walk_step_requested_.y();
-    float y =
-        sin(-total_base_rotation_) * walk_step_requested_.x() + cos(-total_base_rotation_) * walk_step_requested_.y();
-    walk_step_requested_ = Vector3(x, y, 0);
-  }
+  // TODO having to handle headless mode is a bit annoying in my nice new 'speed level' set up
+  // maybe we do the headless transformation later, and when checking speed changes we just assume that
+  //  it won't rotate sufficiently fast to cause errors in speed change throttling
+  //  if (move_mode_ == MoveMode::HEADLESS) {
+  //    float x =
+  //        cos(-total_base_rotation_) * walk_step_requested_.x() - sin(-total_base_rotation_) *
+  //        walk_step_requested_.y();
+  //    float y =
+  //        sin(-total_base_rotation_) * walk_step_requested_.x() + cos(-total_base_rotation_) *
+  //        walk_step_requested_.y();
+  //    walk_step_requested_ = Vector3(x, y, 0);
+  //  }
 
   // Now limit the requests if necessary
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; ++leg_idx) {
     if (legs_[leg_idx].state_ == Leg::State::ON_GROUND && legs_[leg_idx].prev_state_ == Leg::State::RAISED) {
       // a leg has just finished its step, so reset the accumulated motion limit
-      walk_step_applied_this_leg_step_ = {0.0, 0.0, 0.0};
+      //      walk_step_applied_this_leg_step_ = {0.0, 0.0, 0.0};
+      speed_change_applied_so_far_this_leg_step_ = {{0, 0}, 0};
       break;
     }
   }
 
-  const float allowed_change_abs_x = walk_translation_max_per_leg_step_ - walk_step_applied_this_leg_step_.x();
-  const float requested_change_x = walk_step_requested_.x() - walk_step_current_.x();
-  const float change_abs_x = fmin(allowed_change_abs_x, fabs(requested_change_x));
-  const float change_x = requested_change_x >= 0 ? change_abs_x : -change_abs_x;
-  walk_step_applied_this_leg_step_.x() += change_x;
+  const auto allowed_change_abs_x = speed_change_max_each_leg_step_ - speed_change_applied_so_far_this_leg_step_.t.x;
+  const auto requested_change_x = speeds_requested_.t.x - speeds_current_.t.x;
+  const auto change_abs_x = min(allowed_change_abs_x, abs(requested_change_x));
+  const auto change_x = requested_change_x >= 0 ? change_abs_x : -change_abs_x;
+  speed_change_applied_so_far_this_leg_step_.t.x += change_x;
   // surely this can be a bit nicer??
 
-  const float allowed_change_abs_y = walk_translation_max_per_leg_step_ - walk_step_applied_this_leg_step_.y();
-  const float requested_change_y = walk_step_requested_.y() - walk_step_current_.y();
-  const float change_abs_y = fmin(allowed_change_abs_y, fabs(requested_change_y));
-  const float change_y = requested_change_y >= 0 ? change_abs_y : -change_abs_y;
-  walk_step_applied_this_leg_step_.y() += change_y;
+  const auto allowed_change_abs_y = speed_change_max_each_leg_step_ - speed_change_applied_so_far_this_leg_step_.t.y;
+  const auto requested_change_y = speeds_requested_.t.y - speeds_current_.t.y;
+  const auto change_abs_y = min(allowed_change_abs_y, abs(requested_change_y));
+  const auto change_y = requested_change_y >= 0 ? change_abs_y : -change_abs_y;
+  speed_change_applied_so_far_this_leg_step_.t.y += change_y;
 
-  walk_step_target_.x() = walk_step_current_.x() + change_x;
-  walk_step_target_.y() = walk_step_current_.y() + change_y;
+  speeds_target_.t.x = speeds_current_.t.x + change_x;
+  speeds_target_.t.x = speeds_current_.t.x + change_x;
+  // We're not restricting change in turning speed currently
+  speeds_target_.r = speeds_requested_.r;
 
   // also adjust the step time
-  // what should the relationship be? ignore the fact that this is manually adjustable too for the moment
-  // if we double the step distance, should we halve the step speed?
-  // let's try that to start
-
-  // Note that
-
-  if (walk_step_target_ == Vector3()) {
+  if (speeds_target_.t.isZero()) {
     setLegRaiseTime(foot_air_time_default_);
   } else {
-    const float sq =
-        sqrtf(walk_step_target_.x() * walk_step_target_.x() + walk_step_target_.y() * walk_step_target_.y());
-    const uint16_t time_units = (uint16_t)(sq / step_dist_) * 2;
-    setLegRaiseTime(foot_air_time_default_ - time_units);
+    // rough combined measure
+    // or convert to float and calculate accurate combined value sqrt(x^2+y^2)
+    const auto combined_xy_speed_level = abs(speeds_target_.t.x) + abs(speeds_target_.t.y);
+    auto leg_raise_reduction =
+        static_cast<uint16_t>(static_cast<float>(combined_xy_speed_level) * time_steps_per_speed_level_);
+    // round down to multiple of 2
+    leg_raise_reduction = (leg_raise_reduction / 2) * 2;
+    setLegRaiseTime(foot_air_time_default_ - leg_raise_reduction);
   }
-  foot_air_time_;
 
-  // We're not restricting change in turning speed currently
-  turn_step_target_ = turn_step_requested_;
+  // now we need to convert the speed levels to usable measurements
 
-  tf_base_to_new_base_target_.R_.setRPYExtr(0.0f, 0.0f, turn_step_target_);
-  tf_base_to_new_base_target_.t_ = walk_step_target_;
+  float target_x = static_cast<float>(speeds_target_.t.x) * walk_translation_increment_;
+  float target_y = static_cast<float>(speeds_target_.t.y) * walk_translation_increment_;
+  if (move_mode_ == MoveMode::HEADLESS) {
+    target_x = cos(-total_base_rotation_) * target_x - sin(-total_base_rotation_) * target_y;
+    target_y = sin(-total_base_rotation_) * target_x + cos(-total_base_rotation_) * target_y;
+  }
+
+  tf_base_to_new_base_target_.R_.setRPYExtr(0.0f, 0.0f, static_cast<float>(speeds_target_.r) * walk_turn_increment_);
+  tf_base_to_new_base_target_.t_.x() = target_x;
+  tf_base_to_new_base_target_.t_.y() = target_y;
   base_change_ = true;
+
   // If there's a change, need to update raised feet target, unless now stopped in which case update
   // all to allow feet to return to neutral position
-  // Current Vector3 comparison allows some tolerance, here explicity test if zero
-  if (walk_step_current_ != walk_step_target_ || turn_step_current_ != turn_step_target_) {
-    if (walk_step_target_ == Vector3{0.0f, 0.0f, 0.0f} && turn_step_target_ == 0.0f) {
+  if (speeds_current_ != speeds_target_) {
+    if (speeds_target_.isZero()) {
       recalculate_all_feet_targets_ = true;
     } else {
       recalculate_raised_feet_targets_ = true;
@@ -596,13 +671,10 @@ bool Hexapod::changeBody(const Transform& tf_base_to_body_change) {
 
 void Hexapod::clearWalk() {
   // Clear all the movement variables to prevent changes being throttled
-  walk_step_applied_this_leg_step_ = Vector3(0.0f, 0.0f, 0.0f);
-  walk_step_requested_ = Vector3(0.0f, 0.0f, 0.0f);
-  walk_step_target_ = Vector3(0.0f, 0.0f, 0.0f);
-  walk_step_current_ = Vector3(0.0f, 0.0f, 0.0f);
-  turn_step_requested_ = 0.0f;
-  turn_step_target_ = 0.0f;
-  turn_step_current_ = 0.0f;
+  speeds_current_ = {{0, 0}, 0};
+  speeds_target_ = {{0, 0}, 0};
+  speeds_requested_ = {{0, 0}, 0};
+  speed_change_applied_so_far_this_leg_step_ = {{0, 0}, 0};
 }
 
 /**
@@ -1041,7 +1113,7 @@ void Hexapod::handleStateChange() {
   }
 
   if (state_ == State::WALKING && requested_state_ == State::LOWERING) {
-    setWalk(Vector3{0.0f, 0.0f, 0.0f}, 0.0f, true);
+    setWalk(BaseTranslationLevels{0, 0}, true);
     setBody(Transform(), true);  // ideally do more smoothly
     // ensure that legs are allowed to finish current step
     bool ready_to_change = true;
@@ -1170,10 +1242,9 @@ uint8_t Hexapod::gaitNextLeg() { return gaits_[current_gait_seq_].order[gait_nex
 uint8_t Hexapod::gaitMaxRaised() { return gaits_[current_gait_seq_].max_raised; }
 
 void Hexapod::commitTargets() {
-  walk_step_current_ = walk_step_target_;
-  turn_step_current_ = turn_step_target_;
+  speeds_current_ = speeds_target_;
   if (move_mode_ == MoveMode::HEADLESS) {
-    total_base_rotation_ += turn_step_target_;
+    total_base_rotation_ += static_cast<float>(speeds_target_.r) * walk_turn_increment_;
   }
   if (base_change_) {
     tf_base_movement_ = tf_base_to_new_base_target_;

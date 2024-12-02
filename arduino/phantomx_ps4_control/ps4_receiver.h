@@ -13,10 +13,13 @@ class PS4Receiver {
 
   void setRobot(Hexapod* hexapod) {
     hexapod_ = hexapod;
-    walk_increment = hexapod_->walk_translation_increment_;
-    walk_turn_increment = hexapod_->walk_turn_increment_;
-    walk_increment_fb = Vector3{walk_increment, 0.0f, 0.0f};
-    walk_increment_lr = Vector3{0.0f, walk_increment, 0.0f};
+    const uint16_t num_movement_increments = hexapod_->getMovementNumIncrements();
+    const float speed_level_per_joystick_unit = (float)(num_movement_increments * 2) / (float)(128 - kJoystickDeadzone);
+
+    //    walk_increment = hexapod_->walk_translation_increment_;
+    //    walk_turn_increment = hexapod_->walk_turn_increment_;
+    //    walk_increment_fb = Vector3{walk_increment, 0.0f, 0.0f};
+    //    walk_increment_lr = Vector3{0.0f, walk_increment, 0.0f};
     manual_fb = Vector3{0.001, 0.0f, 0.0f};
     manual_lr = Vector3{0.0f, 0.001, 0.0f};
     manual_ud = Vector3{0.0f, 0.0f, 0.001};
@@ -228,61 +231,57 @@ class PS4Receiver {
       }
     }
 
-    float speed_trans_x;
+    // TODO adjust following change to movement requests
+    // scale joystick input to the speed levels in hexapod
+
+    uint16_t speed_trans_x, speed_trans_y, turn_speed;
+
     // Towards 0 is left
     if (ps4_data.l_joystick_x < kJoystickMid - kJoystickDeadzone) {
-      speed_trans_x = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.l_joystick_x);
-      speed_trans_x /= (float)(255 - kJoystickMid + kJoystickDeadzone);
+      const float stick_left_units = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.l_joystick_x);
+      speed_trans_x = (uint16_t)(stick_left_units * speed_level_per_joystick_unit);
     }
     // Towards 255 is right
     else if (ps4_data.l_joystick_x > kJoystickMid + kJoystickDeadzone) {
-      speed_trans_x = (float)(ps4_data.l_joystick_x - kJoystickMid - kJoystickDeadzone);
-      speed_trans_x /= (float)(255 - kJoystickMid + kJoystickDeadzone);
-      speed_trans_x = -speed_trans_x;
+      const float stick_right_units = (float)(ps4_data.l_joystick_x - kJoystickMid - kJoystickDeadzone);
+      speed_trans_x = -(uint16_t)(stick_right_units * speed_level_per_joystick_unit);
     } else {
-      speed_trans_x = 0.0f;
+      speed_trans_x = 0;
     }
 
-    float speed_trans_y;
     // Towards 0 is forward
     if (ps4_data.l_joystick_y < kJoystickMid - kJoystickDeadzone) {
-      speed_trans_y = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.l_joystick_y);
-      speed_trans_y /= (float)(255 - kJoystickMid + kJoystickDeadzone);
+      const float stick_up_units = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.l_joystick_y);
+      speed_trans_y = (uint16_t)(stick_up_units * speed_level_per_joystick_unit);
     }
     // Towards 255 is backward
     else if (ps4_data.l_joystick_y > kJoystickMid + kJoystickDeadzone) {
-      speed_trans_y = (float)(ps4_data.l_joystick_y - kJoystickMid - kJoystickDeadzone);
-      speed_trans_y /= (float)(255 - kJoystickMid + kJoystickDeadzone);
-      speed_trans_y = -speed_trans_y;
+      const float stick_down_units = (float)(ps4_data.l_joystick_y - kJoystickMid - kJoystickDeadzone);
+      speed_trans_y = -(uint16_t)(stick_down_units * speed_level_per_joystick_unit);
     } else {
-      speed_trans_y = 0.0f;
+      speed_trans_y = 0;
     }
 
     float turn_speed;
     // Towards 0 is CCW (+turn rate)
     if (ps4_data.r_joystick_x < kJoystickMid - kJoystickDeadzone) {
-      turn_speed = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.r_joystick_x);
-      turn_speed /= (float)(255 - kJoystickMid + kJoystickDeadzone);
+      const float stick_left_units = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.r_joystick_x);
+      turn_speed = (uint16_t)(stick_left_units * speed_level_per_joystick_unit);
+
     }
     // Towards 255 is CW (-turn rate)
     else if (ps4_data.r_joystick_x > kJoystickMid + kJoystickDeadzone) {
-      turn_speed = (float)(ps4_data.r_joystick_x - kJoystickMid - kJoystickDeadzone);
-      turn_speed /= (float)(255 - kJoystickMid + kJoystickDeadzone);
-      turn_speed = -turn_speed;
+      const float stick_right_units = (float)(ps4_data.r_joystick_x - kJoystickMid - kJoystickDeadzone);
+      turn_speed = -(uint16_t)(stick_right_units * speed_level_per_joystick_unit);
     } else {
-      turn_speed = 0.0f;
+      turn_speed = 0;
     }
 
-    float scaled_walk_increment = walk_increment * kMaxTransSpeed;      // can do once at start
-    float scaled_turn_increment = walk_turn_increment * kMaxTurnSpeed;  // can do once at start
-    // Note: in hexapod, forward is along x axis, left/right along y
-    const Vector3 requested_translation =
-        Vector3{speed_trans_y * scaled_walk_increment, speed_trans_x * scaled_walk_increment, 0.0f};
-    const float requested_turn = turn_speed * scaled_turn_increment;
-    if (requested_translation.x() == 0.0f && requested_translation.y() == 0.0f && requested_turn == 0.0f) {
+    if (speed_trans_x == 0 && speed_trans_y == 0 && turn_speed == 0) {
       hexapod_->clearWalk();
     } else {
-      hexapod_->setWalk(requested_translation, requested_turn);
+      // Remember that joystick Y is hexapod X (forward)
+      hexapod_->setWalk(Hexapod::BaseMovementLevels{speed_trans_y, speed_trans_x, turn_speed});
     }
 
     // Only do these changes if holding L1
@@ -345,16 +344,16 @@ class PS4Receiver {
 
  private:
   Hexapod* hexapod_ = nullptr;
-  float walk_increment;
-  float walk_turn_increment;
-  Vector3 walk_increment_fb;
-  Vector3 walk_increment_lr;
+  //  float walk_increment;
+  //  float walk_turn_increment;
+  //  Vector3 walk_increment_fb;
+  //  Vector3 walk_increment_lr;
   Vector3 manual_fb;
   Vector3 manual_lr;
   Vector3 manual_ud;
   static constexpr uint8_t kJoystickDeadzone = 20;  // either side of midpoint
   static constexpr uint8_t kJoystickMid = 127;
-  static constexpr float kMaxTransSpeed = 30.0;  // times walk increment
-  static constexpr float kMaxTurnSpeed = 60.0;
+  //  static constexpr float kMaxTransSpeed = 30.0;  // times walk increment
+  //  static constexpr float kMaxTurnSpeed = 60.0;
   static constexpr float kBodyRotationScale = 0.5;
 };

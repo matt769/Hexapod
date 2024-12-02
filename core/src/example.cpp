@@ -119,9 +119,12 @@ int main() {
   //    hexapod.update();
   //  }
 
-  for (int i = 0; i < 50; ++i) {
-    hexapod.setWalk(
-        Vector3(hexapod.walk_translation_increment_ * 10.0f, hexapod.walk_translation_increment_ * -10.0f, 0.0f), 0.0);
+  for (int i = 0; i < 10; ++i) {
+    hexapod.increaseWalkForward();
+    hexapod.decreaseWalkLeft();
+    hexapod.update();
+  }
+  for (int i = 0; i < 40; ++i) {
     hexapod.update();
   }
 
@@ -129,7 +132,8 @@ int main() {
 
   Vector3 small_step = Vector3(-0.001f, -0.001f, 0.0f);
   float angle_step = (-5.0 * M_PI / 180.0) / 50.0;
-  hexapod.setWalk(small_step, angle_step);
+  hexapod.decreaseWalkForward();
+  hexapod.decreaseWalkLeft();
   Transform tf_base_to_body_new;
   tf_base_to_body_new.R_.setRPYExtr(0.1f, 0.1f, 0.1f);
   hexapod.setBody(tf_base_to_body_new);
