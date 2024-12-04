@@ -14,7 +14,7 @@ class PS4Receiver {
   void setRobot(Hexapod* hexapod) {
     hexapod_ = hexapod;
     const uint16_t num_movement_increments = hexapod_->getMovementNumIncrements();
-    const float speed_level_per_joystick_unit = (float)(num_movement_increments * 2) / (float)(128 - kJoystickDeadzone);
+    speed_level_per_joystick_unit_ = (float)(num_movement_increments * 2) / (float)(128 - kJoystickDeadzone);
 
     //    walk_increment = hexapod_->walk_translation_increment_;
     //    walk_turn_increment = hexapod_->walk_turn_increment_;
@@ -231,20 +231,17 @@ class PS4Receiver {
       }
     }
 
-    // TODO adjust following change to movement requests
-    // scale joystick input to the speed levels in hexapod
-
-    uint16_t speed_trans_x, speed_trans_y, turn_speed;
+    int16_t speed_trans_x, speed_trans_y, turn_speed;
 
     // Towards 0 is left
     if (ps4_data.l_joystick_x < kJoystickMid - kJoystickDeadzone) {
       const float stick_left_units = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.l_joystick_x);
-      speed_trans_x = (uint16_t)(stick_left_units * speed_level_per_joystick_unit);
+      speed_trans_x = (uint16_t)(stick_left_units * speed_level_per_joystick_unit_);
     }
     // Towards 255 is right
     else if (ps4_data.l_joystick_x > kJoystickMid + kJoystickDeadzone) {
       const float stick_right_units = (float)(ps4_data.l_joystick_x - kJoystickMid - kJoystickDeadzone);
-      speed_trans_x = -(uint16_t)(stick_right_units * speed_level_per_joystick_unit);
+      speed_trans_x = -(uint16_t)(stick_right_units * speed_level_per_joystick_unit_);
     } else {
       speed_trans_x = 0;
     }
@@ -252,27 +249,26 @@ class PS4Receiver {
     // Towards 0 is forward
     if (ps4_data.l_joystick_y < kJoystickMid - kJoystickDeadzone) {
       const float stick_up_units = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.l_joystick_y);
-      speed_trans_y = (uint16_t)(stick_up_units * speed_level_per_joystick_unit);
+      speed_trans_y = (uint16_t)(stick_up_units * speed_level_per_joystick_unit_);
     }
     // Towards 255 is backward
     else if (ps4_data.l_joystick_y > kJoystickMid + kJoystickDeadzone) {
       const float stick_down_units = (float)(ps4_data.l_joystick_y - kJoystickMid - kJoystickDeadzone);
-      speed_trans_y = -(uint16_t)(stick_down_units * speed_level_per_joystick_unit);
+      speed_trans_y = -(uint16_t)(stick_down_units * speed_level_per_joystick_unit_);
     } else {
       speed_trans_y = 0;
     }
 
-    float turn_speed;
     // Towards 0 is CCW (+turn rate)
     if (ps4_data.r_joystick_x < kJoystickMid - kJoystickDeadzone) {
       const float stick_left_units = (float)(kJoystickMid - kJoystickDeadzone - ps4_data.r_joystick_x);
-      turn_speed = (uint16_t)(stick_left_units * speed_level_per_joystick_unit);
+      turn_speed = (uint16_t)(stick_left_units * speed_level_per_joystick_unit_);
 
     }
     // Towards 255 is CW (-turn rate)
     else if (ps4_data.r_joystick_x > kJoystickMid + kJoystickDeadzone) {
       const float stick_right_units = (float)(ps4_data.r_joystick_x - kJoystickMid - kJoystickDeadzone);
-      turn_speed = -(uint16_t)(stick_right_units * speed_level_per_joystick_unit);
+      turn_speed = -(uint16_t)(stick_right_units * speed_level_per_joystick_unit_);
     } else {
       turn_speed = 0;
     }
@@ -356,4 +352,5 @@ class PS4Receiver {
   //  static constexpr float kMaxTransSpeed = 30.0;  // times walk increment
   //  static constexpr float kMaxTurnSpeed = 60.0;
   static constexpr float kBodyRotationScale = 0.5;
+  float speed_level_per_joystick_unit_ = 0.0f;
 };
