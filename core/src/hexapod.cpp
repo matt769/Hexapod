@@ -228,7 +228,7 @@ bool Hexapod::setLegJointsPhysical(const uint8_t leg_idx, const Leg::JointAngles
 
 uint16_t Hexapod::getUpdateFrequency() const { return update_frequency_; }
 
-uint16_t Hexapod::getMovementNumIncrements() const { return walk_translation_num_increments_; }
+int16_t Hexapod::getMovementNumIncrements() const { return walk_translation_num_increments_; }
 float Hexapod::getWalkSpeedMax() const { return walk_translation_max_; }
 float Hexapod::getTurnSpeedMax() const { return walk_turn_max_; }
 
@@ -496,11 +496,37 @@ bool Hexapod::handleRaisedLegs() {
 }
 
 bool Hexapod::setWalk(const BaseMovementLevels& speeds_requested, bool force) {
+#ifndef __AVR__
+  using namespace std;  // for min
+#endif
   // don't set if not in walking state, or if trying to leave walking state
   if (force || (state_ == State::WALKING && requested_state_ == State::WALKING)) {
-    // TODO check limits
-
-    speeds_requested_ = speeds_requested;
+    // Clamp to max speed level
+    //    speeds_requested_.t.x = (speeds_requested_.t.x >= 0 ? 1 : -1) * min(abs(speeds_requested.t.x),
+    //    walk_translation_num_increments_); speeds_requested_.t.y = (speeds_requested_.t.y >= 0 ? 1 : -1) *
+    //    min(abs(speeds_requested.t.y), walk_translation_num_increments_); speeds_requested_.r = (speeds_requested_.r
+    //    >= 0 ? 1 : -1) * min(abs(speeds_requested.r), walk_turn_num_increments_);
+    if (speeds_requested_.t.x > walk_translation_num_increments_) {
+      speeds_requested_.t.x = walk_translation_num_increments_;
+    } else if (speeds_requested_.t.x < -walk_translation_num_increments_) {
+      speeds_requested_.t.x = -walk_translation_num_increments_;
+    } else {
+      speeds_requested_.t.x = speeds_requested.t.x;
+    }
+    if (speeds_requested_.t.y > walk_translation_num_increments_) {
+      speeds_requested_.t.y = walk_translation_num_increments_;
+    } else if (speeds_requested_.t.y < -walk_translation_num_increments_) {
+      speeds_requested_.t.y = -walk_translation_num_increments_;
+    } else {
+      speeds_requested_.t.y = speeds_requested.t.y;
+    }
+    if (speeds_requested_.r > walk_turn_num_increments_) {
+      speeds_requested_.r = walk_turn_num_increments_;
+    } else if (speeds_requested_.r < -walk_turn_num_increments_) {
+      speeds_requested_.r = -walk_turn_num_increments_;
+    } else {
+      speeds_requested_.r = speeds_requested.r;
+    }
     return true;
   }
   return false;
@@ -544,17 +570,17 @@ bool Hexapod::decreaseRotationCCW() { return changeWalk(-1); }
 bool Hexapod::setWalkForward(const uint16_t speed_level) {
   auto modified_request = speeds_requested_;
   modified_request.t.x = speed_level;
-  setWalk(modified_request);
+  return setWalk(modified_request);
 }
 bool Hexapod::setWalkLeft(const uint16_t speed_level) {
   auto modified_request = speeds_requested_;
   modified_request.t.y = speed_level;
-  setWalk(modified_request);
+  return setWalk(modified_request);
 }
 bool Hexapod::setRotationCCW(const uint16_t speed_level) {
   auto modified_request = speeds_requested_;
   modified_request.r = speed_level;
-  setWalk(modified_request);
+  return setWalk(modified_request);
 }
 
 bool Hexapod::setWalkingTargets() {
