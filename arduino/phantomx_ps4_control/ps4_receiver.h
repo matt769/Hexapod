@@ -186,28 +186,28 @@ class PS4Receiver {
 
     // MOVEMENT PARAMETERS
     if (ps4_data.button_x) {
-      hexapod_->changeLegRaiseTime(-hexapod_->leg_raise_time_increment_);  // faster
+      hexapod_->decreaseLegRaiseTime();  // faster
     }
     if (ps4_data.button_square) {
-      hexapod_->changeLegRaiseTime(hexapod_->leg_raise_time_increment_);
+      hexapod_->increaseLegRaiseTime();
     }
     if (ps4_data.button_circle) {
-      hexapod_->changeLegRaiseHeight(hexapod_->leg_raise_increment_);
+      hexapod_->increaseLegRaiseHeight();
     }
     if (ps4_data.button_triangle) {
-      hexapod_->changeLegRaiseHeight(-hexapod_->leg_raise_increment_);
+      hexapod_->decreaseLegRaiseHeight();
     }
 
     if (!ps4_data.button_l1) {
       if (ps4_data.button_up) {
-        hexapod_->changeFootGroundTravelRatio(hexapod_->ftgr_increment_);
+        hexapod_->increaseFootGroundTravelRatio();
       } else if (ps4_data.button_down) {
-        hexapod_->changeFootGroundTravelRatio(-hexapod_->ftgr_increment_);
+        hexapod_->decreaseFootGroundTravelRatio();
       }
       if (ps4_data.button_left) {
-        hexapod_->changeStanceWidth(-hexapod_->stance_width_increment_);
+        hexapod_->decreaseStanceWidth();
       } else if (ps4_data.button_right) {
-        hexapod_->changeStanceWidth(hexapod_->stance_width_increment_);
+        hexapod_->increaseStanceWidth();
       }
     }
 
