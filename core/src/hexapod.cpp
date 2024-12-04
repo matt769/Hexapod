@@ -628,7 +628,7 @@ bool Hexapod::setWalkingTargets() {
   speed_change_applied_so_far_this_leg_step_.t.y += change_y;
 
   speeds_target_.t.x = speeds_current_.t.x + change_x;
-  speeds_target_.t.x = speeds_current_.t.x + change_x;
+  speeds_target_.t.y = speeds_current_.t.y + change_y;
   // We're not restricting change in turning speed currently
   speeds_target_.r = speeds_requested_.r;
 
