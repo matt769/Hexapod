@@ -790,6 +790,9 @@ bool Hexapod::changeStanceWidth(const float change) {
   return setStanceWidth(new_stance_width);
 }
 
+bool Hexapod::increaseStanceWidth() { return changeStanceWidth(stance_width_increment_); }
+bool Hexapod::decreaseStanceWidth() { return changeStanceWidth(-stance_width_increment_); }
+
 /**
  * @details
  *
@@ -857,6 +860,10 @@ bool Hexapod::changeFootGroundTravelRatio(const float change) {
   return setFootGroundTravelRatio(new_ratio);
 }
 
+bool Hexapod::increaseFootGroundTravelRatio() { return changeFootGroundTravelRatio(ftgr_increment_); }
+
+bool Hexapod::decreaseFootGroundTravelRatio() { return changeFootGroundTravelRatio(-ftgr_increment_); }
+
 /**
  * @details
  *
@@ -894,6 +901,10 @@ bool Hexapod::changeLegRaiseHeight(const float change) {
   return setLegRaiseHeight(new_height);
 }
 
+bool Hexapod::increaseLegRaiseHeight() { return changeLegRaiseHeight(leg_raise_increment_); }
+
+bool Hexapod::decreaseLegRaiseHeight() { return changeLegRaiseHeight(-leg_raise_increment_); }
+
 /**
  * @details
  *
@@ -922,6 +933,9 @@ bool Hexapod::changeLegRaiseTime(const int16_t change) {
     return false;
   }
 }
+
+bool Hexapod::increaseLegRaiseTime() { return changeLegRaiseTime(leg_raise_time_increment_); }
+bool Hexapod::decreaseLegRaiseTime() { return changeLegRaiseTime(-leg_raise_time_increment_); }
 
 bool Hexapod::resetLegRaiseTime() { return setLegRaiseTime(foot_air_time_default_); }
 
