@@ -199,20 +199,20 @@ void Receiver::processCommand(const uint8_t cmd) {
       break;
 
     case 93:
-      hexapod_->changeStanceWidth(hexapod_->stance_width_increment_);
+      hexapod_->increaseStanceWidth();
       break;
     case 91:
-      hexapod_->changeStanceWidth(-hexapod_->stance_width_increment_);
+      hexapod_->decreaseStanceWidth();
       break;
     case 59:
       hexapod_->resetStanceWidth();
       break;
 
     case 125:
-      hexapod_->changeLegRaiseTime(hexapod_->leg_raise_time_increment_);
+      hexapod_->increaseLegRaiseTime();
       break;
     case 123:
-      hexapod_->changeLegRaiseTime(-hexapod_->leg_raise_time_increment_);
+      hexapod_->decreaseLegRaiseTime();
       break;
     case 58:
       hexapod_->resetLegRaiseTime();
@@ -220,10 +220,10 @@ void Receiver::processCommand(const uint8_t cmd) {
 
       // Change foot ground travel ratio
     case 35:
-      hexapod_->changeFootGroundTravelRatio(hexapod_->ftgr_increment_);
+      hexapod_->increaseFootGroundTravelRatio();
       break;
     case 39:
-      hexapod_->changeFootGroundTravelRatio(-hexapod_->ftgr_increment_);
+      hexapod_->decreaseFootGroundTravelRatio();
       break;
     case 47:
       hexapod_->resetFootGroundTravelRatio();
@@ -231,10 +231,10 @@ void Receiver::processCommand(const uint8_t cmd) {
 
       // Change leg raise height
     case 61:
-      hexapod_->changeLegRaiseHeight(hexapod_->leg_raise_increment_);
+      hexapod_->increaseLegRaiseHeight();
       break;
     case 45:
-      hexapod_->changeLegRaiseHeight(-hexapod_->leg_raise_increment_);
+      hexapod_->decreaseLegRaiseHeight();
       break;
     case 48:
       hexapod_->resetLegRaiseHeight();
