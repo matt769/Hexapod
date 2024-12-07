@@ -21,7 +21,7 @@
   <xacro:property name="joint_2_offset" value="${14.0*pi/180.0}" />
   <xacro:property name="joint_3_lower_limit" value="${-pi}" />
   <xacro:property name="joint_3_upper_limit" value="${pi}" />
-  <xacro:property name="joint_3_offset" value="${46.0*pi/180.0}" />
+  <xacro:property name="joint_3_offset" value="${32.0*pi/180.0}" />
 
 
   <link name="base_link">
