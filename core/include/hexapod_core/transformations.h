@@ -80,6 +80,7 @@ Vector3 operator*(const Quaternion& q, const Vector3& v);
 Transform operator*(const Transform& a, const Transform& b);
 Vector3 operator*(const Transform& T, const Vector3& v);
 Vector3 operator*(float scalar, const Vector3& v);
+Vector3 operator*(const Vector3& v, float scalar);
 bool operator==(const Vector3& v1, const Vector3& v2);
 bool operator!=(const Vector3& v1, const Vector3& v2);
 RotationMatrix QuaternionToRotationMatrix(const Quaternion& q);
