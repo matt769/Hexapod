@@ -135,7 +135,7 @@ hexapod::Hexapod buildPhantomX() {
   constexpr float kDegToRad = M_PI / 180.0;
 
   constexpr float joint_2_offset = 14.0 * kDegToRad;
-  constexpr float joint_3_offset = 46.0 * kDegToRad;
+  constexpr float joint_3_offset = 32.0 * kDegToRad;
   constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
   hexapod::Joint rhs_leg_joints[num_joints];
   rhs_leg_joints[0] = JointBuilder().addModelLimits(-80.0f * kDegToRad, 80.0f * kDegToRad).setModelAngle(0.0).create();
@@ -213,7 +213,7 @@ hexapod::Hexapod buildPhantomXForVis() {
   constexpr float kDegToRad = M_PI / 180.0;
 
   constexpr float joint_2_offset = 14.0 * kDegToRad;
-  constexpr float joint_3_offset = 46.0 * kDegToRad;
+  constexpr float joint_3_offset = 32.0 * kDegToRad;
   constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
   hexapod::Joint rhs_leg_joints[num_joints];
   // Start off with legs 'flat' / pointing directly out
