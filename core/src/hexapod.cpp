@@ -413,12 +413,12 @@ bool Hexapod::handleGroundedLegs() {
  */
 void Hexapod::updateFootTarget(const uint8_t leg_idx) {
   const Vector3 combined_step = calculateFootVector(leg_idx);
-  float speed = combined_step.norm();
-  Vector3 step_unit;
+  const float speed = combined_step.norm();
+  Vector3 direction;
   if (compareFloat(speed, 0.0f, 0.0001f)) {
-    step_unit = Vector3(0.0f, 0.0f, 0.0f);  // not actually a unit vector obviously
+    direction = Vector3(0.0f, 0.0f, 0.0f);  // not actually a unit vector obviously
   } else {
-    step_unit = combined_step.unit();
+    direction = combined_step.unit();
   }
 
   Vector3 raised_pos;
@@ -446,8 +446,14 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
   //  (this allows the leg to respond to changes in e.g. stance width)
   else {
     const Vector3 neutral_pos = getNeutralPosition(leg_idx);
+
     // Target is ahead of neutral along step unit direction
-    const Vector3 target_pos_in_base = neutral_pos + (allowed_foot_position_diameter_ / 2.0f) * step_unit;
+    // How far do we expect this leg to travel on the ground?
+    // distance per time step * num time steps a leg is in the air * num legs that will be in the air while this is on
+    // the ground
+    const float expected_stride_length_at_current_speed = speed * static_cast<float>(foot_air_time_ * 5);
+    const Vector3 target_pos_in_base = neutral_pos + (expected_stride_length_at_current_speed / 2.0f) * direction;
+
     // Raised point half way between current position and target
     const Vector3 current_pos_in_base = getFootPosition(leg_idx);
     Vector3 raised_pos_in_base = current_pos_in_base + 0.5f * (target_pos_in_base - current_pos_in_base);
