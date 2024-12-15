@@ -141,8 +141,8 @@ int main() {
     for (size_t leg_idx = 0; leg_idx < hexapod.num_legs_; ++leg_idx) {
       if (hexapod.getLeg(leg_idx).state_ == Leg::State::RAISED) {
         std::cout << leg_idx << '\t' << (int)hexapod.getLeg(leg_idx).state_;
-        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).step_idx_;
-        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).current_step_duration_;
+        //        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).step_idx_;
+        //        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).current_step_duration_;
       }
       std::cout << '\t';
     }
@@ -167,8 +167,9 @@ int main() {
     hexapod.update();
     const auto& leg = hexapod.getLeg(2);
     //    if (leg.state_ == Leg::State::RAISED) {
-    std::cout << i << '\t' << (int)leg.state_ << '\t' << leg.step_idx_ << '\t' << leg.current_step_duration_ << '\t'
-              << leg.target_pos_.y() << '\t' << leg.current_pos_.y() << '\n';
+    //    std::cout << i << '\t' << (int)leg.state_ << '\t' << leg.step_idx_ << '\t' << leg.current_step_duration_ <<
+    //    '\t'
+    //              << leg.target_pos_.y() << '\t' << leg.current_pos_.y() << '\n';
     //    }
   }
   // then change speed, make sure in steady state and check again
@@ -183,8 +184,8 @@ int main() {
     hexapod.update();
     const auto& leg = hexapod.getLeg(2);
     if (leg.state_ == Leg::State::RAISED) {
-      std::cout << leg.step_idx_ << '\t' << leg.current_step_duration_ << '\t' << leg.target_pos_.y() << '\t'
-                << leg.current_pos_.y() << '\n';
+      //      std::cout << leg.step_idx_ << '\t' << leg.current_step_duration_ << '\t' << leg.target_pos_.y() << '\t'
+      //                << leg.current_pos_.y() << '\n';
     }
   }
 
