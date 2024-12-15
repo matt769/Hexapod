@@ -755,10 +755,9 @@ uint16_t Leg::getCurrentStepDuration() const { return current_step_duration_; }
 float Leg::getCurrentStepProgress() const {
   if (state_ == State::ON_GROUND) {
     return 1.0f;
-  } else if (step_idx_ == 0) {
-    return 0.0;
   } else {
-    return static_cast<float>(step_idx_) / static_cast<float>(current_step_duration_);
+    // TODO justify this +1 based on timings of things
+    return static_cast<float>(step_idx_ + 1) / static_cast<float>(current_step_duration_);
   }
 }
 
