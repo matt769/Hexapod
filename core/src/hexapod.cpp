@@ -451,7 +451,7 @@ void Hexapod::updateFootTarget(const uint8_t leg_idx) {
     // How far do we expect this leg to travel on the ground?
     // distance per time step * num time steps a leg is in the air * num legs that will be in the air while this is on
     // the ground
-    const float expected_stride_length_at_current_speed = speed * static_cast<float>(foot_air_time_ * 5);
+    const float expected_stride_length_at_current_speed = speed * static_cast<float>(getLegGroundedTime(leg_idx));
     const Vector3 target_pos_in_base = neutral_pos + (expected_stride_length_at_current_speed / 2.0f) * direction;
 
     // Raised point half way between current position and target
@@ -974,6 +974,13 @@ bool Hexapod::increaseLegRaiseTime() { return changeLegRaiseTime(leg_raise_time_
 bool Hexapod::decreaseLegRaiseTime() { return changeLegRaiseTime(-leg_raise_time_increment_); }
 
 bool Hexapod::resetLegRaiseTime() { return setLegRaiseTime(foot_air_time_default_); }
+
+uint16_t Hexapod::getLegGroundedTime(const uint8_t leg_idx) {
+  // estimated time that a leg will be on the ground
+  // function of gait offset, num legs and foot_air_time
+  const float cycle_time = static_cast<float>(foot_air_time_ * num_legs_) * gaits_[current_gait_seq_].offset[leg_idx];
+  return static_cast<uint16_t>(cycle_time) - foot_air_time_;
+}
 
 /**
  * @details
