@@ -651,7 +651,7 @@ bool Hexapod::setWalkingTargets() {
         static_cast<uint16_t>(static_cast<float>(combined_xy_speed_level) * time_steps_per_speed_level_);
     // round down to multiple of 2
     leg_raise_reduction = (leg_raise_reduction / 2) * 2;
-    setLegRaiseTime(foot_air_time_default_ - leg_raise_reduction);
+    //    setLegRaiseTime(foot_air_time_default_ - leg_raise_reduction); // TODO temporarily disable
   }
 
   // now we need to convert the speed levels to usable measurements
