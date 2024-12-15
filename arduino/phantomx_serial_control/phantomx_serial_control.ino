@@ -313,11 +313,12 @@ void loop() {
   }
 
   if (millis() - last_update > update_period) {
-    hex.update();
-#ifdef MOTORS_ON
+    // Do servo update first (from previous model update) in order to prioritise time stability in the servo commands
     setServoGoalsToCurrentModelJoints();
-#endif
+#ifdef MOTORS_ON
     applyServoGoals();
+#endif
+    hex.update();
     last_update += update_period;
   }
 }

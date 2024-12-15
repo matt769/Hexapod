@@ -336,14 +336,16 @@ void loop() {
   //  }
 
   if (millis() - last_update > update_period) {
-    ps4controller.fetchData();
-    // ps4::printData(&Serial, ps4controller.input);
-    receiver.processCommand(ps4controller.input);
-    hex.update();
+    // Do servo update first (from previous model update) in order to prioritise time stability in the servo commands
     setServoGoalsToCurrentModelJoints();
 #ifdef MOTORS_ON
     applyServoGoals();
 #endif
+
+    ps4controller.fetchData();
+    // ps4::printData(&Serial, ps4controller.input);
+    receiver.processCommand(ps4controller.input);
+    hex.update();
     last_update += update_period;
   }
 }
