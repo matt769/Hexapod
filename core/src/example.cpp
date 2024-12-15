@@ -119,13 +119,73 @@ int main() {
   //    hexapod.update();
   //  }
 
-  for (int i = 0; i < 10; ++i) {
-    hexapod.increaseWalkForward();
-    hexapod.decreaseWalkLeft();
+  // Let it settle in case it needs to re-adjust feet after standing up
+  for (int i = 0; i < 200; ++i) {
     hexapod.update();
   }
-  for (int i = 0; i < 40; ++i) {
+  for (size_t leg_idx = 0; leg_idx < hexapod.num_legs_; ++leg_idx) {
+    std::cout << leg_idx << '\t' << (int)hexapod.getLeg(leg_idx).state_ << '\n';
+  }
+
+  std::cout << hexapod.getWalk().t.x << '\t' << hexapod.getWalk().t.y << '\n';
+
+  std::cout << "leg raise time: " << hexapod.getLegRaiseTime() << '\n';
+  hexapod.increaseWalkForward();
+  hexapod.update();
+  std::cout << hexapod.getWalk().t.x << '\t' << hexapod.getWalk().t.y << '\n';
+  for (int i = 0; i < 200; ++i) {
+    //    hexapod.increaseWalkForward();
+    //    hexapod.decreaseWalkLeft();
     hexapod.update();
+    std::cout << i << '\t';
+    for (size_t leg_idx = 0; leg_idx < hexapod.num_legs_; ++leg_idx) {
+      if (hexapod.getLeg(leg_idx).state_ == Leg::State::RAISED) {
+        std::cout << leg_idx << '\t' << (int)hexapod.getLeg(leg_idx).state_;
+        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).step_idx_;
+        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).current_step_duration_;
+      }
+      std::cout << '\t';
+    }
+    std::cout << '\n';
+  }
+
+  hexapod.increaseWalkForward();
+  hexapod.update();
+  std::cout << hexapod.getWalk().t.x << '\t' << hexapod.getWalk().t.y << '\n';
+  for (int i = 0; i < 10; ++i) {
+    //    hexapod.increaseWalkForward();
+    //    hexapod.decreaseWalkLeft();
+    hexapod.update();
+  }
+
+  // make sure in steady state
+  for (int i = 0; i < 200; ++i) {
+    hexapod.update();
+  }
+  // look at the target position and distance travelled by a given leg (2)
+  for (int i = 0; i < 100; ++i) {
+    hexapod.update();
+    const auto& leg = hexapod.getLeg(2);
+    //    if (leg.state_ == Leg::State::RAISED) {
+    std::cout << i << '\t' << (int)leg.state_ << '\t' << leg.step_idx_ << '\t' << leg.current_step_duration_ << '\t'
+              << leg.target_pos_.y() << '\t' << leg.current_pos_.y() << '\n';
+    //    }
+  }
+  // then change speed, make sure in steady state and check again
+
+  hexapod.increaseWalkForward();
+  hexapod.update();
+  std::cout << hexapod.getWalk().t.x << '\t' << hexapod.getWalk().t.y << '\n';
+  for (int i = 0; i < 200; ++i) {
+    hexapod.update();
+  }
+  for (int i = 0; i < 100; ++i) {
+    hexapod.update();
+    const auto& leg = hexapod.getLeg(2);
+    if (leg.state_ == Leg::State::RAISED) {
+      std::cout << leg.step_idx_ << '\t' << leg.current_step_duration_ << '\t' << leg.target_pos_.y() << '\t'
+                << leg.current_pos_.y() << '\n';
+    }
   }
 
   exit(0);
