@@ -567,6 +567,8 @@ bool Hexapod::changeWalk(const int16_t rotation_speed_level_change) {
   return changeWalk(BaseTranslationLevels{0, 0}, rotation_speed_level_change);
 }
 
+Hexapod::BaseMovementLevels Hexapod::getWalk() { return speeds_current_; }
+
 bool Hexapod::increaseWalkForward() { return changeWalk(BaseTranslationLevels{1, 0}); }
 bool Hexapod::decreaseWalkForward() { return changeWalk(BaseTranslationLevels{-1, 0}); }
 bool Hexapod::increaseWalkLeft() { return changeWalk(BaseTranslationLevels{0, 1}); }
@@ -943,6 +945,8 @@ bool Hexapod::decreaseLegRaiseHeight() { return changeLegRaiseHeight(-leg_raise_
  * @return true if the value was changed
  */
 bool Hexapod::resetLegRaiseHeight() { return setLegRaiseHeight(leg_lift_height_default_); }
+
+uint16_t Hexapod::getLegRaiseTime() { return foot_air_time_; }
 
 bool Hexapod::setLegRaiseTime(uint16_t time) {
   if (time < foot_air_time_min_)

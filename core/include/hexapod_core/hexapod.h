@@ -15,7 +15,7 @@ namespace hexapod {
 struct GaitDefinition {
   uint8_t* order;
   float* offset;
-  uint8_t max_raised;
+  uint8_t max_raised;  // TODO no longer used
 };
 
 /** @class Hexapod
@@ -81,6 +81,8 @@ class Hexapod {
   /** @brief Change turning movement for the next period */
   bool changeWalk(int16_t rotation_speed_level);
 
+  BaseMovementLevels getWalk();
+
   bool increaseWalkForward();
   bool decreaseWalkForward();
   bool setWalkForward(uint16_t speed_level);
@@ -120,6 +122,7 @@ class Hexapod {
   bool increaseLegRaiseHeight();
   bool decreaseLegRaiseHeight();
   bool resetLegRaiseHeight();
+  uint16_t getLegRaiseTime();
   bool setLegRaiseTime(uint16_t time);
   bool changeLegRaiseTime(int16_t change);
   bool increaseLegRaiseTime();
