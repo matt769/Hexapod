@@ -9,6 +9,8 @@
 #include <receiver.h>
 #include <transformations.h>
 
+#define MOTORS_ON
+
 namespace ax12 = dynamixel_ax12;
 using namespace hexapod;
 
@@ -249,23 +251,28 @@ void setup() {
   bool res = false;
 
   hex.setUpdateFrequency(update_frequency);
-
+#ifdef MOTORS_ON
   dynamixel_ax12::init(1000000);
-
+#endif
   Serial.begin(115200);
   Serial.println(F("Initialising..."));
-
+#ifdef MOTORS_ON
   ax12::enableTorque();
+#endif
   Serial.print(F("Starting joint positions from servos"));
+#ifdef MOTORS_ON
   getCurrentPhysicalPosition();
   printBuffer(current_position, kNumServos);
+#endif
 
   Serial.print(F("Joint goals from hexapod model after setting joints to current servo positions"));
   // NOTE!! If the hexapod has it legs outside the model's allowed ranges, this will not work
   // properly
   // TODO use a manual movement to set the legs to something we know is allowed
   //  and only then initialise the model angles
+#ifdef MOTORS_ON
   setHexapodModelJointsToCurrentServoPositions();
+#endif
   // the model should now be in sync with the physical robot
 
   Serial.print(F("Moving to preset starting position..."));
@@ -273,7 +280,9 @@ void setup() {
   const uint16_t move_duration = 50;
   bool res1 = true;
   for (uint8_t leg_idx = 0; leg_idx < hex.num_legs_; leg_idx++) {
+#ifdef MOTORS_ON
     res1 &= hex.setLegTarget(leg_idx, start, move_duration);
+#endif
   }
   if (!res1) {
     while (1);
@@ -284,7 +293,9 @@ void setup() {
   for (uint16_t cnt = 0; cnt < move_duration; ++cnt) {
     hex.update();
     setServoGoalsToCurrentModelJoints();
+#ifdef MOTORS_ON
     applyServoGoals();
+#endif
     delay(update_period);  // inaccurate timing used like this but fine for basic setup
   }
 
@@ -303,7 +314,9 @@ void loop() {
 
   if (millis() - last_update > update_period) {
     hex.update();
+#ifdef MOTORS_ON
     setServoGoalsToCurrentModelJoints();
+#endif
     applyServoGoals();
     last_update += update_period;
   }
