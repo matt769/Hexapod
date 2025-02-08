@@ -53,23 +53,22 @@ Vector3 Vector3::unit() const {
 }
 
 const float& RotationMatrix::operator()(const uint8_t rowIdx, const uint8_t colIdx) const {
-  return data_[rowIdx][colIdx];
+  return data_[rowIdx * 3 + colIdx];
 }
 
-float& RotationMatrix::operator()(const uint8_t rowIdx, const uint8_t colIdx) { return data_[rowIdx][colIdx]; }
+float& RotationMatrix::operator()(const uint8_t rowIdx, const uint8_t colIdx) { return data_[rowIdx * 3 + colIdx]; }
 
 RotationMatrix RotationMatrix::inverse() const {
   RotationMatrix result;
-  result(0, 0) = (*this)(0, 0);
-  result(0, 1) = (*this)(1, 0);
-  result(0, 2) = (*this)(2, 0);
-  result(0, 0) = (*this)(0, 0);
-  result(1, 0) = (*this)(0, 1);
-  result(1, 2) = (*this)(2, 1);
-  result(1, 1) = (*this)(1, 1);
-  result(2, 0) = (*this)(0, 2);
-  result(2, 1) = (*this)(1, 2);
-  result(2, 2) = (*this)(2, 2);
+  result.data_[0] = data_[0];
+  result.data_[1] = data_[3];
+  result.data_[2] = data_[6];
+  result.data_[3] = data_[1];
+  result.data_[4] = data_[4];
+  result.data_[5] = data_[7];
+  result.data_[6] = data_[2];
+  result.data_[7] = data_[5];
+  result.data_[8] = data_[8];
   return result;
 }
 
@@ -145,15 +144,15 @@ RotationMatrix getYaw(const float angle) {
 
 RotationMatrix operator*(const RotationMatrix& a, const RotationMatrix& b) {
   RotationMatrix result;
-  result(0, 0) = a(0, 0) * b(0, 0) + a(0, 1) * b(1, 0) + a(0, 2) * b(2, 0);
-  result(0, 1) = a(0, 0) * b(0, 1) + a(0, 1) * b(1, 1) + a(0, 2) * b(2, 1);
-  result(0, 2) = a(0, 0) * b(0, 2) + a(0, 1) * b(1, 2) + a(0, 2) * b(2, 2);
-  result(1, 0) = a(1, 0) * b(0, 0) + a(1, 1) * b(1, 0) + a(1, 2) * b(2, 0);
-  result(1, 1) = a(1, 0) * b(0, 1) + a(1, 1) * b(1, 1) + a(1, 2) * b(2, 1);
-  result(1, 2) = a(1, 0) * b(0, 2) + a(1, 1) * b(1, 2) + a(1, 2) * b(2, 2);
-  result(2, 0) = a(2, 0) * b(0, 0) + a(2, 1) * b(1, 0) + a(2, 2) * b(2, 0);
-  result(2, 1) = a(2, 0) * b(0, 1) + a(2, 1) * b(1, 1) + a(2, 2) * b(2, 1);
-  result(2, 2) = a(2, 0) * b(0, 2) + a(2, 1) * b(1, 2) + a(2, 2) * b(2, 2);
+  result.data_[0] = a.data_[0] * b.data_[0] + a.data_[1] * b.data_[3] + a.data_[2] * b.data_[6];
+  result.data_[1] = a.data_[0] * b.data_[1] + a.data_[1] * b.data_[4] + a.data_[2] * b.data_[7];
+  result.data_[2] = a.data_[0] * b.data_[2] + a.data_[1] * b.data_[5] + a.data_[2] * b.data_[8];
+  result.data_[3] = a.data_[3] * b.data_[0] + a.data_[4] * b.data_[3] + a.data_[5] * b.data_[6];
+  result.data_[4] = a.data_[3] * b.data_[1] + a.data_[4] * b.data_[4] + a.data_[5] * b.data_[7];
+  result.data_[5] = a.data_[3] * b.data_[2] + a.data_[4] * b.data_[5] + a.data_[5] * b.data_[8];
+  result.data_[6] = a.data_[6] * b.data_[0] + a.data_[7] * b.data_[3] + a.data_[8] * b.data_[6];
+  result.data_[7] = a.data_[6] * b.data_[1] + a.data_[7] * b.data_[4] + a.data_[8] * b.data_[7];
+  result.data_[8] = a.data_[6] * b.data_[2] + a.data_[7] * b.data_[5] + a.data_[8] * b.data_[8];
   return result;
 }
 
@@ -223,9 +222,9 @@ Quaternion operator*(const Quaternion& a, const Quaternion& b) {
 }
 
 Vector3 operator*(const RotationMatrix& R, const Vector3& v) {
-  return Vector3(R(0, 0) * v.x() + R(0, 1) * v.y() + R(0, 2) * v.z(),
-                 R(1, 0) * v.x() + R(1, 1) * v.y() + R(1, 2) * v.z(),
-                 R(2, 0) * v.x() + R(2, 1) * v.y() + R(2, 2) * v.z());
+  return {R.data_[0] * v.x() + R.data_[1] * v.y() + R.data_[2] * v.z(),
+          R.data_[3] * v.x() + R.data_[4] * v.y() + R.data_[5] * v.z(),
+          R.data_[6] * v.x() + R.data_[7] * v.y() + R.data_[8] * v.z()};
 }
 
 Transform operator*(const Transform& a, const Transform& b) {

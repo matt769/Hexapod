@@ -30,7 +30,8 @@ class Vector3 {
 
 class RotationMatrix {
  private:
-  float data_[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+  //  float data_[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+  float data_[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 
  public:
   const float& operator()(uint8_t rowIdx, uint8_t colIdx) const;
@@ -38,6 +39,8 @@ class RotationMatrix {
   RotationMatrix inverse() const;
   void setRPYExtr(float roll, float pitch, float yaw);  // roll -> pitch -> yaw around fixed axes
   void setRPYIntr(float roll, float pitch, float yaw);  // roll -> pitch -> yaw updating axes
+  friend RotationMatrix operator*(const RotationMatrix& a, const RotationMatrix& b);
+  friend Vector3 operator*(const RotationMatrix& R, const Vector3& v);
 };
 
 class Quaternion {
