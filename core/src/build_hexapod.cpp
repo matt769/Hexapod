@@ -139,11 +139,9 @@ hexapod::Hexapod buildPhantomX() {
   constexpr float joint_3_offset_mod = joint_3_offset - joint_2_offset;
   hexapod::Joint rhs_leg_joints[num_joints];
   rhs_leg_joints[0] = JointBuilder().addModelLimits(-80.0f * kDegToRad, 80.0f * kDegToRad).setModelAngle(0.0).create();
-  rhs_leg_joints[1] = JointBuilder(joint_2_offset, true)
-                          .addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad)
-                          .setModelAngle(0.0)
-                          .create();
-  rhs_leg_joints[2] = JointBuilder(joint_3_offset_mod, true)
+  rhs_leg_joints[1] =
+      JointBuilder(joint_2_offset).addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad).setModelAngle(0.0).create();
+  rhs_leg_joints[2] = JointBuilder(joint_3_offset_mod)
                           .addModelLimits(-160.0f * kDegToRad, 88.0f * kDegToRad)
                           .setModelAngle(0.0)
                           .create();
@@ -151,9 +149,11 @@ hexapod::Hexapod buildPhantomX() {
 
   hexapod::Joint lhs_leg_joints[num_joints];
   lhs_leg_joints[0] = JointBuilder().addModelLimits(-80.0f * kDegToRad, 80.0f * kDegToRad).setModelAngle(0.0).create();
-  lhs_leg_joints[1] =
-      JointBuilder(-joint_2_offset).addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad).setModelAngle(0.0).create();
-  lhs_leg_joints[2] = JointBuilder(-joint_3_offset_mod)
+  lhs_leg_joints[1] = JointBuilder(-joint_2_offset, true)
+                          .addModelLimits(-95.0f * kDegToRad, 95.0f * kDegToRad)
+                          .setModelAngle(0.0)
+                          .create();
+  lhs_leg_joints[2] = JointBuilder(-joint_3_offset_mod, true)
                           .addModelLimits(-160.0f * kDegToRad, 88.0f * kDegToRad)
                           .setModelAngle(0.0)
                           .create();
