@@ -85,13 +85,9 @@ Hexapod::Hexapod(const uint8_t num_legs, Dims hex_dims, Transform* tf_body_to_le
   legs_ = legs;
   tf_body_to_leg_ = tf_body_to_leg;
 
-  setUpdateFrequency(update_frequency_);
   updateMovementParameters();
-  setMovementIncrements();
-
   populateGaitInfo();
-
-  printMovementParameters();
+  setUpdateFrequency(update_frequency_);
 }
 
 Hexapod::~Hexapod() {
@@ -118,6 +114,8 @@ void Hexapod::setUpdateFrequency(const uint16_t update_frequency) {
   foot_air_time_min_ = 2;
   foot_air_time_max_ = update_frequency_ * 2;  // Double default - 2.0s
   foot_air_time_ = foot_air_time_default_;
+  setMovementIncrements();
+  printMovementParameters();
 }
 
 // This should only be called in the initial setup
@@ -162,8 +160,9 @@ void Hexapod::setMovementIncrements() {
   // i.e. would raise from ground to walking height in ~1 second
   rising_increment_ = (walk_height_default_ - base_height_) * time_step_duration_seconds;
 
-  // max leg movement on ground / time steps on ground (using 5/6 e.g. ripple gait, but tripod would be 1/2)
-  walk_translation_max_ = allowed_foot_position_diameter_ * time_step_duration_seconds * 6.0f / 5.0f;
+  // max leg movement on ground / time steps on ground (in ripple gait (and tripod) a foot is on the ground half the
+  // time)
+  walk_translation_max_ = allowed_foot_position_diameter_ * time_step_duration_seconds * 2.0f;
   // let's say 30 degrees per second for now
   walk_turn_max_ = (30.0f * static_cast<float>(M_PI) / 180.0f) * time_step_duration_seconds;
 
@@ -209,7 +208,32 @@ void Hexapod::printMovementParameters() {
   std::cout << "walk_turn_max_\t" << walk_turn_max_ << '\n';
   std::cout << "walk_turn_num_increments_\t" << (int)walk_turn_num_increments_ << '\n';
   std::cout << "walk_turn_increment_\t" << walk_turn_increment_ << '\n';
-
+#else
+//  Serial.print(F("update_frequency_\t"));Serial.println(update_frequency_);
+//  Serial.print(F("body
+//  dimensions\t"));Serial.print(dims_.length,4);Serial.print('\t');Serial.print(dims_.width,4);Serial.print('\t');Serial.println(dims_.depth,4);
+//  Serial.print(F("leg
+//  neutral\t"));Serial.print(neutral.x(),4);Serial.print('\t');Serial.print(neutral.y(),4);Serial.print('\t');Serial.println(neutral.z(),4);
+//  Serial.print(F("leg_length_full_extension\t"));Serial.println(leg_length_full_extension,4);
+//  Serial.print(F("movement
+//  limits\t"));Serial.print(lml.x_max,4);Serial.print('\t');Serial.print(lml.x_min,4);Serial.print('\t');Serial.print(lml.y_max,4);Serial.print('\t');Serial.println(lml.y_min,4);
+//  Serial.print(F("foot_air_time_default_\t"));Serial.println(foot_air_time_default_);
+//  Serial.print(F("foot_air_time_min_\t"));Serial.println(foot_air_time_min_);
+//  Serial.print(F("walk_height_default_\t"));Serial.println(walk_height_default_,4);
+//  Serial.print(F("stance_width_default_\t"));Serial.println(stance_width_default_,4);
+//  Serial.print(F("stance_width_min_\t"));Serial.println(stance_width_min_,4);
+//  Serial.print(F("stance_width_max_\t"));Serial.println(stance_width_max_,4);
+//  Serial.print(F("leg_lift_height_min_\t"));Serial.println(leg_lift_height_min_,4);
+//  Serial.print(F("leg_lift_height_max_\t"));Serial.println(leg_lift_height_max_,4);
+//  Serial.print(F("leg_lift_height_default_\t"));Serial.println(leg_lift_height_default_,4);
+//  Serial.print(F("allowed_foot_position_diameter_\t"));Serial.println(allowed_foot_position_diameter_,4);
+//  Serial.print(F("rising_increment_\t"));Serial.println(rising_increment_,4);
+//  Serial.print(F("walk_translation_max_\t"));Serial.println(walk_translation_max_,4);
+//  Serial.print(F("walk_translation_num_increments_\t"));Serial.println(walk_translation_num_increments_,4);
+//  Serial.print(F("walk_translation_increment_\t"));Serial.println(walk_translation_increment_,4);
+//  Serial.print(F("walk_turn_max_\t"));Serial.println(walk_turn_max_,4);
+//  Serial.print(F("walk_turn_num_increments_\t"));Serial.println(walk_turn_num_increments_,4);
+//  Serial.print(F("walk_turn_increment_\t"));Serial.println(walk_turn_increment_,4);
 #endif
 }
 
