@@ -333,29 +333,45 @@ void Hexapod::updateLegsStatus() {
   // So we actually need to do this first make sure all raised legs that have finished have their
   // status update before
   //  we try and raise anything else
+
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    std::cout << (int)legs_[leg_idx].state_ << '\t';
+  }
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+    std::cout << (int)legs_[leg_idx].prev_state_ << '\t';
+  }
+  std::cout << '\n';
+
   for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
     if (legs_[leg_idx].state_ == Leg::State::RAISED) {
       legs_[leg_idx].updateStatus(false);
+      std::cout << "upd1\t" << (int)leg_idx << '\n';
     }
   }
+  // And make sure we update the status for all other legs too
 
   // now see if we want to request a raise
   // TODO could this be simplified a little?
   // Go through in the order of the gait, not the leg indices
   //  and start with next in gait sequence
-  uint8_t seq_no = gait_next_leg_seq_no_;
-  for (uint8_t i = 0; i < num_legs_; ++i, seq_no = (seq_no + 1) % num_legs_) {
-    uint8_t prev_seq_no = (seq_no + num_legs_ - 1) % num_legs_;
-    uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no];
-    uint8_t leg_idx = gaits_[current_gait_seq_].order[seq_no];
 
-    // if the previous leg has finished i.e. is grounded, then can raise the new one
-    // Use the offset value to determine when during the the previous leg's trajectory the next one
-    // can start lifting (offset = 0 -> straight away, offset 1 -> only when back on ground)
+  // Iterate through the legs in the order defined by the gait, starting at the 'next' leg in the gait order
+  //  note that the 'next' leg may change during these operations, but it will not affect the loop
+  bool no_more_raises =
+      false;  // once we've evaluated a leg that doesn't meet the criteria, none of the rest should either
+  uint8_t seq_no_it = gait_next_leg_seq_no_;
+  for (uint8_t i = 0; i < num_legs_; ++i, seq_no_it = (seq_no_it + 1) % num_legs_) {
+    //  for (uint8_t seq_no_it = gait_next_leg_seq_no_; seq_no_it < gait_next_leg_seq_no_ + num_legs_; ++seq_no_it) {
+    uint8_t prev_seq_no_it = (seq_no_it + num_legs_ - 1) % num_legs_;
+    uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no_it];
+    uint8_t leg_idx = gaits_[current_gait_seq_].order[seq_no_it];
+
     bool prev_leg_complete =
-        legs_[prev_leg_idx].getCurrentStepProgress() >= gaits_[current_gait_seq_].offset[prev_seq_no];
-
-    if (base_change_ && prev_leg_complete && legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
+        legs_[prev_leg_idx].getCurrentStepProgress() >= gaits_[current_gait_seq_].offset[prev_seq_no_it];
+    // If the robot needs to move, and the previous leg has completed its movement, and this leg is on the ground
+    //  and hasn't only just been flagged as such
+    if (!no_more_raises && base_change_ && prev_leg_complete && legs_[leg_idx].state_ == Leg::State::ON_GROUND &&
+        legs_[leg_idx].prev_state_ == Leg::State::ON_GROUND) {
       updateFootTarget(leg_idx);  // TODO I think this can (and should) be removed because it's already called
                                   // for
                                   //  all legs in updateFootTargets called in update() (unless there's anything
@@ -365,12 +381,50 @@ void Hexapod::updateLegsStatus() {
         ++gait_next_leg_seq_no_;
         gait_next_leg_seq_no_ %= num_legs_;
       }
-      // TODO for multi-leg gaits, what happens if some but not all legs can't raise
-      //  I expect things will get weird
     } else {
-      break;  // stop at the first non-raise result, there can't be any more
+      no_more_raises = true;
+      if (legs_[leg_idx].state_ == Leg::State::ON_GROUND && legs_[leg_idx].prev_state_ == Leg::State::RAISED) {
+        // we updated this in the beginning, skip
+        // TODO how does this status get cleared? as need to run updateStatus
+        //  but we don't want to update twice in the same time step...?
+      } else {
+        legs_[leg_idx].updateStatus(false);  // run update function for all other legs
+      }
     }
   }
+
+  //
+  //  for (uint8_t i = 0; i < num_legs_; ++i) {
+  //    uint8_t prev_seq_no = (gait_next_leg_seq_no_ + num_legs_ - 1) % num_legs_;
+  //    uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no];
+  //    uint8_t leg_idx = gaits_[current_gait_seq_].order[gait_next_leg_seq_no_];
+  //
+  //    // if the previous leg has finished i.e. is grounded, then can raise the new one
+  //    // Use the offset value to determine when during the previous leg's trajectory the next one
+  //    // can start lifting (offset = 0 -> straight away, offset 1 -> only when back on ground)
+  //    bool prev_leg_complete =
+  //        legs_[prev_leg_idx].getCurrentStepProgress() >= gaits_[current_gait_seq_].offset[prev_seq_no];
+  //
+  //    if (base_change_ && prev_leg_complete && legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
+  //      updateFootTarget(leg_idx);  // TODO I think this can (and should) be removed because it's already called
+  //                                  // for
+  //                                  //  all legs in updateFootTargets called in update() (unless there's anything
+  //                                  //  significant happening inbetween but I don't think so
+  //      bool raise_result = legs_[leg_idx].updateStatus(true);
+  //      std::cout << "upd2\t" << (int)leg_idx << '\n';
+  //      if (raise_result) {
+  //        ++gait_next_leg_seq_no_;
+  //        gait_next_leg_seq_no_ %= num_legs_;
+  //      }
+  //      // TODO for multi-leg gaits, what happens if some but not all legs can't raise
+  //      //  I expect things will get weird
+  //    } else {
+  //      // still need to call update for any legs that we haven't yet
+  ////      legs_[leg_idx].updateStatus(false);
+  //
+  ////      break;  // stop at the first non-raise result, there can't be any more
+  //    }
+  //  }
 }
 
 /**
@@ -642,6 +696,9 @@ bool Hexapod::setWalkingTargets() {
       // a leg has just finished its step, so reset the accumulated motion limit
       //      walk_step_applied_this_leg_step_ = {0.0, 0.0, 0.0};
       speed_change_applied_so_far_this_leg_step_ = {{0, 0}, 0};
+      //      Serial.print(F("step end"));
+      //      Serial.print('\t');
+      //      Serial.println(leg_idx);
       break;
     }
   }
@@ -651,6 +708,22 @@ bool Hexapod::setWalkingTargets() {
   const auto change_abs_x = min(allowed_change_abs_x, abs(requested_change_x));
   const auto change_x = requested_change_x >= 0 ? change_abs_x : -change_abs_x;
   speed_change_applied_so_far_this_leg_step_.t.x += change_x;
+  //  Serial.print(speed_change_max_each_leg_step_);
+  //  Serial.print('\t');
+  //  Serial.print(speed_change_applied_so_far_this_leg_step_.t.x);
+  //  Serial.print('\t');
+  //  Serial.print(allowed_change_abs_x);
+  //  Serial.print('\t');
+  //  Serial.print(speeds_requested_.t.x);
+  //  Serial.print('\t');
+  //  Serial.print(speeds_current_.t.x);
+  //  Serial.print('\t');
+  //  Serial.print(requested_change_x);
+  //  Serial.print('\t');
+  //  Serial.print(change_abs_x);
+  //  Serial.print('\t');
+  //  Serial.print(change_x);
+  //  Serial.print('\n');
   // surely this can be a bit nicer??
 
   const auto allowed_change_abs_y = speed_change_max_each_leg_step_ - speed_change_applied_so_far_this_leg_step_.t.y;
