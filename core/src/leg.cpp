@@ -185,7 +185,7 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
   if (clamp(ka, -1.0f, 1.0f)) {
     th3 = -acos(ka);  // acos result always positive (between 0 and pi)
     // but the negative version also valid
-    // and for walking, we want to option where J3 is negative
+    // and for walking, we want the option where J3 is negative
     if (joints_[JOINT_3].isWithinLimits(th3)) {
       th3 = joints_[JOINT_3].clampToLimits(th3);
     } else {
@@ -202,12 +202,18 @@ uint8_t Leg::calculateJointAnglesWalk(const Vector3& pos, JointAngles& result_an
   th2 = wrapAngle(th2);
   if (joints_[JOINT_2].isWithinLimits(th2)) {
     th2 = joints_[JOINT_2].clampToLimits(th2);
+  } else {
+    return 0;
   }
 
   JointAngles tmp{th1, th2, th3};
-  if (!validateJointAngles(tmp, pos)) {
-    return 0;
-  }
+
+  // TODO Simpler indication that result was not achieved?
+  //  since we've check the results are within joint limits, is that sufficient?
+
+  //  if (!validateJointAngles(tmp, pos)) {
+  //    return 0;
+  //  }
 
   result_angles = tmp;
   return 1;  // max 1 result
