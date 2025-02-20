@@ -35,7 +35,9 @@ int main() {
   //  Hexapod h2 = buildDefaultHexapod2();
   //  Hexapod h3 = buildDefaultOctapod();
   //  Hexapod h4 = buildPhantomXForVis();
-  //  Hexapod h5 = buildPhantomX();
+  //    Hexapod h5 = buildPhantomX();
+  //    h5.setUpdateFrequency(20);
+  //    return 0;
 
   Joint j1 = JointBuilder(0, false).addPhysicalLimits(1, 3).setPhysicalAngle(2).create();
   Joint j2 = JointBuilder(0, false).addModelLimits(1, 3).setModelAngle(2).create();
@@ -127,27 +129,34 @@ int main() {
     std::cout << leg_idx << '\t' << (int)hexapod.getLeg(leg_idx).state_ << '\n';
   }
 
-  std::cout << hexapod.getWalk().t.x << '\t' << hexapod.getWalk().t.y << '\n';
+  //  std::cout << hexapod.getWalk().t.x << '\t' << hexapod.getWalk().t.y << '\n';
 
   std::cout << "leg raise time: " << hexapod.getLegRaiseTime() << '\n';
-  hexapod.increaseWalkForward();
-  hexapod.update();
-  std::cout << hexapod.getWalk().t.x << '\t' << hexapod.getWalk().t.y << '\n';
-  for (int i = 0; i < 200; ++i) {
-    //    hexapod.increaseWalkForward();
+  //  hexapod.increaseWalkForward();
+  //  hexapod.update();
+  //  std::cout << hexapod.getWalk().t.x << '\t' << hexapod.getWalk().t.y << '\n';
+
+  //  hexapod.changeGait(Hexapod::Gait::TRIPOD);
+  hexapod.setWalk(Hexapod::BaseTranslationLevels{2, 0});
+  for (int i = 0; i < 70; ++i) {
+    //        hexapod.increaseWalkForward();
     //    hexapod.decreaseWalkLeft();
     hexapod.update();
-    std::cout << i << '\t';
-    for (size_t leg_idx = 0; leg_idx < hexapod.num_legs_; ++leg_idx) {
-      if (hexapod.getLeg(leg_idx).state_ == Leg::State::RAISED) {
-        std::cout << leg_idx << '\t' << (int)hexapod.getLeg(leg_idx).state_;
-        //        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).step_idx_;
-        //        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).current_step_duration_;
-      }
-      std::cout << '\t';
-    }
+
+    std::cout << i << '\t' << (int)hexapod.getLeg(0).state_ << '\t' << (int)hexapod.getLeg(0).prev_state_ << '\n';
+
+    //    std::cout << i << '\t';
+    //    for (size_t leg_idx = 0; leg_idx < hexapod.num_legs_; ++leg_idx) {
+    //      if (hexapod.getLeg(leg_idx).state_ == Leg::State::RAISED) {
+    //        std::cout << leg_idx << '\t' << (int)hexapod.getLeg(leg_idx).state_;
+    //        //        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).step_idx_;
+    //        //        std::cout << '\t' << (int)hexapod.getLeg(leg_idx).current_step_duration_;
+    //      }
+    //      std::cout << '\t';
+    //    }
     std::cout << '\n';
   }
+  return 0;
 
   hexapod.increaseWalkForward();
   hexapod.update();
@@ -187,6 +196,11 @@ int main() {
       //      std::cout << leg.step_idx_ << '\t' << leg.current_step_duration_ << '\t' << leg.target_pos_.y() << '\t'
       //                << leg.current_pos_.y() << '\n';
     }
+  }
+
+  // for profiling
+  for (int i = 0; i < 500000; ++i) {
+    hexapod.update();
   }
 
   exit(0);
