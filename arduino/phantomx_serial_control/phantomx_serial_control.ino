@@ -294,7 +294,8 @@ void setup() {
     hex.update();
     setServoGoalsToCurrentModelJoints();
 #ifdef MOTORS_ON
-    applyServoGoals();
+    applyServoGoals();  // TODO review what the model is at at this point - sends one(?) of the legs out before moving
+                        // to expected position
 #endif
     delay(update_period);  // inaccurate timing used like this but fine for basic setup
   }
