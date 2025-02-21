@@ -181,11 +181,11 @@ class Hexapod {
   // TODO remove defaults and put all in the movement parameter functions
   float walk_translation_max_{0.0f};
   // TODO may want to increase later for finer control (but while testing keep relatively low
-  int16_t walk_translation_num_increments_{10};
+  int16_t walk_translation_num_increments_{25};
   float walk_translation_increment_{0.0f};
   float walk_turn_max_{0.0f};
   // TODO may want to increase later for finer control (but while testing keep relatively low
-  int16_t walk_turn_num_increments_{10};
+  int16_t walk_turn_num_increments_{25};
   float walk_turn_increment_{0.0f};
   const float body_rotation_increment_{1.0f * M_PI / 180.0};
   float body_translation_increment_{0.0f};
