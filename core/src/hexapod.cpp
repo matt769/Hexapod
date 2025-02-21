@@ -328,103 +328,56 @@ uint8_t Hexapod::getNumLegsRaised() const {
  *
  */
 void Hexapod::updateLegsStatus() {
-  // change approach a bit, so instead of checked the number raised vs max
-  //  we check that the previous leg has finished
-  // So we actually need to do this first make sure all raised legs that have finished have their
-  // status update before
-  //  we try and raise anything else
+  // Note that any and all raised legs will appear consecutively in the sequence
+  //  and the first non-raised leg after a raised leg will be the next in line to raise
+  //  (explicitly denoted by gait_next_leg_seq_no_)
+  // When we check if a leg needs to be raised, we have to look at the previous leg's status
+  //  so we need to update the status of all raised legs first
+  // So we will iterate through the legs, in order of where they appear in the sequence,
+  //  starting with the first raised leg
 
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    std::cout << (int)legs_[leg_idx].state_ << '\t';
-  }
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
-    std::cout << (int)legs_[leg_idx].prev_state_ << '\t';
-  }
-  std::cout << '\n';
-
-  for (uint8_t leg_idx = 0; leg_idx < num_legs_; leg_idx++) {
+  // Find the first raised leg in the sequence
+  uint8_t update_status_start_from_seq_no = gait_next_leg_seq_no_;  // if nothing raised, we'll start from here
+  for (uint8_t i = 0; i < num_legs_; ++i) {
+    // Start looking from gait_next_leg_seq_no_ since this will be not-raised
+    const uint8_t seq_no = (i + gait_next_leg_seq_no_) % num_legs_;
+    const uint8_t leg_idx = gaits_[current_gait_seq_].order[seq_no];
     if (legs_[leg_idx].state_ == Leg::State::RAISED) {
-      legs_[leg_idx].updateStatus(false);
-      std::cout << "upd1\t" << (int)leg_idx << '\n';
+      update_status_start_from_seq_no = seq_no;
+      break;
     }
   }
-  // And make sure we update the status for all other legs too
 
-  // now see if we want to request a raise
-  // TODO could this be simplified a little?
-  // Go through in the order of the gait, not the leg indices
-  //  and start with next in gait sequence
-
-  // Iterate through the legs in the order defined by the gait, starting at the 'next' leg in the gait order
-  //  note that the 'next' leg may change during these operations, but it will not affect the loop
+  // Now do the status updates
   bool no_more_raises =
       false;  // once we've evaluated a leg that doesn't meet the criteria, none of the rest should either
-  uint8_t seq_no_it = gait_next_leg_seq_no_;
-  for (uint8_t i = 0; i < num_legs_; ++i, seq_no_it = (seq_no_it + 1) % num_legs_) {
-    //  for (uint8_t seq_no_it = gait_next_leg_seq_no_; seq_no_it < gait_next_leg_seq_no_ + num_legs_; ++seq_no_it) {
-    uint8_t prev_seq_no_it = (seq_no_it + num_legs_ - 1) % num_legs_;
-    uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no_it];
-    uint8_t leg_idx = gaits_[current_gait_seq_].order[seq_no_it];
+  for (uint8_t i = 0; i < num_legs_; ++i) {
+    // Start looking from gait_next_leg_seq_no_ since this will be not-raised
+    const uint8_t seq_no = (i + update_status_start_from_seq_no) % num_legs_;
+    const uint8_t prev_seq_no = (seq_no + num_legs_ - 1) % num_legs_;
+    const uint8_t leg_idx = gaits_[current_gait_seq_].order[seq_no];
+    const uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no];
+    const bool prev_leg_complete =
+        legs_[prev_leg_idx].getCurrentStepProgress() >= gaits_[current_gait_seq_].offset[prev_seq_no];
 
-    bool prev_leg_complete =
-        legs_[prev_leg_idx].getCurrentStepProgress() >= gaits_[current_gait_seq_].offset[prev_seq_no_it];
-    // If the robot needs to move, and the previous leg has completed its movement, and this leg is on the ground
-    //  and hasn't only just been flagged as such
-    if (!no_more_raises && base_change_ && prev_leg_complete && legs_[leg_idx].state_ == Leg::State::ON_GROUND &&
-        legs_[leg_idx].prev_state_ == Leg::State::ON_GROUND) {
+    if (legs_[leg_idx].state_ == Leg::State::RAISED) {
+      legs_[leg_idx].updateStatus(false);
+    } else if (!no_more_raises && base_change_ && prev_leg_complete && legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
       updateFootTarget(leg_idx);  // TODO I think this can (and should) be removed because it's already called
                                   // for
                                   //  all legs in updateFootTargets called in update() (unless there's anything
                                   //  significant happening inbetween but I don't think so
-      bool raise_result = legs_[leg_idx].updateStatus(true);
+      const bool raise_result = legs_[leg_idx].updateStatus(true);
       if (raise_result) {
         ++gait_next_leg_seq_no_;
         gait_next_leg_seq_no_ %= num_legs_;
       }
     } else {
+      // didn't meet criteria for raising, but still call updateStatus to update its previous state value
       no_more_raises = true;
-      if (legs_[leg_idx].state_ == Leg::State::ON_GROUND && legs_[leg_idx].prev_state_ == Leg::State::RAISED) {
-        // we updated this in the beginning, skip
-        // TODO how does this status get cleared? as need to run updateStatus
-        //  but we don't want to update twice in the same time step...?
-      } else {
-        legs_[leg_idx].updateStatus(false);  // run update function for all other legs
-      }
+      legs_[leg_idx].updateStatus(false);  // run update function for all other legs
     }
   }
-
-  //
-  //  for (uint8_t i = 0; i < num_legs_; ++i) {
-  //    uint8_t prev_seq_no = (gait_next_leg_seq_no_ + num_legs_ - 1) % num_legs_;
-  //    uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no];
-  //    uint8_t leg_idx = gaits_[current_gait_seq_].order[gait_next_leg_seq_no_];
-  //
-  //    // if the previous leg has finished i.e. is grounded, then can raise the new one
-  //    // Use the offset value to determine when during the previous leg's trajectory the next one
-  //    // can start lifting (offset = 0 -> straight away, offset 1 -> only when back on ground)
-  //    bool prev_leg_complete =
-  //        legs_[prev_leg_idx].getCurrentStepProgress() >= gaits_[current_gait_seq_].offset[prev_seq_no];
-  //
-  //    if (base_change_ && prev_leg_complete && legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
-  //      updateFootTarget(leg_idx);  // TODO I think this can (and should) be removed because it's already called
-  //                                  // for
-  //                                  //  all legs in updateFootTargets called in update() (unless there's anything
-  //                                  //  significant happening inbetween but I don't think so
-  //      bool raise_result = legs_[leg_idx].updateStatus(true);
-  //      std::cout << "upd2\t" << (int)leg_idx << '\n';
-  //      if (raise_result) {
-  //        ++gait_next_leg_seq_no_;
-  //        gait_next_leg_seq_no_ %= num_legs_;
-  //      }
-  //      // TODO for multi-leg gaits, what happens if some but not all legs can't raise
-  //      //  I expect things will get weird
-  //    } else {
-  //      // still need to call update for any legs that we haven't yet
-  ////      legs_[leg_idx].updateStatus(false);
-  //
-  ////      break;  // stop at the first non-raise result, there can't be any more
-  //    }
-  //  }
 }
 
 /**
