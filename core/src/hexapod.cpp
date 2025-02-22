@@ -543,23 +543,23 @@ bool Hexapod::setWalk(const BaseMovementLevels& speeds_requested, bool force) {
     //    walk_translation_num_increments_); speeds_requested_.t.y = (speeds_requested_.t.y >= 0 ? 1 : -1) *
     //    min(abs(speeds_requested.t.y), walk_translation_num_increments_); speeds_requested_.r = (speeds_requested_.r
     //    >= 0 ? 1 : -1) * min(abs(speeds_requested.r), walk_turn_num_increments_);
-    if (speeds_requested_.t.x > walk_translation_num_increments_) {
+    if (speeds_requested.t.x > walk_translation_num_increments_) {
       speeds_requested_.t.x = walk_translation_num_increments_;
-    } else if (speeds_requested_.t.x < -walk_translation_num_increments_) {
+    } else if (speeds_requested.t.x < -walk_translation_num_increments_) {
       speeds_requested_.t.x = -walk_translation_num_increments_;
     } else {
       speeds_requested_.t.x = speeds_requested.t.x;
     }
-    if (speeds_requested_.t.y > walk_translation_num_increments_) {
+    if (speeds_requested.t.y > walk_translation_num_increments_) {
       speeds_requested_.t.y = walk_translation_num_increments_;
-    } else if (speeds_requested_.t.y < -walk_translation_num_increments_) {
+    } else if (speeds_requested.t.y < -walk_translation_num_increments_) {
       speeds_requested_.t.y = -walk_translation_num_increments_;
     } else {
       speeds_requested_.t.y = speeds_requested.t.y;
     }
-    if (speeds_requested_.r > walk_turn_num_increments_) {
+    if (speeds_requested.r > walk_turn_num_increments_) {
       speeds_requested_.r = walk_turn_num_increments_;
-    } else if (speeds_requested_.r < -walk_turn_num_increments_) {
+    } else if (speeds_requested.r < -walk_turn_num_increments_) {
       speeds_requested_.r = -walk_turn_num_increments_;
     } else {
       speeds_requested_.r = speeds_requested.r;
@@ -661,22 +661,6 @@ bool Hexapod::setWalkingTargets() {
   const auto change_abs_x = min(allowed_change_abs_x, abs(requested_change_x));
   const auto change_x = requested_change_x >= 0 ? change_abs_x : -change_abs_x;
   speed_change_applied_so_far_this_leg_step_.t.x += change_x;
-  //  Serial.print(speed_change_max_each_leg_step_);
-  //  Serial.print('\t');
-  //  Serial.print(speed_change_applied_so_far_this_leg_step_.t.x);
-  //  Serial.print('\t');
-  //  Serial.print(allowed_change_abs_x);
-  //  Serial.print('\t');
-  //  Serial.print(speeds_requested_.t.x);
-  //  Serial.print('\t');
-  //  Serial.print(speeds_current_.t.x);
-  //  Serial.print('\t');
-  //  Serial.print(requested_change_x);
-  //  Serial.print('\t');
-  //  Serial.print(change_abs_x);
-  //  Serial.print('\t');
-  //  Serial.print(change_x);
-  //  Serial.print('\n');
   // surely this can be a bit nicer??
 
   const auto allowed_change_abs_y = speed_change_max_each_leg_step_ - speed_change_applied_so_far_this_leg_step_.t.y;
