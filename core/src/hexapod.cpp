@@ -316,6 +316,46 @@ uint8_t Hexapod::getNumLegsRaised() const {
   return num_legs_raised;
 }
 
+void Hexapod::markLegsRaised() {
+  // Will call updateStatus for all currently grounded legs
+  bool no_more_raises = false;  // once we've evaluated a leg that doesn't meet the criteria, none of the rest should
+                                // either (but we still need to call updateStatus for them)
+  uint8_t start_from_seq_no = gait_next_leg_seq_no_;  // the next leg to be raised
+  for (uint8_t i = 0; i < num_legs_; ++i) {
+    const uint8_t seq_no = (i + start_from_seq_no) % num_legs_;
+    const uint8_t prev_seq_no = (seq_no + num_legs_ - 1) % num_legs_;
+    const uint8_t leg_idx = gaits_[current_gait_seq_].order[seq_no];
+    const uint8_t prev_leg_idx = gaits_[current_gait_seq_].order[prev_seq_no];
+    if (legs_[leg_idx].state_ == Leg::State::ON_GROUND) {
+      const bool prev_leg_complete =
+          legs_[prev_leg_idx].getCurrentStepProgress() >= gaits_[current_gait_seq_].offset[prev_seq_no];
+      if (!no_more_raises && base_change_ && prev_leg_complete) {
+        updateFootTarget(leg_idx);  // TODO I think this can (and should) be removed because it's already called
+                                    //  for
+                                    //  all legs in updateFootTargets called in update() (unless there's anything
+                                    //  significant happening inbetween but I don't think so
+        const bool raise_result = legs_[leg_idx].updateStatus(true);  // TODO split/rename function
+        if (raise_result) {
+          ++gait_next_leg_seq_no_;
+          gait_next_leg_seq_no_ %= num_legs_;
+        }
+      } else {
+        no_more_raises = true;
+        legs_[leg_idx].updateStatus(false);
+      }
+    }
+  }
+}
+
+void Hexapod::markLegsGrounded() {
+  for (uint8_t leg_idx = 0; leg_idx < num_legs_; ++leg_idx) {
+    // TODO better way to represent a Leg's temporary 'about to raise' status?
+    if (legs_[leg_idx].state_ == Leg::State::RAISED && !legs_[leg_idx].onlyJustRaised()) {
+      legs_[leg_idx].updateStatus(false);
+    }
+  }
+}
+
 /**
  * @details
  * Calls Leg::updateStatus() for all legs.
@@ -328,6 +368,8 @@ uint8_t Hexapod::getNumLegsRaised() const {
  *
  */
 void Hexapod::updateLegsStatus() {
+  // TODO this function needs changing/removing
+
   // Note that any and all raised legs will appear consecutively in the sequence
   //  and the first non-raised leg after a raised leg will be the next in line to raise
   //  (explicitly denoted by gait_next_leg_seq_no_)
@@ -336,17 +378,14 @@ void Hexapod::updateLegsStatus() {
   // So we will iterate through the legs, in order of where they appear in the sequence,
   //  starting with the first raised leg
 
-  // Find the first raised leg in the sequence
+  // Check all the grounded legs for raise eligibility first
+  // Then the raised legs
+
+  // I'm getting a bit confused on the order of things
+  // I think I do need at extra state - ABOUT_TO_RAISE or similar?
+
+  // The first grounded leg in the sequence
   uint8_t update_status_start_from_seq_no = gait_next_leg_seq_no_;  // if nothing raised, we'll start from here
-  for (uint8_t i = 0; i < num_legs_; ++i) {
-    // Start looking from gait_next_leg_seq_no_ since this will be not-raised
-    const uint8_t seq_no = (i + gait_next_leg_seq_no_) % num_legs_;
-    const uint8_t leg_idx = gaits_[current_gait_seq_].order[seq_no];
-    if (legs_[leg_idx].state_ == Leg::State::RAISED) {
-      update_status_start_from_seq_no = seq_no;
-      break;
-    }
-  }
 
   // Now do the status updates
   bool no_more_raises =
@@ -789,12 +828,14 @@ bool Hexapod::update() {
     changeBase(Vector3(0, 0, -rising_increment_));
     grounded_legs_result = handleGroundedLegs();
   } else if (state_ == State::WALKING) {
+    markLegsRaised();
     grounded_legs_result = handleGroundedLegs();
     if (!grounded_legs_result) {
       clearTargets();  // couldn't achieve the desired movement
     }
     updateRaisedFootTargets();  // Update foot targets if required
     raised_legs_result = handleRaisedLegs();
+    markLegsGrounded();
 
   } else {
     // state_ == State::FULL_MANUAL
@@ -803,17 +844,17 @@ bool Hexapod::update() {
   }
 
   if (grounded_legs_result && raised_legs_result) {
-    commitTargets();
+    commitTargets();  // TODO rename commitMovementTargets?
   }
   // only check the raise leg results because if the grounded legs couldn't be updated, they just
-  // won't change
+  // won't have been updated
   //  and we can keep moving the raised legs even if we couldn't move the grounded ones
   if (raised_legs_result) {
     commitLegJointChanges();
-    if (state_ == State::WALKING) {
-      updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and
-                           // RAISED
-    }
+    //    if (state_ == State::WALKING) {
+    //      updateLegsStatus();  // Allow them (based on conditions) to change state between ON_GROUND and
+    //                           // RAISED
+    //    }
   }
 
   clearTargets();
@@ -1010,9 +1051,16 @@ bool Hexapod::decreaseLegRaiseTime() { return changeLegRaiseTime(-leg_raise_time
 bool Hexapod::resetLegRaiseTime() { return setLegRaiseTime(foot_air_time_default_); }
 
 uint16_t Hexapod::getLegGroundedTime(const uint8_t leg_idx) {
+  // TODO maybe precalculate some of this when setting gait and/or changing foot air time
+
   // estimated time that a leg will be on the ground
   // function of gait offset, num legs and foot_air_time
-  const float cycle_time = static_cast<float>(foot_air_time_ * num_legs_) * gaits_[current_gait_seq_].offset[leg_idx];
+  float sum = 0;
+  for (uint8_t li = 0; li < num_legs_; ++li) {
+    sum += gaits_[current_gait_seq_].offset[li];
+  }
+
+  const float cycle_time = static_cast<float>(foot_air_time_) * sum;
   return static_cast<uint16_t>(cycle_time) - foot_air_time_;
 }
 
@@ -1361,7 +1409,7 @@ void Hexapod::populateGaitInfo() {
   uint8_t leg = 0;
   for (uint8_t seq_no = 0; seq_no < num_legs_; seq_no++) {
     gaits_[gait_type].order[seq_no] = leg;
-    gaits_[gait_type].offset[seq_no] = 0.34;
+    gaits_[gait_type].offset[seq_no] = 0.33;
     // next leg is on the other side and 1 'row' further back
     if (leg % 2 == 0) {
       // on left

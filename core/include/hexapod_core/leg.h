@@ -65,7 +65,10 @@ class Leg {
    * @see joints_
    */
   enum { JOINT_1 = 0, JOINT_2, JOINT_3, NUM_JOINTS };  // TODO name this?
-  /** @brief Leg state */
+  /** @brief Leg state
+   * * @details
+   * ABOUT_TO_RAISE is a temporary state to help when not handling all legs at the same time.
+   */
   enum class State { ON_GROUND, RAISED };
   /** @brief Inverse kinematics mode
    * WALK is most restrictive
@@ -131,6 +134,7 @@ class Leg {
    * leg. **/
   JointAngles toPhysicalAngles(const Leg::JointAngles& model_angles) const;
 
+  bool onlyJustRaised();
   /** @brief Updates joint angles as required by current trajectory. Must be called every period
    * when leg raised. */
   bool stepUpdate();

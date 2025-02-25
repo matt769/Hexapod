@@ -399,14 +399,14 @@ void Leg::setTrajectory(const Leg::JointAngles& target, const Leg::JointAngles& 
   inc_down_angles_ = increment_down;
 }
 
-void Leg::clearTrajectory() {
-  step_idx_ = 0;
-  current_step_duration_ = 0;
-  target_angles_ = getJointAngles();
-  inc_up_angles_ = JointAngles{0.0f, 0.0f, 0.0f};
-  step_apex_angles_ = getJointAngles();
-  inc_down_angles_ = JointAngles{0.0f, 0.0f, 0.0f};
-}
+// void Leg::clearTrajectory() {
+//   step_idx_ = 0;
+//   current_step_duration_ = 0;
+//   target_angles_ = getJointAngles();
+//   inc_up_angles_ = JointAngles{0.0f, 0.0f, 0.0f};
+//   step_apex_angles_ = getJointAngles();
+//   inc_down_angles_ = JointAngles{0.0f, 0.0f, 0.0f};
+// }
 
 /**
  * @details
@@ -416,28 +416,33 @@ void Leg::clearTrajectory() {
  *  to avoid any rounding errors.
  */
 void Leg::incrementLeg() {
+  if (step_idx_ >= current_step_duration_) {
+    return;  // trajectory has finished, incrementLeg() should have no effect
+  }
   // Use staged_angles_ as the latest version of the angles in the current calculation period
   JointAngles& current_joint_angles = staged_angles_;
-  if (step_idx_ == current_step_duration_ - 1) {
+  step_idx_++;
+  if (step_idx_ == current_step_duration_) {
+    // The last step, where the foot reaches its target
     current_joint_angles.theta_1 = target_angles_.theta_1;
     current_joint_angles.theta_2 = target_angles_.theta_2;
     current_joint_angles.theta_3 = target_angles_.theta_3;
-  } else if (step_idx_ == (current_step_duration_ / 2) - 1) {
+  } else if (step_idx_ == (current_step_duration_ / 2)) {
+    // The mid-step, where the foot reaches the apex of the movement
     current_joint_angles.theta_1 = step_apex_angles_.theta_1;
     current_joint_angles.theta_2 = step_apex_angles_.theta_2;
     current_joint_angles.theta_3 = step_apex_angles_.theta_3;
   } else if (step_idx_ < (current_step_duration_ / 2)) {
+    // Going up
     current_joint_angles.theta_1 += inc_up_angles_.theta_1;
     current_joint_angles.theta_2 += inc_up_angles_.theta_2;
     current_joint_angles.theta_3 += inc_up_angles_.theta_3;
   } else if (step_idx_ < current_step_duration_) {
+    // Coming down
     current_joint_angles.theta_1 += inc_down_angles_.theta_1;
     current_joint_angles.theta_2 += inc_down_angles_.theta_2;
     current_joint_angles.theta_3 += inc_down_angles_.theta_3;
-  } else {
-    return;  // trajectory has finished, incrementLeg() should have no effect
   }
-  step_idx_++;
 }
 
 Leg::MovementLimits Leg::calculateMovementLimits(const float height) const {
@@ -628,6 +633,8 @@ Vector3 Leg::clampTarget(const Vector3& target_position, const MovementLimits& l
   return clamped_target;
 }
 
+bool Leg::onlyJustRaised() { return state_ == Leg::State::RAISED && step_idx_ == 0; }
+
 /**
  * @details
  * To be run for every period the leg is raised. Can be called if not raised - will not do anything.
@@ -647,8 +654,8 @@ bool Leg::stepUpdate() {
   }
 
   // if leg has only just transitioned to RAISED then need to calculate trajectory
-  if (target_updated_ && prev_state_ == State::ON_GROUND) {
-    step_idx_ = 0;                                // reset
+  // TODO is target_updated_ condition required here?
+  if (target_updated_ && step_idx_ == 0) {
     current_step_duration_ = new_step_duration_;  // save for later when doing actual movement
   }
 
@@ -692,16 +699,15 @@ bool Leg::stepUpdate() {
 bool Leg::updateStatus(const bool raise) {
   prev_state_ = state_;
   bool result = false;
-  if (state_ == State::RAISED && step_idx_ == current_step_duration_) {
+  if (state_ == State::RAISED && step_idx_ >= current_step_duration_) {
     state_ = State::ON_GROUND;
-    step_idx_ = 0;
   }
   // If it's already at its target then don't lift but return true as if it had
   else if (raise && state_ == State::ON_GROUND) {
     const float d = (current_pos_ - target_pos_).norm();
     if (!compareFloat(d, 0.0f, target_tolerance)) {
       state_ = State::RAISED;
-      step_idx_ = 0;  // TODO review where this is set throughout
+      step_idx_ = 0;
     }
     result = true;
   }
@@ -762,8 +768,7 @@ float Leg::getCurrentStepProgress() const {
   if (state_ == State::ON_GROUND) {
     return 1.0f;
   } else {
-    // TODO justify this +1 based on timings of things
-    return static_cast<float>(step_idx_ + 1) / static_cast<float>(current_step_duration_);
+    return static_cast<float>(step_idx_) / static_cast<float>(current_step_duration_);
   }
 }
 

@@ -311,6 +311,10 @@ class Hexapod {
   Vector3 calculateFootVector(uint8_t leg_idx) const;
   /** @brief Includes everything necessary to manage the raised legs. */
   bool handleRaisedLegs();
+  /** @brief Check if leg should be raised and update status if so */
+  void markLegsRaised();
+  /** @brief Check if leg has finished movement and update status if so */
+  void markLegsGrounded();
   /** @brief Update status of each leg and request they raise if conditions met. */
   void updateLegsStatus();
   /** @brief Converts a vector in a leg frame to the correspondng vector in the base frame. */
