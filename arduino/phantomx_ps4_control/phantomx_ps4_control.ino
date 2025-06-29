@@ -13,6 +13,7 @@ using namespace hexapod;
 
 // can disable servos for debugging
 #define MOTORS_ON
+#define TORQUE_ON
 
 uint32_t last_update;
 constexpr uint32_t update_period = 50;  // ms e.g. 50ms = 20Hz
@@ -226,15 +227,21 @@ void setServoGoalsToCurrentModelJoints() {
 
 // Will command the servos to move directly to whatever the goal_positions are set to.
 bool applyServoGoals() {
+// The torque on/off doesn't seem to be working (need to investigate) so for now, don't send the command at all
+#ifdef TORQUE_ON
   ax12::setupSyncWrite(kNumServos, ax12::RegisterPosition::AX_GOAL_POSITION_L, 2, sync_write_tx_buffer);
   for (uint8_t idx = 0; idx < kNumServos; idx++) {
     const uint8_t servo_id = idx + 1;
     ax12::addToSyncWrite(servo_id, (uint16_t)goal_position[idx]);
   }
   return ax12::executeSyncWrite();
+#else
+  return true;
+#endif
 }
 
 void applyServoGoalsOverTime(const uint16_t num_steps, uint32_t step_period) {
+#ifdef TORQUE_ON
   getCurrentPhysicalPosition();
 
   float inc[kNumServos];
@@ -257,6 +264,7 @@ void applyServoGoalsOverTime(const uint16_t num_steps, uint32_t step_period) {
 
     delay(step_period);
   }
+#endif
 }
 
 void setup() {
@@ -269,22 +277,25 @@ void setup() {
   Serial.begin(115200);
   Serial.println(F("Initialising..."));
 
-#ifdef MOTORS_ON
+#ifdef TORQUE_ON
+  Serial.println(F("Torque ON"));
   ax12::enableTorque();
-#endif
-  Serial.println(F("Starting joint positions from servos"));
-#ifdef MOTORS_ON
-  getCurrentPhysicalPosition();
-  printBuffer(current_position, kNumServos);
+#else
+  Serial.println(F("Torque OFF"));
+  ax12::disableTorque();
 #endif
 
-  Serial.println(F("Joint goals from hexapod model after setting joints to current servo positions"));
+#ifdef MOTORS_ON
+  getCurrentPhysicalPosition();
+#endif
+
   // NOTE!! If the hexapod has it legs outside the model's allowed ranges, this will not work
   // properly
   // TODO use a manual movement to set the legs to something we know is allowed
   //  and only then initialise the model angles
 #ifdef MOTORS_ON
   setHexapodModelJointsToCurrentServoPositions();
+  setServoGoalsToCurrentModelJoints();  // so that everything is in sync
 #endif
   // the model should now be in sync with the physical robot
 
@@ -330,12 +341,6 @@ void setup() {
 }
 
 void loop() {
-  //  if (Serial.available() > 0) {
-  //    char cmd = Serial.read();
-  //    Serial.println(cmd);
-  //    receiver.processCommand(cmd);
-  //  }
-
   if (millis() - last_update > update_period) {
     // Do servo update first (from previous model update) in order to prioritise time stability in the servo commands
     setServoGoalsToCurrentModelJoints();

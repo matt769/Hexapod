@@ -10,6 +10,7 @@
 #include <transformations.h>
 
 #define MOTORS_ON
+#define TORQUE_ON
 
 namespace ax12 = dynamixel_ax12;
 using namespace hexapod;
@@ -74,6 +75,14 @@ void printBuffer(const uint8_t* buffer, uint8_t length) {
 }
 
 void printBuffer(const int16_t* buffer, uint8_t length) {
+  for (int i = 0; i < length; i++) {
+    Serial.print(buffer[i]);
+    Serial.print('\t');
+  }
+  Serial.print('\n');
+}
+
+void printBuffer(const float* buffer, uint8_t length) {
   for (int i = 0; i < length; i++) {
     Serial.print(buffer[i]);
     Serial.print('\t');
@@ -197,6 +206,18 @@ void setHexapodModelJointsToCurrentServoPositions() {
   }
 }
 
+void printModelJoints() {
+  float joint_array[kNumServos];  //
+  uint8_t ja_idx = 0;
+  for (uint8_t leg_idx = 0; leg_idx < hex.num_legs_; leg_idx++) {
+    Leg::JointAngles lja = hex.getLeg(leg_idx).getJointAnglesPhysical();
+    joint_array[ja_idx++] = lja.theta_1;
+    joint_array[ja_idx++] = lja.theta_2;
+    joint_array[ja_idx++] = lja.theta_3;
+  }
+  printBuffer(joint_array, kNumServos);
+}
+
 // Updates goal_position array with the values from the hexapod model
 void setServoGoalsToCurrentModelJoints() {
   float joint_array[kNumServos];  //
@@ -214,15 +235,21 @@ void setServoGoalsToCurrentModelJoints() {
 
 // Will command the servos to move directly to whatever the goal_positions are set to.
 bool applyServoGoals() {
+// The torque on/off doesn't seem to be working (need to investigate) so for now, just don't send the command at all
+#ifdef TORQUE_ON
   ax12::setupSyncWrite(kNumServos, ax12::RegisterPosition::AX_GOAL_POSITION_L, 2, sync_write_tx_buffer);
   for (uint8_t idx = 0; idx < kNumServos; idx++) {
     const uint8_t servo_id = idx + 1;
     ax12::addToSyncWrite(servo_id, (uint16_t)goal_position[idx]);
   }
   return ax12::executeSyncWrite();
+#else
+  return true;
+#endif
 }
 
 void applyServoGoalsOverTime(const uint16_t num_steps, uint32_t step_period) {
+#ifdef TORQUE_ON
   getCurrentPhysicalPosition();
 
   float inc[kNumServos];
@@ -245,33 +272,38 @@ void applyServoGoalsOverTime(const uint16_t num_steps, uint32_t step_period) {
 
     delay(step_period);
   }
+#endif
 }
 
 void setup() {
+  Serial.begin(115200);
+  Serial.println(F("Initialising..."));
   bool res = false;
 
   hex.setUpdateFrequency(update_frequency);
 #ifdef MOTORS_ON
   dynamixel_ax12::init(1000000);
 #endif
-  Serial.begin(115200);
-  Serial.println(F("Initialising..."));
-#ifdef MOTORS_ON
+
+#ifdef TORQUE_ON
+  Serial.println(F("Torque ON"));
   ax12::enableTorque();
-#endif
-  Serial.print(F("Starting joint positions from servos"));
-#ifdef MOTORS_ON
-  getCurrentPhysicalPosition();
-  printBuffer(current_position, kNumServos);
+#else
+  Serial.println(F("Torque OFF"));
+  ax12::disableTorque();
 #endif
 
-  Serial.print(F("Joint goals from hexapod model after setting joints to current servo positions"));
+#ifdef MOTORS_ON
+  getCurrentPhysicalPosition();
+#endif
+
   // NOTE!! If the hexapod has it legs outside the model's allowed ranges, this will not work
   // properly
   // TODO use a manual movement to set the legs to something we know is allowed
   //  and only then initialise the model angles
 #ifdef MOTORS_ON
   setHexapodModelJointsToCurrentServoPositions();
+  setServoGoalsToCurrentModelJoints();  // so that everything is in sync
 #endif
   // the model should now be in sync with the physical robot
 
