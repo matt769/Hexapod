@@ -235,7 +235,7 @@ void setServoGoalsToCurrentModelJoints() {
 
 // Will command the servos to move directly to whatever the goal_positions are set to.
 bool applyServoGoals() {
-// The torque on/off doesn't seem to be working (need to investigate) so for now, just don't send the command at all
+// Setting goal positions enables torque, so if we don't want it, just don't send the command at all
 #ifdef TORQUE_ON
   ax12::setupSyncWrite(kNumServos, ax12::RegisterPosition::AX_GOAL_POSITION_L, 2, sync_write_tx_buffer);
   for (uint8_t idx = 0; idx < kNumServos; idx++) {
