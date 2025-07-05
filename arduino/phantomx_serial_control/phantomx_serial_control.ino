@@ -297,37 +297,31 @@ void setup() {
   getCurrentPhysicalPosition();
 #endif
 
-  // NOTE!! If the hexapod has it legs outside the model's allowed ranges, this will not work
-  // properly
-  // TODO use a manual movement to set the legs to something we know is allowed
-  //  and only then initialise the model angles
+// Use a manual movement to set the legs to something we know is allowed
+//  and only then initialise the model angles
 #ifdef MOTORS_ON
-  setHexapodModelJointsToCurrentServoPositions();
-  setServoGoalsToCurrentModelJoints();  // so that everything is in sync
+  setServoGoalsToCurrentModelJoints();
+  applyServoGoalsOverTime(50, 20);  // so that everything is in sync
 #endif
-  // the model should now be in sync with the physical robot
 
-  Serial.print(F("Moving to preset starting position..."));
+  // Now the physical robot should match the model
+  Serial.println(F("Moving to preset starting position..."));
   const Leg::JointAngles start = {0.0f, 1.41f, 1.50f};
-  const uint16_t move_duration = 50;
+  const uint16_t move_duration = update_frequency;
   bool res1 = true;
   for (uint8_t leg_idx = 0; leg_idx < hex.num_legs_; leg_idx++) {
-#ifdef MOTORS_ON
     res1 &= hex.setLegTarget(leg_idx, start, move_duration);
-#endif
   }
   if (!res1) {
     while (1);
   }
   Serial.println(res);
-  delay(1000);
 
   for (uint16_t cnt = 0; cnt < move_duration; ++cnt) {
     hex.update();
     setServoGoalsToCurrentModelJoints();
 #ifdef MOTORS_ON
-    applyServoGoals();  // TODO review what the model is at at this point - sends one(?) of the legs out before moving
-                        // to expected position
+    applyServoGoals();
 #endif
     delay(update_period);  // inaccurate timing used like this but fine for basic setup
   }
